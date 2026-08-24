@@ -1,0 +1,5 @@
+{
+  "name": "soojos-core",
+  "description": "Context hygiene, decision logging, adversarial critique and project bootstrap for every SoojOS project.",
+  "author": { "name": "Sayuj Varsani" }
+}

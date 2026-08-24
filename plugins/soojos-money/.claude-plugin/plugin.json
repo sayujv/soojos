@@ -1,0 +1,5 @@
+{
+  "name": "soojos-money",
+  "description": "Guardrails for money projects: backtest sanity review, risk checks, secret-file write protection.",
+  "author": { "name": "Sayuj Varsani" }
+}

@@ -1,0 +1,5 @@
+{
+  "name": "soojos-ops",
+  "description": "Notion registry wiring: log runs and spend, and produce a cross-project standup.",
+  "author": { "name": "Sayuj Varsani" }
+}

@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# Bootstrap the current directory onto the SoojOS standard.
+# Usage: soojos-init <github-owner> [extra-plugin ...]
+#   e.g. soojos-init sayujvarsani soojos-ops soojos-money
+set -euo pipefail
+
+OWNER="${1:-}"
+if [ -z "$OWNER" ]; then
+  echo "usage: soojos-init <github-owner> [soojos-ops] [soojos-money]" >&2
+  exit 1
+fi
+shift || true
+
+mkdir -p .claude context decisions
+
+EXTRA=""
+for p in "$@"; do
+  EXTRA="$EXTRA
+    \"$p@soojos\": true,"
+done
+
+if [ -f .claude/settings.json ]; then
+  echo "! .claude/settings.json already exists — not overwriting. Merge manually." >&2
+else
+  cat > .claude/settings.json <<JSON
+{
+  "extraKnownMarketplaces": {
+    "soojos": {
+      "source": { "source": "github", "repo": "$OWNER/soojos" }
+    }
+  },
+  "enabledPlugins": {$EXTRA
+    "soojos-core@soojos": true,
+    "soojos-build@soojos": true
+  }
+}
+JSON
+  echo "+ .claude/settings.json"
+fi
+
+if [ -f CLAUDE.md ]; then
+  echo "! CLAUDE.md already exists — left alone."
+else
+  cat > CLAUDE.md <<'MD'
+# <Project> — <one-line purpose>
+
+Category: <make-money | save-spend | personal | admin>
+Stage: <idea | building | running>
+
+## Read before working
+- Background and constraints: `./context/`
+- Prior decisions (binding): `./decisions/`
+- Last session state: `./context/handoff.md`
+
+## Standing rules
+- Verify before claiming done. Untested is not working.
+- Log any directional choice with the `decide` skill.
+- Write a handoff before clearing context.
+
+## This project specifically
+<three to six lines: what it does, the one constraint that matters, what "done" looks like>
+MD
+  echo "+ CLAUDE.md"
+fi
+
+[ -f context/.gitkeep ] || touch context/.gitkeep
+[ -f decisions/.gitkeep ] || touch decisions/.gitkeep
+
+echo
+echo "Done. Next: open Claude Code here and run /plugin to confirm SoojOS loaded,"
+echo "then fill in the bottom section of CLAUDE.md."

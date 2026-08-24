@@ -1,0 +1,72 @@
+{
+  "name": "soojos",
+  "description": "Sayuj's operating system for Claude: shared skills, agents, hooks and MCP wiring deployed across every project from one repo.",
+  "owner": {
+    "name": "Sayuj Varsani"
+  },
+  "metadata": {
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "soojos-core",
+      "source": "./soojos-core",
+      "description": "The spine: context hygiene, decision logging, anti-yes-man critique, project bootstrap. Enable in every project.",
+      "category": "workflow",
+      "tags": [
+        "core",
+        "context",
+        "handoff",
+        "decisions"
+      ]
+    },
+    {
+      "name": "soojos-ops",
+      "source": "./soojos-ops",
+      "description": "Notion wiring: Mission Control, Tasks, Spend & Revenue and Automation Log logging plus a daily standup.",
+      "category": "operations",
+      "tags": [
+        "notion",
+        "registry",
+        "logging"
+      ]
+    },
+    {
+      "name": "soojos-build",
+      "source": "./soojos-build",
+      "description": "Build discipline: build-then-verify, parallel worktree lanes, adversarial code review.",
+      "category": "engineering",
+      "tags": [
+        "verify",
+        "worktree",
+        "review"
+      ]
+    },
+    {
+      "name": "soojos-intel",
+      "source": "./soojos-intel",
+      "description": "Question-scoped research across Reddit and YouTube, distilled into a machine-queryable claims ledger and sourced reports.",
+      "category": "knowledge",
+      "tags": [
+        "research",
+        "reddit",
+        "youtube",
+        "wiki",
+        "cadence"
+      ]
+    },
+    {
+      "name": "soojos-money",
+      "source": "./soojos-money",
+      "description": "Money-project guardrails: backtest sanity review, risk checks, and a hook that blocks secret-file edits.",
+      "category": "finance",
+      "tags": [
+        "trading",
+        "betting",
+        "risk",
+        "guardrail"
+      ],
+      "defaultEnabled": false
+    }
+  ]
+}

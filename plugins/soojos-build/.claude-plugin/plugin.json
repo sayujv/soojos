@@ -1,0 +1,5 @@
+{
+  "name": "soojos-build",
+  "description": "Build-then-verify discipline, parallel worktree lanes, and adversarial code review.",
+  "author": { "name": "Sayuj Varsani" }
+}

@@ -1,0 +1,11 @@
+{
+  "extraKnownMarketplaces": {
+    "soojos": {
+      "source": { "source": "github", "repo": "REPLACE_ME/soojos" }
+    }
+  },
+  "enabledPlugins": {
+    "soojos-core@soojos": true,
+    "soojos-build@soojos": true
+  }
+}
