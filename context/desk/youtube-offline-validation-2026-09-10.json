@@ -1,0 +1,201 @@
+{
+  "task_id": "20260910-youtube-offline-validation",
+  "observed_at": "2026-09-10T15:42:20.692932+08:00",
+  "source": "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build",
+  "isolated_copy": "/private/tmp/soojos-youtube-offline-20260910/source",
+  "source_hashes": {
+    "PROJECT_BRIEF.md": "9472a97c3d8a9007ea480972b1198f6438f2b5e89d57c09791b50ea8505b3826",
+    ".mcp.json": "9b8bd73993dea064ad07fdfc565870b0ede23798150e8eaa34f0d818f7a94ea9",
+    "README.md": "19630d4f49954d4f68c74670e59409bbda441b48e59014d662b0c4c3eb62c0bf",
+    "TREND_INTELLIGENCE_BRIEF.md": "3a6544d466176298783bc4a00b3e2280671325da5fdb3274e108d0e9cf630eb8",
+    "AGENTS.md": "5391afaf973a4848cb4f70038cb0c556ba0c1e4066407fab2c5ab5124d29b1a5",
+    "CLAUDE.md": "b55d4fe15f51b00826f8025928469ab4b11dd95568bf6c7afcb809815b257675",
+    "connectors/notion-claims.js": "7c0c51fdd3845027d89cd28a841dabf1789f49d4b81aaf3895ec1795675d2094",
+    "connectors/video-source.js": "e3f56711e37613a2b89c7f3ca1be8de4c1f91ffc84ba733d137ff5117849c2c8",
+    "connectors/json2video.js": "8b296fcc11e1d308752ab68e11bafe8d182e1a49953b97ae59036e6cd7821f3b",
+    "connectors/youtube.js": "0a22b1bafbee5867103e0c2721b17faa18d12622bd30d0c76b7104bb2a847204",
+    "connectors/vidiq.js": "11253927b35ad0d26000489e80c48847ec045b8949954282e3476049edc0b152",
+    "connectors/elevenlabs.js": "d10ccf757a1ddbcdc25f5c7e170adb564be96ae52c273704ca9215a9820466bb",
+    "music/tracks.json": "8bf5e20e73c73d76458125ac48d6da11da7b3ddd9ad93d46e33674ba1e8f6271",
+    "music/select-track.js": "570ae75378b5cc37453153845f9cf6e31a37052541f781b54e364e838e9a0067",
+    "test/live-agents.js": "736f583b3e65eeb8c62ded86be1d3ebe516869857078bce8cba2e5f7db0ed930",
+    "test/live-editing.js": "16b2b157a7e6ff01edd3e4a87704f42bf71473a45fcbf102c93039891a278fdd",
+    "test/e2e-mock.js": "cdd56461fcb7f438f31672f5deccb7542720a957ec143c20e03337b90c4413e7",
+    "test/live-compliance.js": "7e4a4a1c498a96ae9d7ca08338405beb29186a492874d371022e2af3dcb335d8",
+    ".claude/agents/code-reviewer.md": "3e2376e0eb44b9dedc21b2ea25c540e33651078204b0c1342641d95394fa7d54",
+    ".claude/agents/test-automator.md": "68925bb9fc7424c2b5076a872fb51db9433e051bdee2c5fad39b9c32eb2e87ab",
+    "agents/agent-script.md": "62e02c085f7fbcf2959dece8193c80e4c570d965b63c4e37eb37a07e38752340",
+    "agents/agent-research.md": "254d662834f1c641f6bc33123cf116b4bc8639338984bc3085a971e4dcbe6c3d",
+    "agents/benchmark-script.md": "3c095114461f3df1cf567cc61b4e545a7140b32ba8b7b286af36b395e9250efd",
+    "agents/agent-compliance.md": "ecbb46769e5d54b1c7c8881c3f7a0564b1421eccedbbb5dd0b4a974127680c94",
+    "agents/TEAMS.md": "1c8fbb4367114f89f21d4e53791bfd21be0851885f0e4b9fd5a4c64a66282f4d",
+    "agents/script-editing/agent-critic.md": "d1e7693a528db0eb9a235954073cbfbc12f7f6cb356f00548bdf3bf10551e2ba",
+    "agents/script-editing/agent-hook-doctor.md": "c9068e36aa3e064f5efee72709cb8ec2f28f538c7fedef0f7c53566adba11c9c",
+    "agents/script-editing/agent-fact-check.md": "b79f5ea9daf663a2df799d2f6c8181ba765615a81367595f9f40c77d96dedee7",
+    "trends/README.md": "c2b75676ad2b9c0d5183da799727d3dc0724ee42bc104c98f6f913037300224e",
+    "trends/package-lock.json": "fff32e5ac9e88f236e855737b9b04aa5d66344848515316db7dde6397301765b",
+    "trends/package.json": "4e9e1c1a02d3550d30c29e4eee36354811d3338c984a6d6f940e6a488e7873d9",
+    "trends/test/mock-run.js": "620f6a544accbed67a26fdcf18a94a9e8271e446a182b99cec616c9d321a5043",
+    "trends/test/metrics.test.js": "cb016bb84fb8dc7c417f0d8488bdf58ddf559a7266d66afae2874e71e28b922a",
+    "trends/config/watchlist.json": "dffb23c477416373df0e5958b94c990fecc50c7d9957a7afea9df23a90436ac1",
+    "trends/collector/classify.js": "2f104e6610e88089bf2c89daa58725304c685319b662fa05bea06c750a758c8e",
+    "trends/collector/run.js": "bf9384b8b4e0b1e92618ef56ea3c66c556e25a529f826a9c5270a12be16ddcda",
+    "trends/collector/fetch.js": "089271371618a610f674f8139b51da58b690c0c380300c6943eb6550c5412992",
+    "trends/collector/snapshot.js": "2897deeadfc1305b543a848dde296d7c836938e31e68d7d8b95ee9734b984341",
+    "trends/notion/digest.js": "585868510629beb97e3240a8a61b5009d27aad06ffd637a628a919b2b876a5d0",
+    "trends/dashboard/index.html": "3e839f057c8c03e765fb8ed4f80975b589e0cca257b7c73dd5b73061f387ebd5",
+    "trends/dashboard/vite.config.js": "8739316b8d523a83562fb21c887007c58f656e4d81b4999c715084035aaa8fee",
+    "trends/dashboard/src/FormatChart.jsx": "bfd089bf03c531337984e4e5bd001e9aba8b58b2f0db8163a4806073bd88d9ed",
+    "trends/dashboard/src/styles.css": "bfc8ec52255697488f08776f9662f69d4b6068ba3a875eeada566925050a12a2",
+    "trends/dashboard/src/main.jsx": "c5663abe90b582eecfa6113b43faece7182d451fc4c1de15e77b748c0c0e3ea0",
+    "trends/dashboard/src/App.jsx": "b5ef2edfa009bc13ca33f4ca9b4ed53ef1a97bd701bb1202bee73e11e43bc23c",
+    "trends/dashboard/src/panels.jsx": "ae58096c2b30e7eaa1b7b6e12d33452c03d3b552b884ee96aa3e131087f836d3",
+    "trends/dashboard/src/api.js": "3c1db3f6cff7eca8210940e68b4979714af9c8dd671436ea530bccc8fd192cfc",
+    "trends/lib/env.js": "f35d571537d065f8fbcae00bb27eb58c4b9438402ebf1c9ac6cc31c20db6d6d6",
+    "trends/api/server.js": "62d4bd58b67c4a250c00744dd0751d30042f27e072c4088fe08d240a6f915c8c",
+    "trends/api/metrics.js": "62bf5a7c77c092fb05674b0f1f596a9c8b228ea8f9d854ee0092ce0fba92142f",
+    "trends/store/db.js": "8d11a3015fa4ed2559e71092236b720b30f13edd8779295a2799ff0e0b9e6f3a",
+    "review/server.js": "d36aa673a8c86c0eb90c8020d30c989006561353d68bf45e61c6001eabb704a7",
+    "review/queue.json": "4391f7330928b4cccb6b8856b3d6016c8854b3b032cdcc15c121077ec9f821ab",
+    "workflow/trends-collector.n8n.json": "7f11728d1e859587663b70c6ae89c009bb306a105570d288c4a2437686d671c1",
+    "workflow/pipeline.n8n.json": "06a83bac789b7ed21473ea83acb113af7c4821049507c65ca91c942aca630052",
+    "workflow/code-nodes/05-evaluate-gate.js": "0ef3ede5a63f9234003d727f0f65a6af7322c145bf361b4cc08f2b00cb976afe",
+    "workflow/code-nodes/01-load-config.js": "18b50aec0ea1ce322fc6266aa37c8fd91b1ffff75f8077fe94754d6910d5ed05",
+    "workflow/code-nodes/06-prepare-rewrite.js": "97cbc2c20e52478bff95d9ced04258f3a2b56deb0587e1617c716d3bbfe8833e",
+    "workflow/code-nodes/02-enforce-batch-cap.js": "69ba3a78b8b20a4757cb16b30b374dfafdf0875a264037c37eb85f69b1ac9da5",
+    "workflow/code-nodes/07-build-metadata.js": "b30d6bdbc7be92303e343daafa3f912c9c05f8f677c8ea0b857ce8585e0148cc",
+    "workflow/code-nodes/15-query-claims-cache.js": "ed929476b22b27179fd95d555c9539ce948439901dceb6446f8c3abff076126c",
+    "workflow/code-nodes/00-prepare-llm-request.js": "c8194877ec65df504b66c44ac352d9b886bf5b3305633a07aaecb3fcf433919e",
+    "workflow/code-nodes/09-queue-for-review.js": "1a5230fd17525ff22fdac265992272bae363e608d89c51fd3c8b290fc64c2a53",
+    "workflow/code-nodes/03-validate-research.js": "8507025a6b5d08cbf65dd3ae40331a6ba323f45837bfff08d12b83dfe59f6481",
+    "workflow/code-nodes/19-apply-claim-resolutions.js": "0bc8073b197b5d42fe77a6d614a2d7cb8adf155e563abc7fb5738b7449460a77",
+    "workflow/code-nodes/18-queue-claim-approval.js": "2232cb33d433d5c9b134415be95c43d620dc633d5264117aee1c516aea33efba",
+    "workflow/code-nodes/10-prepare-editing-request.js": "f0a10bc751e67c62e5818fea80987f85438e40c426ee23446a9846d5c137e365",
+    "workflow/code-nodes/17-validate-factcheck.js": "7d2217be1cddd701ec70b0cdaed48072fc92c783b48c29782fd08891d4ff6327",
+    "workflow/code-nodes/12-validate-hookdoctor.js": "aac4cc92f272a3ec58b72eaf5d7a83ce65fd3911fa5bc9dbd18ce143f6abff07",
+    "workflow/code-nodes/04-validate-script.js": "4dab6b6b6e1f905592596c6dac6304064ee82a6942a652188ef1b692de927ef4",
+    "workflow/code-nodes/08-build-render-spec.js": "2dc31344fb2658b985662c47d94106c55c31e007c9f0501303a7e98758e125c6",
+    "workflow/code-nodes/14-validate-revision.js": "9c5377c6716afdab6b061c5ba21c37aaf3e997d77edd7f5640c0817b68df8979",
+    "workflow/code-nodes/16-prepare-factcheck.js": "02b27c56a9f0625bd26048a9070e08b64fa590a5fa6ea4cd23f51541a1c85f4b",
+    "workflow/code-nodes/11-validate-critic.js": "08c3caf7774d81b10bd9001412cebe9c08cb6ed298a5bc6b36705a8dd1a38c10",
+    "workflow/code-nodes/13-prepare-revision.js": "6528aca2ddf88b21cd83523a3a3251babd6b5deda21784762333585729043968",
+    "lib/editing.js": "ceea893e3d770f4039e9de79d55b39ed2b8f6ae617348277dbf0449a81d566eb",
+    "lib/gate.js": "c4f2959a68ad52891504ea341590e1c67a48da03d3bf685815296c3330e3defc",
+    "thumbnails/generate.js": "29ca65d3cb3e8d9b68ca709a1a28100973fb0dcf3dc9ef56fa8248f95e131f58",
+    "thumbnails/template.js": "c64bf22deea6f5588df73ff4befceac491165a8e5e909c42e7dea6a58420a967",
+    "thumbnails/out/priced-in-gym-business-model.svg": "87fb98459789d55b05239534ab82610d373a8e0546f9f53f610ffeedf50e21e1",
+    "channels/channel-config.priced-in.json": "38c0b6eff0dc2712ce3ef991b041ff29ebcd3ca8d3f9ed829f453e2cf772fd65"
+  },
+  "excluded_files": [
+    ".gitignore",
+    ".env",
+    ".env.example",
+    "trends/store/trends.db",
+    "trends/store/trends.db-wal",
+    "trends/store/trends.db-shm",
+    "scripts/mcp-env.sh",
+    "thumbnails/out/priced-in-gym-business-model.png.mock"
+  ],
+  "excluded_directories": [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "build",
+    "data",
+    "dist",
+    "logs",
+    "node_modules",
+    "output",
+    "venv"
+  ],
+  "git_status_before": " M .env.example\n M .gitignore\n M README.md\n M channels/channel-config.priced-in.json\n M connectors/json2video.js\n M test/e2e-mock.js\n M workflow/code-nodes/08-build-render-spec.js\n M workflow/pipeline.n8n.json\n?? AGENTS.md\n?? CLAUDE.md\n?? TREND_INTELLIGENCE_BRIEF.md\n?? trends/\n?? workflow/trends-collector.n8n.json\n",
+  "git_status_after": " M .env.example\n M .gitignore\n M README.md\n M channels/channel-config.priced-in.json\n M connectors/json2video.js\n M test/e2e-mock.js\n M workflow/code-nodes/08-build-render-spec.js\n M workflow/pipeline.n8n.json\n?? AGENTS.md\n?? CLAUDE.md\n?? TREND_INTELLIGENCE_BRIEF.md\n?? trends/\n?? workflow/trends-collector.n8n.json\n",
+  "source_files_changed": [],
+  "git_status_unchanged": true,
+  "network_policy": "(version 1) (allow default) (deny network*) (deny file-write*) (allow file-write* (subpath \"/private/tmp/soojos-youtube-offline-20260910\"))",
+  "credential_environment": "Child environment is an explicit non-secret allowlist; no .env read or copied",
+  "dependencies": "Existing original trends/node_modules is read-only via NODE_PATH; no dependency installation",
+  "results": [
+    {
+      "name": "e2e-mock",
+      "command": [
+        "/Users/sayuj/.nvm/versions/node/v20.20.2/bin/node",
+        "test/e2e-mock.js"
+      ],
+      "cwd": "/private/tmp/soojos-youtube-offline-20260910/source",
+      "exit_code": 0,
+      "duration_seconds": 0.0392,
+      "stdout": "\n1. Compliance gate (lib/gate.js \u2014 same logic as the n8n gate node)\n  \u2713 BLOCKS unresolved [VERIFY] token even when the verdict claims clean\n  \u2713 BLOCKS when the verdict itself reports unresolved tokens\n  \u2713 BLOCKS on unparseable verdict (fail closed)\n  \u2713 PASSES a clean script with a passing verdict\n\n2. Render spec (connectors/json2video.js \u2014 voice+assembly in one call)\n  \u2713 hard-fails on a script with unresolved [VERIFY] (fail closed before the render spend)\n  \u2713 hard-fails when no ElevenLabs connection id is available\n  \u2713 spec has scenes derived from [visual: ...] cues\n  \u2713 every scene has a voice element with the channel voice + settings\n  \u2713 cued scenes carry the matching b-roll clip\n  \u2713 captions element present per config caption style\n  \u2713 low-volume music bed uses the mood-selected track\n\n3. Mocked render round-trip (no network)\n  \u2713 mock render reports done with a video URL\n\n4. Thumbnail (thumbnails/generate.js)\n  \u2713 generates SVG + mock PNG path from the idea\n\n5. Review-queue entry (what review/server.js renders)\n  \u2713 review payload has every required field\n\n6. Script editing team (lib/editing.js + connectors/notion-claims.js \u2014 offline)\n  \u2713 critic output parses and blocking state derives\n  \u2713 hook options parse, auto-select takes recommended, revision feedback applies both\n  \u2713 fact-check cache-hit path works without network (normalise, match, expire)\n  \u2713 insufficient claims block; refuted always blocks; soften/cut/override resolve\n  \u2713 claims queue entry carries everything the review app renders\n\nALL PASSED \u2014 19 checks ok\n\n",
+      "stderr": ""
+    },
+    {
+      "name": "trends-mock",
+      "command": [
+        "/Users/sayuj/.nvm/versions/node/v20.20.2/bin/node",
+        "test/mock-run.js"
+      ],
+      "cwd": "/private/tmp/soojos-youtube-offline-20260910/source/trends",
+      "exit_code": 0,
+      "duration_seconds": 0.1189,
+      "stdout": "mock-run: all assertions passed\n",
+      "stderr": ""
+    },
+    {
+      "name": "trends-metrics",
+      "command": [
+        "/Users/sayuj/.nvm/versions/node/v20.20.2/bin/node",
+        "test/metrics.test.js"
+      ],
+      "cwd": "/private/tmp/soojos-youtube-offline-20260910/source/trends",
+      "exit_code": 0,
+      "duration_seconds": 0.0383,
+      "stdout": "metrics.test: all assertions passed\n",
+      "stderr": ""
+    }
+  ],
+  "new_cash_spend_aud": 0,
+  "tokens": null,
+  "initial_attempts": [
+    {
+      "name": "e2e-mock",
+      "command": [
+        "/Users/sayuj/.nvm/versions/node/v20.20.2/bin/node",
+        "test/e2e-mock.js"
+      ],
+      "cwd": "/private/tmp/soojos-youtube-offline-20260910/source",
+      "exit_code": 71,
+      "duration_seconds": 0.0063,
+      "stdout": "",
+      "stderr": "sandbox-exec: sandbox_apply: Operation not permitted\n"
+    },
+    {
+      "name": "trends-mock",
+      "command": [
+        "/Users/sayuj/.nvm/versions/node/v20.20.2/bin/node",
+        "test/mock-run.js"
+      ],
+      "cwd": "/private/tmp/soojos-youtube-offline-20260910/source/trends",
+      "exit_code": 71,
+      "duration_seconds": 0.0062,
+      "stdout": "",
+      "stderr": "sandbox-exec: sandbox_apply: Operation not permitted\n"
+    },
+    {
+      "name": "trends-metrics",
+      "command": [
+        "/Users/sayuj/.nvm/versions/node/v20.20.2/bin/node",
+        "test/metrics.test.js"
+      ],
+      "cwd": "/private/tmp/soojos-youtube-offline-20260910/source/trends",
+      "exit_code": 71,
+      "duration_seconds": 0.0062,
+      "stdout": "",
+      "stderr": "sandbox-exec: sandbox_apply: Operation not permitted\n"
+    }
+  ],
+  "sandbox_probe": {
+    "exit_code": 0,
+    "stdout": "network denial: EPERM\n",
+    "stderr": ""
+  }
+}

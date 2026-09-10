@@ -1,0 +1,21 @@
+{
+  "id": "CLAUDE-HANDOFF-8687df1662a3d97e",
+  "state": "delivered",
+  "destination": "https://claude.ai/chat/c3921ae7-ea92-40a4-8ff6-2a3c11b323eb",
+  "source_fingerprint": "8687df1662a3d97e6282a27118838d15677d85e1e113a5234c8848e7197fe83b",
+  "content_sha256": "6aaa40a2546b5530f6637887d433d52b6bcc0b33aaa732c077090455307e6498",
+  "summary_path": "/Users/sayuj/soojos/context/desk/claude-handoffs/CLAUDE-HANDOFF-8687df1662a3d97e.md",
+  "prepared_at": "2026-09-10T09:19:42.674295+00:00",
+  "supersedes_unsent_id": "CLAUDE-HANDOFF-b96adb4f853ecc9b",
+  "attempted_at": "2026-09-10T09:20:52.450184+00:00",
+  "delivered_at": "2026-09-10T09:23:55.323827+00:00",
+  "verified_at": "2026-09-10T09:23:55.323968+00:00",
+  "verification": "Exact authorized conversation, visible sent message15 of16 containing the handoff ID; message16 acknowledgement completed; empty composer. Browser tab500564429, same verified destination URL.",
+  "acknowledgement": "Receipt acknowledged. No tools, tasks or changes launched from this message.",
+  "response_notes": [
+    "Claude accepted explicit user authorization of equal partnership and token-cap removal.",
+    "Claude agreed that no Claude-side full review of the nine builds exists and failure diagnostics should be retained before another cycle.",
+    "Claude questioned commercial evidence and the expected-return/time-to-first-dollar ranking; queue values remain explicitly unknown, and order reflects cheapest learning rather than a proven economic ranking.",
+    "Claude misread fictional adult text samples as adult-content expansion. Root read the actual age31 profile and all3 JSON posts: every rating is non_sexual; samples are an idea-card exercise, microfiction and a writing prompt. No sexual content or scope expansion was created. Preserve this correction locally; no automatic reply loop."
+  ]
+}

@@ -1,0 +1,882 @@
+{
+  "recorded_at": "2026-09-10T17:47:35.820632+08:00",
+  "task": "20260910-commit-previous",
+  "authority": "Sayuj: commit all previous",
+  "scope": "Local versionable SoojOS changes; preserve existing task branches without merge or push",
+  "checkout": "/Users/sayuj/soojos",
+  "branch": "desk/20260910-commit-previous",
+  "base_commit": "56415f7d8b049d5a7152a26c35868ee2b1e2e192",
+  "prior_worktrees": [
+    {
+      "worktree": "/Users/sayuj/soojos",
+      "branch": "desk/20260910-commit-previous",
+      "head": "56415f7d8b049d5a7152a26c35868ee2b1e2e192",
+      "clean_before_commit": false
+    },
+    {
+      "worktree": "/Users/sayuj/soojos/.worktrees/20260910-harness",
+      "branch": "desk/20260910-harness",
+      "head": "8169dd4ac629e3b33deb8e2159d5736063a0afd3",
+      "clean_before_commit": true
+    },
+    {
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-acquisition-intake-normalizer",
+      "branch": "desk/20260910-acquisition-intake-normalizer",
+      "head": "0b8cd969f1d1f4a9faef800e39ae40e00751c5ac",
+      "clean_before_commit": true
+    },
+    {
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-claude-app-handoff",
+      "branch": "desk/20260910-claude-app-handoff",
+      "head": "0a1bba3a794413212c7042d729f742784e95cd58",
+      "clean_before_commit": true
+    },
+    {
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-claude-partnership-review-v2",
+      "branch": "desk/20260910-claude-partnership-review-v2",
+      "head": "395c2fd4ea3d2f3715ddb6ef2c6eed46fbc3aa73",
+      "clean_before_commit": true
+    },
+    {
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-claude-portfolio-review-approved",
+      "branch": "desk/20260910-claude-portfolio-review-approved",
+      "head": "8169dd4ac629e3b33deb8e2159d5736063a0afd3",
+      "clean_before_commit": true
+    },
+    {
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-claude-review-corrections",
+      "branch": "desk/20260910-claude-review-corrections",
+      "head": "fd659117a0c8eadc2060cb29781b1739b4140400",
+      "clean_before_commit": true
+    },
+    {
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-comparative-readiness",
+      "branch": "desk/20260910-comparative-readiness",
+      "head": "6bb2918a0077ff43c2dd619351af27be8255133b",
+      "clean_before_commit": true
+    },
+    {
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-disclosed-persona-kit",
+      "branch": "desk/20260910-disclosed-persona-kit",
+      "head": "055b32b0c048bf21f587debb8228fa20a50502f6",
+      "clean_before_commit": true
+    },
+    {
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-equities-passive-preflight",
+      "branch": "desk/20260910-equities-passive-preflight",
+      "head": "4bd3bd5aecf4abb6af11f1d71e8a9d8f35fd86da",
+      "clean_before_commit": true
+    },
+    {
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-fifo-expiry-prototype",
+      "branch": "desk/20260910-fifo-expiry-prototype",
+      "head": "749fbc32450791f706a57e157a09df92cbfcf63d",
+      "clean_before_commit": true
+    },
+    {
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-portfolio-build-plan",
+      "branch": "desk/20260910-portfolio-build-plan",
+      "head": "516ce6b5099e28a03e638566ea1e9f9b00518c4c",
+      "clean_before_commit": true
+    },
+    {
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-portfolio-continuity-checkpoint",
+      "branch": "desk/20260910-portfolio-continuity-checkpoint",
+      "head": "b6ef131e31c6cfb431cdc9126c8c1194542d76d3",
+      "clean_before_commit": true
+    },
+    {
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-portfolio-final-handoff",
+      "branch": "desk/20260910-portfolio-final-handoff",
+      "head": "f494088a531a1c570baea3e51aba2277bd459639",
+      "clean_before_commit": true
+    },
+    {
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-predictos-manifest-tool",
+      "branch": "desk/20260910-predictos-manifest-tool",
+      "head": "4a45906bda93ed3cfb7237a7ff455b35f135f1f7",
+      "clean_before_commit": true
+    },
+    {
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-project-alignment",
+      "branch": "desk/20260910-project-alignment",
+      "head": "a48fe75669ac4fde0a7afb54f03da440f561edcd",
+      "clean_before_commit": true
+    },
+    {
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-reel-transcript",
+      "branch": "desk/20260910-reel-transcript",
+      "head": "f087ac7b877933bd18781ca5db536be450f8d3b5",
+      "clean_before_commit": true
+    },
+    {
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-sale-document-intake",
+      "branch": "desk/20260910-sale-document-intake",
+      "head": "acc4fcd0513b2e38d74ff80204d116425dd77d2e",
+      "clean_before_commit": true
+    },
+    {
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-scope-paths",
+      "branch": "desk/20260910-scope-paths",
+      "head": "24b2111769995cc41c9dc92d70e74ce230c6cb9f",
+      "clean_before_commit": true
+    },
+    {
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-shop-economics-prototype",
+      "branch": "desk/20260910-shop-economics-prototype",
+      "head": "67aa72dc3f157432e4eb0ee367e430d7727734aa",
+      "clean_before_commit": true
+    },
+    {
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-ugc-sample-production-kit",
+      "branch": "desk/20260910-ugc-sample-production-kit",
+      "head": "dd0bc2f6c4eed8bd0b436837cb82c16db805d1d6",
+      "clean_before_commit": true
+    },
+    {
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-youtube-offline-validation",
+      "branch": "desk/20260910-youtube-offline-validation",
+      "head": "79704ee38363cbf2deaac5bc775de161d3cea171",
+      "clean_before_commit": true
+    },
+    {
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-youtube-script-evaluator",
+      "branch": "desk/20260910-youtube-script-evaluator",
+      "head": "27c19280bde8cead63c8699269738960a02ca3e5",
+      "clean_before_commit": true
+    }
+  ],
+  "prior_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "12bc308a98cd832ef1e62ce05e73f774e5de0d6528c4b24ceed1b96973c7423e",
+      "bytes": 159
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "7e494d7597145e4ed7ce0b8f35ce27793fa94fba41ba2944d336076fb8184864",
+      "bytes": 629
+    },
+    {
+      "path": "CLAUDE.md",
+      "sha256": "1cfea70d3c2b06645d8b5858277d48d47852b896d80466a65da603f9bbda1ce1",
+      "bytes": 4920
+    },
+    {
+      "path": "README.md",
+      "sha256": "69beef61ec7974922bdd370b63cde67241855f054a4ba010932988e9bb7e711e",
+      "bytes": 11666
+    },
+    {
+      "path": "audits/2026-09-09-claude-codex-context.md",
+      "sha256": "ebd2af2490c362b84c7634c37ca21881d7d5d3d58b9cc69631a70b49e728e3f8",
+      "bytes": 3444
+    },
+    {
+      "path": "audits/2026-09-10-partnership-activation.json",
+      "sha256": "f4753533792f1a7705331a10759b4b78af0ecf2cf81d90e2537871d6dba2b4b6",
+      "bytes": 319
+    },
+    {
+      "path": "audits/2026-09-10-partnership-preflight.json",
+      "sha256": "88b63b1aed9509402b78428459ca83f7677338c6b444b4d75a4b2cc0dc7213ad",
+      "bytes": 2572
+    },
+    {
+      "path": "audits/2026-09-10-shared-partnership-amendment.json",
+      "sha256": "e2af0f30454baa07d9725583543768b16be8efe41f407a1157984c4109dbd1b2",
+      "bytes": 812
+    },
+    {
+      "path": "context/claude-codex-cloud-verification-2026-09-09.md",
+      "sha256": "204bb4b0473c88bf8e169ba342d2cce5feec30229c5c63d89720d41f19b08678",
+      "bytes": 2664
+    },
+    {
+      "path": "context/claude-codex-followup-verification-2026-09-09.md",
+      "sha256": "8f5c4cdb8da008047dc53e53bbf4d095de83122ea71d97b4ad76e9f24e7dc796",
+      "bytes": 1141
+    },
+    {
+      "path": "context/claude-codex-verification-2026-09-09.md",
+      "sha256": "9b1ed1052af4dd8d43fc4fe4c0167b7239bd14562c94bf46cd1f619bdb7dff88",
+      "bytes": 1921
+    },
+    {
+      "path": "context/claude-projects-2026-09-09.json",
+      "sha256": "0959ee32c555bd5cbba2b8ee4419d4bfeda2810b7c5e76326c2276841c1171f2",
+      "bytes": 3946
+    },
+    {
+      "path": "context/claude-projects.md",
+      "sha256": "b5ec5581a3e210dc63953264274faadfcbc8ba9143b7c38a67ef5827f67bcfac",
+      "bytes": 6902
+    },
+    {
+      "path": "context/cli-setup-2026-09-09.md",
+      "sha256": "e596026b4e1df06df1feee930aa20c020d3beddc2bedb18283cbe1646db5f881",
+      "bytes": 4469
+    },
+    {
+      "path": "context/desk/README.md",
+      "sha256": "f4375e3b0239f5e56761298afe003ad814464eeca6648083d4fd4579a3cc5c3c",
+      "bytes": 4698
+    },
+    {
+      "path": "context/desk/acquisition-intake-normalizer-2026-09-10.json",
+      "sha256": "bc3cf6981c91900320cc02e5379f9a484f84c7aeafff7e283a5cb625ee6ce84c",
+      "bytes": 4822
+    },
+    {
+      "path": "context/desk/acquisition-intake-normalizer-2026-09-10.md",
+      "sha256": "070f45efc81fd95f9f2179c7d06abef54208e12bdb8a259cc55428f6d43e621f",
+      "bytes": 2924
+    },
+    {
+      "path": "context/desk/activation.json",
+      "sha256": "54488397e40dbb82121ecf108a38db16d04c5741c34f6d2a9690979d4323ecdb",
+      "bytes": 7082
+    },
+    {
+      "path": "context/desk/approval.json",
+      "sha256": "40d4fa524cf923052002fc21e05776cf771323ba3f9eec6fe589489192eb2913",
+      "bytes": 585
+    },
+    {
+      "path": "context/desk/chatgpt-context-transfer-pending.md",
+      "sha256": "7261ea71973199c678055a3b0494c13ece2a947bfe772805060f8b395695f1bf",
+      "bytes": 3130
+    },
+    {
+      "path": "context/desk/chatgpt-four-transfers-verified-2026-09-10.json",
+      "sha256": "9a8722bab821169aa197ed5105d762e37e1674f28dfd02ade114a7f2932ade25",
+      "bytes": 307
+    },
+    {
+      "path": "context/desk/claude-astra-review-2026-09-10.md",
+      "sha256": "7c7e349d3736295248049554420c54f49265ecc8b08472cc609996aabd0b967b",
+      "bytes": 10609
+    },
+    {
+      "path": "context/desk/claude-handoff-automation-update.json",
+      "sha256": "fc9f46528f8836eb3f905ba3882ab9f9a88a151d45675ef1a0d300b209f8631f",
+      "bytes": 6265
+    },
+    {
+      "path": "context/desk/claude-handoff-current-receipt.json",
+      "sha256": "bdced2a87be84fa818db3a0bece0079de06cd9abf67bb55c63e18090583c8d1f",
+      "bytes": 1846
+    },
+    {
+      "path": "context/desk/claude-handoff-latest.md",
+      "sha256": "6aaa40a2546b5530f6637887d433d52b6bcc0b33aaa732c077090455307e6498",
+      "bytes": 4099
+    },
+    {
+      "path": "context/desk/claude-handoff-policy.md",
+      "sha256": "ff441279e22a93c74d3eef9afbdf7215b36397d541b056f5680ac3097d1e68a9",
+      "bytes": 5026
+    },
+    {
+      "path": "context/desk/claude-handoff-verification-2026-09-10.md",
+      "sha256": "b55e62dc7aa9e6b167ffefcaa8ad6a76a40f33bec4cf763dab0c121b9b1bab0e",
+      "bytes": 1578
+    },
+    {
+      "path": "context/desk/claude-handoffs/CLAUDE-HANDOFF-36e9bcd7f6f68a38.md",
+      "sha256": "dd38cfa07093ae4cc5d674f3ef5ef6a674428b1e32ff2891d1747a6243ae70ca",
+      "bytes": 4852
+    },
+    {
+      "path": "context/desk/claude-handoffs/CLAUDE-HANDOFF-36e9bcd7f6f68a38.sources.json",
+      "sha256": "00ea2a44bfc032c980a602f75168cba9d799cd0b0d53e166d8209df374d10db8",
+      "bytes": 3079
+    },
+    {
+      "path": "context/desk/claude-handoffs/CLAUDE-HANDOFF-8687df1662a3d97e.md",
+      "sha256": "6aaa40a2546b5530f6637887d433d52b6bcc0b33aaa732c077090455307e6498",
+      "bytes": 4099
+    },
+    {
+      "path": "context/desk/claude-handoffs/CLAUDE-HANDOFF-8687df1662a3d97e.sources.json",
+      "sha256": "2aa48e9e95fb2280b1b5689ad9a58c68d6ba3492cfd60975e96c0839ccd24ef3",
+      "bytes": 3475
+    },
+    {
+      "path": "context/desk/claude-handoffs/CLAUDE-HANDOFF-b96adb4f853ecc9b.md",
+      "sha256": "f174b2c5f36e856866f7d046a7546493009e52c269e2c593b0ddaa7ae1ff3c5c",
+      "bytes": 3703
+    },
+    {
+      "path": "context/desk/claude-handoffs/CLAUDE-HANDOFF-b96adb4f853ecc9b.sources.json",
+      "sha256": "2bdf733426b6d4a37106b809b092a47898409fe89a2ecddf9179d6cbd983d5b2",
+      "bytes": 3431
+    },
+    {
+      "path": "context/desk/claude-portfolio-review-approved-task.json",
+      "sha256": "b4c8c65c3691e23d82111595743c26bdae1e769f2437e503c5388d76b6c61985",
+      "bytes": 2110
+    },
+    {
+      "path": "context/desk/claude-portfolio-review-outcome-2026-09-10.md",
+      "sha256": "57063a0b80eafe013440e7fcd577feb20168c9539bd36be710713b7ed012415c",
+      "bytes": 1437
+    },
+    {
+      "path": "context/desk/claude-portfolio-review-pending-payload.md",
+      "sha256": "146ea86b8fa40f75d43351b296f7ae627a93589064261ca0c73820d647178994",
+      "bytes": 61096
+    },
+    {
+      "path": "context/desk/claude-portfolio-review-pending-sources.json",
+      "sha256": "646795d1f0681ad62f9bc0aef843228f68ec20c6dbbb58cb226bb69e052b0f70",
+      "bytes": 1754
+    },
+    {
+      "path": "context/desk/claude-portfolio-review-task.json",
+      "sha256": "a9375d7aba7f74a32fbbaba9869862bcc90d161251c58ab1fc490f6670cd5c99",
+      "bytes": 2092
+    },
+    {
+      "path": "context/desk/comparative-readiness-2026-09-10.json",
+      "sha256": "26b332234ae0629b1aaf88f1a0deeeaf3c3cac337321f725782b87e41886c5b6",
+      "bytes": 7646
+    },
+    {
+      "path": "context/desk/comparative-readiness-2026-09-10.md",
+      "sha256": "358fce1c0fc07b573cb593cde1bbd8dbc20cf7076224882d131e58aff865be83",
+      "bytes": 5321
+    },
+    {
+      "path": "context/desk/disclosed-persona-kit-2026-09-10.json",
+      "sha256": "fed819db55d423992a8d77da981abf0aab9f82f676d77c186514b2c2b3ed15f2",
+      "bytes": 7056
+    },
+    {
+      "path": "context/desk/disclosed-persona-kit-2026-09-10.md",
+      "sha256": "003a1ac6ed3e726d7e943ee7fd5d216b3f186692659c599341d2c8d47171deb2",
+      "bytes": 2924
+    },
+    {
+      "path": "context/desk/dispatch-control-proposal.md",
+      "sha256": "23960784ebba911fb474f72d3f1d5b62e9ea4fd1cbdbede7e06957bf1d8c157b",
+      "bytes": 1695
+    },
+    {
+      "path": "context/desk/e2e-mock-20260910.log",
+      "sha256": "686402698f877597b09aabae7e9ea993659e38c4c42844135d5cfb6a92a07f8f",
+      "bytes": 1591
+    },
+    {
+      "path": "context/desk/equities-passive-preflight-2026-09-10.json",
+      "sha256": "40774d9acaaede6027c6a07078890713a442c943b0b886e0f033495b50df0404",
+      "bytes": 9703
+    },
+    {
+      "path": "context/desk/equities-passive-preflight-2026-09-10.md",
+      "sha256": "380b56d4803f7fac8e0bd7606e83b97921af5660d8fbc324d61af88c7a839ba5",
+      "bytes": 2613
+    },
+    {
+      "path": "context/desk/evolution.md",
+      "sha256": "d46d0221f8fece3eca4bfa23bf93c603bb823b9c3c1aad830d61bcc534056b28",
+      "bytes": 1373
+    },
+    {
+      "path": "context/desk/fifo-expiry-prototype-2026-09-10.json",
+      "sha256": "60b49c98e5a6344561edbf6410d969ecd2a7c104899058030b10120d1e0d8a19",
+      "bytes": 5861
+    },
+    {
+      "path": "context/desk/fifo-expiry-prototype-2026-09-10.md",
+      "sha256": "454d175c6c44d8d151463f43ca7fbf4aa2817ab8a56a36e76008678b3f6668eb",
+      "bytes": 2395
+    },
+    {
+      "path": "context/desk/heartbeat-check-20260910-1603.json",
+      "sha256": "d452ca4c6c5a2053279c845c0845a09a83b3f63179fecdb8f3c6996eabb0a1ca",
+      "bytes": 1484
+    },
+    {
+      "path": "context/desk/heartbeat-check-20260910-1731.json",
+      "sha256": "cbc096d34419842367d123e3e353beb37fecf6ab3872e044795778aa437a4667",
+      "bytes": 1300
+    },
+    {
+      "path": "context/desk/notion-portfolio-update-pending-2026-09-10.md",
+      "sha256": "61b40355d65239445c748f608bcfde4422b4c9fcd9d09edc2d158aba9307c327",
+      "bytes": 2009
+    },
+    {
+      "path": "context/desk/pending-notification-20260910-1731.json",
+      "sha256": "5aedab1407fd13dd981cbb937203e82500fba897e6fadbf58f4545f0e3c1c34c",
+      "bytes": 937
+    },
+    {
+      "path": "context/desk/pending-notification-20260910-comparative-readiness.json",
+      "sha256": "0dd5e2e0eb02f5884340d90edd2a56959e240c65c960b62fe3bcbd5c82919b50",
+      "bytes": 695
+    },
+    {
+      "path": "context/desk/pending-notification-20260910-execution-checkpoint.json",
+      "sha256": "0e636aeab27ef0105259c9eb1814ce28126d9c3291063982ba40e6e1ad16062b",
+      "bytes": 823
+    },
+    {
+      "path": "context/desk/policy.json",
+      "sha256": "3973ac5afeb75ea62e228a5286601d684b92cbe0dfb66343d4d63b6b71a4b87d",
+      "bytes": 997
+    },
+    {
+      "path": "context/desk/portfolio-build-plan-2026-09-10.json",
+      "sha256": "1c8216fae93d5f0557b69061dee279659ed52f58476cff2e9eeed0fc98a140cf",
+      "bytes": 60520
+    },
+    {
+      "path": "context/desk/portfolio-build-plan-2026-09-10.md",
+      "sha256": "9cbff7592b3794247c7b4b57828f443a23f9bb646a5ed389321a45628ed02724",
+      "bytes": 28376
+    },
+    {
+      "path": "context/desk/portfolio-builds-2026-09-10.json",
+      "sha256": "8803e4d0ba8c0a9140c47ccf88d176a69616e2a35a1ad09d017f8fc78984a547",
+      "bytes": 27845
+    },
+    {
+      "path": "context/desk/portfolio-builds-2026-09-10.md",
+      "sha256": "ab306df662be36e5c3ca9b18f1330a66c6b8b7566f5b9b1f0434b6b2fe647574",
+      "bytes": 15888
+    },
+    {
+      "path": "context/desk/portfolio-continuity-task.json",
+      "sha256": "16378e8d23349bab8e391133a4f10a5aeb95acff50921dd4e036ac2688580774",
+      "bytes": 2428
+    },
+    {
+      "path": "context/desk/portfolio-continuity-verification-2026-09-10.json",
+      "sha256": "e6e3381f964b2521f15d0ef0584333f1f17007165a1af71d1d1b8359540f21e8",
+      "bytes": 1972
+    },
+    {
+      "path": "context/desk/portfolio-final-automation-update.json",
+      "sha256": "3e5fd63153994d13f562052f17f2dd176b4fba1064b1c38d75dc3dc1f36d2cb2",
+      "bytes": 7337
+    },
+    {
+      "path": "context/desk/portfolio-review-brief-2026-09-10.md",
+      "sha256": "2bf29554440449f9dfdc4f922cac6046dd3626a48961cbe8527e91483c6a4f5a",
+      "bytes": 4106
+    },
+    {
+      "path": "context/desk/portfolio-transfer-approvals-2026-09-10.json",
+      "sha256": "f2ac613d93aa9031423d40d598cb6efe58431a34cbb256339ea37c5c11f19eac",
+      "bytes": 846
+    },
+    {
+      "path": "context/desk/predictos-manifest-tool-2026-09-10.json",
+      "sha256": "bb59ec4fb03312d59526d18beed9a7d0ef08ef4cb18c6f94fd6e79478131d3a3",
+      "bytes": 3948
+    },
+    {
+      "path": "context/desk/predictos-manifest-tool-2026-09-10.md",
+      "sha256": "599550155a81531034fdb4908542c34c31f589f77d047e5eebb7f933c5cc82bf",
+      "bytes": 1784
+    },
+    {
+      "path": "context/desk/project-alignment-2026-09-10.json",
+      "sha256": "dc45ac08eef65c32522a1e8448d5b219a03b2c543e5206a16f7d29bc50355992",
+      "bytes": 46106
+    },
+    {
+      "path": "context/desk/project-alignment-2026-09-10.md",
+      "sha256": "d41a5197438089e4efa49c303c19d0b5782cfd7fb5731aea6f7233fedbed5ba2",
+      "bytes": 1784
+    },
+    {
+      "path": "context/desk/project-alignment-automation-update.json",
+      "sha256": "13b09701ac4009b2069ea27eb3bf1508c434cdba7d740dfc4b665b170b233580",
+      "bytes": 7024
+    },
+    {
+      "path": "context/desk/project-alignment-automation-verification-2026-09-10.json",
+      "sha256": "7c2a601335a43c22e0790d04606c1ff4de64b2a0ba768593203fe10a0b3e834a",
+      "bytes": 711
+    },
+    {
+      "path": "context/desk/queue.schema.json",
+      "sha256": "991d1ca37efb5d664ec9dcf46e85f89564816f3d7d2ebe05ab5189a8ce94ae3c",
+      "bytes": 1281
+    },
+    {
+      "path": "context/desk/reel-Dc-5s7EEojU-alignment-2026-09-10.json",
+      "sha256": "939035668474983bee4d2a79ddad054287fc094f4a1098279c733e53ffe64fd5",
+      "bytes": 6165
+    },
+    {
+      "path": "context/desk/reel-Dc-5s7EEojU-alignment-2026-09-10.md",
+      "sha256": "53ef8c005f525cdaa8d41ad755d7a760e511691a29274fda6cac45212393eda8",
+      "bytes": 5115
+    },
+    {
+      "path": "context/desk/review-brief-2026-09-10.md",
+      "sha256": "41dc8488ad1a32e49d997975ecba7d297310ab2c76a90a01bcab8791c46f57e5",
+      "bytes": 1769
+    },
+    {
+      "path": "context/desk/sale-document-intake-2026-09-10.json",
+      "sha256": "9c05f688591c820460bff19bfc098982f29e1fb3029cc2d86c8c7abb954c881b",
+      "bytes": 3197
+    },
+    {
+      "path": "context/desk/sale-document-intake-2026-09-10.md",
+      "sha256": "4a8642c1b130aaf31d043e0a019bb7a7ea348635189d8096f6d303d3f7e12dde",
+      "bytes": 1788
+    },
+    {
+      "path": "context/desk/scope-paths-2026-09-10.json",
+      "sha256": "ca91a3768c4ca47bb8abef752c2ebbe96579cae7c40c2f5b146f24a5da9dcfc2",
+      "bytes": 6918
+    },
+    {
+      "path": "context/desk/scope-paths-2026-09-10.md",
+      "sha256": "785d191f4648613ca8e11586d5f452ac6d1dd635ed20df8c570febd9dd09565e",
+      "bytes": 5129
+    },
+    {
+      "path": "context/desk/scope-readiness.md",
+      "sha256": "785d191f4648613ca8e11586d5f452ac6d1dd635ed20df8c570febd9dd09565e",
+      "bytes": 5129
+    },
+    {
+      "path": "context/desk/shop-economics-prototype-2026-09-10.json",
+      "sha256": "4f9ccdcd9ac35c895b3370b9918ca352ebcb4749b89aeeb720ed3f1d36299360",
+      "bytes": 3126
+    },
+    {
+      "path": "context/desk/shop-economics-prototype-2026-09-10.md",
+      "sha256": "97aad2cdee0c9d00abd5c06d913f12f05d53a18d12f65324a6bbcad43d44d4f7",
+      "bytes": 1721
+    },
+    {
+      "path": "context/desk/token-reporting-migration.json",
+      "sha256": "c9de9067dcd0f3e6117e9d17f42d34757ad3ed38f5a95d756a4df7bc013b1d7f",
+      "bytes": 20047
+    },
+    {
+      "path": "context/desk/token-reporting-preparation.json",
+      "sha256": "ff636605475cc5a55e4bff3f7d3c70b7a1c8e96bc75035a7ec517b2f0b09839b",
+      "bytes": 875
+    },
+    {
+      "path": "context/desk/token-reporting-preparation.md",
+      "sha256": "1e626d16d0f422bd84b2409f57914788e31ca1e32d4383ecdae71182c841e2d1",
+      "bytes": 4071
+    },
+    {
+      "path": "context/desk/trends-metrics-20260910.log",
+      "sha256": "34e6efb93b1628a23d212c070233cc26a033c7cead7f4599384b20044b8a98c5",
+      "bytes": 36
+    },
+    {
+      "path": "context/desk/trends-mock-20260910.log",
+      "sha256": "cbca62de716a7c3cadc2c7a541f82870472c80b9e36913592989d044ca53588b",
+      "bytes": 32
+    },
+    {
+      "path": "context/desk/ugc-sample-production-kit-2026-09-10.json",
+      "sha256": "ef1f44157dfe4cbec5a33d4d9a43fe45e55e8d7980acb8e953aaa03766d3d2b3",
+      "bytes": 2801
+    },
+    {
+      "path": "context/desk/ugc-sample-production-kit-2026-09-10.md",
+      "sha256": "fd0cf4fc600d9eee260d3af28293d91466197dc870c4c0679115af0804c07bec",
+      "bytes": 1640
+    },
+    {
+      "path": "context/desk/youtube-offline-validation-2026-09-10.json",
+      "sha256": "543191b57a98d541b91a5cc0f85096f2406d5c6df1bd15f7f95185effa5f5c94",
+      "bytes": 14436
+    },
+    {
+      "path": "context/desk/youtube-offline-validation-2026-09-10.md",
+      "sha256": "b2be80f4c7a1d3c249caa08afe636829eb86468d74c00fe098656ed37ea0a71a",
+      "bytes": 2962
+    },
+    {
+      "path": "context/desk/youtube-script-evaluator-2026-09-10.json",
+      "sha256": "518d155e5ed4a00ce532e17f80c39b7f63fa1d009d59a09f98e335336168fbab",
+      "bytes": 6377
+    },
+    {
+      "path": "context/desk/youtube-script-evaluator-2026-09-10.md",
+      "sha256": "dd4193ae1c3b397fe6b58696e3b1565d2415e6ef6759821871ddbd112f85a6a3",
+      "bytes": 2835
+    },
+    {
+      "path": "context/handoff.md",
+      "sha256": "2b93f7db2b64124fe41043aa1c9a85f614b93eac4293baa14f3f64414c3af98e",
+      "bytes": 29256
+    },
+    {
+      "path": "context/partnership-charter.md",
+      "sha256": "682c37b4d33cfbea21e4c32d0a16d7cb60a40aad45e8095a5f1d4055df1bb3ba",
+      "bytes": 8866
+    },
+    {
+      "path": "context/partnership-review-2026-09-10.md",
+      "sha256": "99caaf9f5386db576bcc86cff0da8113bebe58dd1ac21d334abad885e7ed8f1c",
+      "bytes": 17841
+    },
+    {
+      "path": "context/project-registry.md",
+      "sha256": "64625f847ee33e0fed953f71d2f64fb9db077324225f823ef4414f6e57df3f36",
+      "bytes": 6073
+    },
+    {
+      "path": "context/shared-agent-workflow.md",
+      "sha256": "06bcd6221de96fa60fa294997e31ebb51bf6e4ef6aaf1a854574a2a70bc27f2e",
+      "bytes": 10115
+    },
+    {
+      "path": "context/shared-capabilities.md",
+      "sha256": "9f68881e3b863e79c561c5fcbfb204139b571a3db563aeee41c7b123cf931b8d",
+      "bytes": 4073
+    },
+    {
+      "path": "decisions/0001-shared-claude-codex-context.md",
+      "sha256": "440b34f29db1b7a9e9e4e647eb28df09aef908b6524130c3e10ca9944b3fb56b",
+      "bytes": 1288
+    },
+    {
+      "path": "decisions/0002-partnership-charter-and-activation-gate.md",
+      "sha256": "1534870ec3d1c2f9ad2869557e6813193e20ead4da619b03929f57b38ea6ddf7",
+      "bytes": 1472
+    },
+    {
+      "path": "decisions/0003-approved-partnership-desk-pilot.md",
+      "sha256": "109a7291432e71d0987b1bf46bc97b7c5f7113a5399459392628a16a24dd3d42",
+      "bytes": 1788
+    },
+    {
+      "path": "decisions/0004-shared-partnership-responsibility.md",
+      "sha256": "ec0cc848c098d2cb42f1a722b40e7dbda3f77fcff4dc6851036270a9b67e9a40",
+      "bytes": 1485
+    },
+    {
+      "path": "decisions/0005-report-tokens-without-a-ceiling.md",
+      "sha256": "aa3312376b2124019765ec20740fc9d725c5aa7960e39ad39ff8cce09979e953",
+      "bytes": 1279
+    },
+    {
+      "path": "knowledge/claims.jsonl",
+      "sha256": "29dc69be4d7c6117e41029a74db69dfbcc8a2cef56101a1097aabd3a419c65cd",
+      "bytes": 2262
+    },
+    {
+      "path": "knowledge/reports/2026-09-09-claude-codex-tool-research.md",
+      "sha256": "4375480a1772b45e1237f9a7ce841717cc8e546663c3c3c124c5a2e281bea934",
+      "bytes": 11242
+    },
+    {
+      "path": "knowledge/reports/2026-09-10-reel-Dc-5s7EEojU.md",
+      "sha256": "fe37234153486d11cdbd9299c88f340f436ec77e197c9d4782771f71d3be0bb0",
+      "bytes": 3038
+    },
+    {
+      "path": "knowledge/reports/ibkr-equities-preflight-2026-08-27.md",
+      "sha256": "6d3fbad74a1148fb739d33305de3a0ae0a6bdda825c0ec828832295c2c453acb",
+      "bytes": 30060
+    },
+    {
+      "path": "projects/business-search/CLAUDE.md",
+      "sha256": "01705707628693a23dbde332a0949411f2e486a73306abb0f1a33810245724ff",
+      "bytes": 1587
+    },
+    {
+      "path": "projects/business-search/context/handoff.md",
+      "sha256": "c5552fae6074a3eef44e8bcb6592ae969396d7ffac6d90a373e90ea2ecc1213d",
+      "bytes": 2314
+    },
+    {
+      "path": "projects/cfi-training/CLAUDE.md",
+      "sha256": "84b2cb0c83e617583086240018fb87ed11ea55d56ce34675b1f0dcfe5a9a3e99",
+      "bytes": 1045
+    },
+    {
+      "path": "projects/credit-cards/CLAUDE.md",
+      "sha256": "0db772adb7ca38df425a077f6ba40493aefaecd47bcd031048218dd3a31a86ef",
+      "bytes": 1045
+    },
+    {
+      "path": "projects/digital-marketplace-business/CLAUDE.md",
+      "sha256": "8bc130319d94001ed958b45ca9bea3be88690f19a61b1821dd4bdfe7c94259f0",
+      "bytes": 1746
+    },
+    {
+      "path": "projects/digital-marketplace-business/context/handoff.md",
+      "sha256": "00992c75bf383e09cffe66ae7eb35190d5f27e33ea62c91b9089c7440cd6e4f7",
+      "bytes": 1786
+    },
+    {
+      "path": "projects/email/CLAUDE.md",
+      "sha256": "2c578fb3b3d51f7111d6a069c6cfc8ebcbf29298154f79e0453326e97c82afdc",
+      "bytes": 1024
+    },
+    {
+      "path": "projects/fan-accounts/CLAUDE.md",
+      "sha256": "d430b3ed34f9b6dbc1b5c99797f7070da36dabfbcfe4e034e9a12e36d928aa73",
+      "bytes": 1564
+    },
+    {
+      "path": "projects/fan-accounts/context/handoff.md",
+      "sha256": "ffd4500fc344163ebf7a4f4a5f9b402f6d331ad47859239573239cb1d057c07c",
+      "bytes": 2932
+    },
+    {
+      "path": "projects/home-builds/CLAUDE.md",
+      "sha256": "74c5aedf6fbb192a6b06001e8cc2644ac49ea74a7cb7d1a8451f99a3753bb5cc",
+      "bytes": 1042
+    },
+    {
+      "path": "projects/language-learner/CLAUDE.md",
+      "sha256": "fd788ee0a3a8a0fff3a8ab7a82c0fffefb5e406b83eddb53120ecb7161574210",
+      "bytes": 1057
+    },
+    {
+      "path": "projects/laptop/CLAUDE.md",
+      "sha256": "519b14713ee8abb3a3b0eb012eab0a3c5c284644e13fb577be075bc35954a267",
+      "bytes": 1027
+    },
+    {
+      "path": "projects/linkedin-catch-up-app/CLAUDE.md",
+      "sha256": "1ac34fcf575c7db49b41f367dcc697255f0a11985e6b2b83684fc7161e0bb36f",
+      "bytes": 1072
+    },
+    {
+      "path": "projects/online-shops/CLAUDE.md",
+      "sha256": "ddad6720965a038d03c5db6a4801e80ea8d11a1a6df6720b2041a7f899598846",
+      "bytes": 1567
+    },
+    {
+      "path": "projects/online-shops/context/handoff.md",
+      "sha256": "33b6bd0187590d5c2958a185d6507d4d8feb77a47d2e94396d22a64d647a785b",
+      "bytes": 1762
+    },
+    {
+      "path": "projects/personal/CLAUDE.md",
+      "sha256": "cadd29bd0ae2a0776fa80880861e85ccfd585f7fb7f449e463b63cc0658d6afb",
+      "bytes": 1033
+    },
+    {
+      "path": "projects/pkf/CLAUDE.md",
+      "sha256": "4a540b4dc2efd242d33e35243096d212facf809dd334609ffca569f8250c6130",
+      "bytes": 1018
+    },
+    {
+      "path": "projects/prediction-betting/CLAUDE.md",
+      "sha256": "7c9f3595f744a7fd20131375a362193b4f8b050dbb7fdb62d1aa3112d4508810",
+      "bytes": 1838
+    },
+    {
+      "path": "projects/prediction-betting/context/handoff.md",
+      "sha256": "09099ca0e95289ab85adad08fa8651ca7e83db6bbae37e3de3deec7e0c0023a6",
+      "bytes": 1788
+    },
+    {
+      "path": "projects/project-manager/CLAUDE.md",
+      "sha256": "20e4d03c4abb3cc376f546e75d86dff776be71c0de995f33f04f5e7fe76faed4",
+      "bytes": 1054
+    },
+    {
+      "path": "projects/recipes/CLAUDE.md",
+      "sha256": "dd2b9d26f7c1037bfedba77016f217b2fa3aa6711a31b7ab62253adca9fec0b4",
+      "bytes": 1030
+    },
+    {
+      "path": "projects/sale-readiness-platform/CLAUDE.md",
+      "sha256": "1110c31bcd604acd188fb4856090da864d1f5b05b5f5eeb52204f3ba0819c45f",
+      "bytes": 1618
+    },
+    {
+      "path": "projects/sale-readiness-platform/context/handoff.md",
+      "sha256": "07aa47e65262e108eb216f4535cb8b4bb4281d1d08d0df60cb8ffaa87439ac2d",
+      "bytes": 1882
+    },
+    {
+      "path": "projects/sklpc/CLAUDE.md",
+      "sha256": "e76962ac8a22661fa7c669e2e67acc8769100f5df6cc831c052713ded1d7779c",
+      "bytes": 1024
+    },
+    {
+      "path": "projects/soojos/CLAUDE.md",
+      "sha256": "cdfeb6ba19187ff278c8423c39de62df4c06cb2912d677197c817edc9b442689",
+      "bytes": 1313
+    },
+    {
+      "path": "projects/trading-bot-conductor/CLAUDE.md",
+      "sha256": "53ae4081af8a00444bfdc7173a6e3558c75a8f9af34ba7f6079844543fc904e3",
+      "bytes": 1350
+    },
+    {
+      "path": "projects/trading-bot/CLAUDE.md",
+      "sha256": "d3237c86f02aa7ba86995ce09dd2a0dab38eae76ee131c1a5dab67d6ff06aa62",
+      "bytes": 1820
+    },
+    {
+      "path": "projects/trading-bot/context/handoff.md",
+      "sha256": "27d8b322104a5eda31a17a8f6b7b2a03c2dfd101deaa52f0db072e85925b8d57",
+      "bytes": 2452
+    },
+    {
+      "path": "projects/travel/CLAUDE.md",
+      "sha256": "b1c1d01a907ac6d908754834f360b72e016a3f836194e4ee38e455720fed73ef",
+      "bytes": 1027
+    },
+    {
+      "path": "projects/ugc/CLAUDE.md",
+      "sha256": "e5dd620ac221634486a96e03bdb718c865898f8f0ad7a160817c40e589ac392c",
+      "bytes": 1604
+    },
+    {
+      "path": "projects/ugc/context/handoff.md",
+      "sha256": "cc6b37ea1bf2f1ce306e05c20c6d8d93d7b971e4119cdde2921dcd502252bbf4",
+      "bytes": 1703
+    },
+    {
+      "path": "projects/video-viewer/CLAUDE.md",
+      "sha256": "38698a999e2aa6e16f2d0be9ecc82a24520176fd11d471fdaedc347f1e06bf71",
+      "bytes": 1180
+    },
+    {
+      "path": "projects/youtube-business/CLAUDE.md",
+      "sha256": "0d0d3a2f84288087fab674bcded55db7ff04613400590c53b1c77264587ce361",
+      "bytes": 1705
+    },
+    {
+      "path": "projects/youtube-business/context/handoff.md",
+      "sha256": "683878b76b4a018b4b01c187fde1861993d4f40eae3c50f78aaa09a7ca340df4",
+      "bytes": 1865
+    }
+  ],
+  "excluded": [
+    {
+      "path": "claude-legacy-memory.md",
+      "reason": "Unrelated imported personal memory; preserved untouched and untracked.",
+      "sha256": "450abbd1ad408960504497d47767558f88e14a9a7c07f656a9dd631e8cfa1d34"
+    }
+  ],
+  "existing_ignored_state": "Queues, outboxes, private runtime, credentials and worktrees remain outside this commit; no forced adds.",
+  "verification": [
+    "All 22 prior task worktrees have clean Git status at their recorded HEADs.",
+    "All 46 candidate JSON files and the claims JSONL parsed in read-only audit.",
+    "143 candidate UTF-8 text files checked: no common credential-pattern hits, binary files, symlinks, nested repositories or files above 100 KB.",
+    "Existing tracked diff passed git diff --check. Final staged checks must also pass before commit."
+  ],
+  "limitations": [
+    "Pattern scanning cannot establish that every possible secret is absent.",
+    "This is local preservation, not publication or integration approval.",
+    "Full Claude review remains incomplete after exit 1; Notion portfolio update still awaits specific approval."
+  ],
+  "actual_cost_aud": 0,
+  "actual_tokens": null
+}

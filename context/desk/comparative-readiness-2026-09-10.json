@@ -1,0 +1,179 @@
+{
+  "task_id": "20260910-comparative-readiness",
+  "observed_at": "2026-09-10T15:09:14.180776+08:00",
+  "scope": "Read-only local repository comparison; no live service, account, cloud-chat or financial-state verification",
+  "repositories": {
+    "equities": {
+      "path": "/Users/sayuj/AI/Claude/equities-desk",
+      "branch": "main",
+      "head": "34ae039f3357771c8ec247da3a431cea265ab864",
+      "status": "",
+      "recent_commits": "34ae039 2026-09-10T10:33:58+08:00 File the operator's anomaly-candidates note (2026-09-09) unchanged; handoff for 2026-09-10\n794d228 2026-09-10T10:15:34+08:00 Codex adapter: AGENTS.md is a live router to CLAUDE.md and the shared workflow; .agents skills are links to the live Claude skills, not translated copies\nad1c13e 2026-09-08T12:03:56+08:00 Qanat adoption report and handoff (v3.2 reshaped complete; Q8 deferred, attempt counter 1/12)\n2a3c2a6 2026-09-08T10:34:29+08:00 Q9: console link on panel 8, README (read-only MCP, hook install, console), router line for Qanat\n4c1435d 2026-09-08T10:11:50+08:00 Q5: committed pre-commit hook blocks stray qanat backtest/run invocations outside governance; core.hooksPath documented"
+    },
+    "youtube": {
+      "path": "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build",
+      "branch": "main",
+      "head": "abb2d8bb1e538784f84c957fe4c93f7206fc45cb",
+      "status": "M .env.example\n M .gitignore\n M README.md\n M channels/channel-config.priced-in.json\n M connectors/json2video.js\n M test/e2e-mock.js\n M workflow/code-nodes/08-build-render-spec.js\n M workflow/pipeline.n8n.json\n?? AGENTS.md\n?? CLAUDE.md\n?? TREND_INTELLIGENCE_BRIEF.md\n?? trends/\n?? workflow/trends-collector.n8n.json",
+      "recent_commits": "abb2d8b 2026-08-05T14:36:40+08:00 Reconcile claims cache with the live Notion database\n08ab860 2026-07-31T21:16:01+08:00 Test the editing team: mock coverage + live run\n558b720 2026-07-31T21:16:01+08:00 Add claim-approval section to the review app\nb11497f 2026-07-31T21:16:01+08:00 Wire script-editing team into the n8n workflow\n8a4046e 2026-07-31T21:15:46+08:00 Add editing-team logic library and Notion Verified Claims cache"
+    }
+  },
+  "source_hashes": [
+    {
+      "path": "/Users/sayuj/AI/Claude/equities-desk/CLAUDE.md",
+      "sha256": "d9d80b99c8f928e9220e4817f072639801f27ef322d3de4bd85e0f34f5c09d77"
+    },
+    {
+      "path": "/Users/sayuj/AI/Claude/equities-desk/README.md",
+      "sha256": "1a88b2f5684bee0693c03a27c10e3a822ac2a596d950375ec257a0c89b6e9c8a"
+    },
+    {
+      "path": "/Users/sayuj/AI/Claude/equities-desk/artifacts/specs/phase1-v3.md",
+      "sha256": "366a760081a6a3cb995e903142ccce260cab198a0114880010c33b7f87bb0d83"
+    },
+    {
+      "path": "/Users/sayuj/AI/Claude/equities-desk/artifacts/reports/context/handoff.md",
+      "sha256": "840e8ee88e09c023dff8e1243cf583ef9a908617e2a9518957f2e5a78e918eec"
+    },
+    {
+      "path": "/Users/sayuj/AI/Claude/equities-desk/artifacts/reports/phase2-backlog.md",
+      "sha256": "607b149234e4e9f0a8d0198a492d64098e01dda29a12f2f94340cb7e697ce663"
+    },
+    {
+      "path": "/Users/sayuj/AI/Claude/equities-desk/artifacts/reports/decisions/0005-qanat-signal-substrate.md",
+      "sha256": "00735bc8b267fbf9a33d413b90f6226dc899b3d834698cf14513888826e4d0e2"
+    },
+    {
+      "path": "/Users/sayuj/AI/Claude/equities-desk/artifacts/reports/qanat-adoption.md",
+      "sha256": "0ec88d13857407ed5b05c538b479a8d91868527bad5a7d045929caebfc309559"
+    },
+    {
+      "path": "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build/CLAUDE.md",
+      "sha256": "b55d4fe15f51b00826f8025928469ab4b11dd95568bf6c7afcb809815b257675"
+    },
+    {
+      "path": "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build/AGENTS.md",
+      "sha256": "5391afaf973a4848cb4f70038cb0c556ba0c1e4066407fab2c5ab5124d29b1a5"
+    },
+    {
+      "path": "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build/README.md",
+      "sha256": "19630d4f49954d4f68c74670e59409bbda441b48e59014d662b0c4c3eb62c0bf"
+    },
+    {
+      "path": "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build/PROJECT_BRIEF.md",
+      "sha256": "9472a97c3d8a9007ea480972b1198f6438f2b5e89d57c09791b50ea8505b3826"
+    },
+    {
+      "path": "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build/agents/TEAMS.md",
+      "sha256": "1c8fbb4367114f89f21d4e53791bfd21be0851885f0e4b9fd5a4c64a66282f4d"
+    },
+    {
+      "path": "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build/workflow/pipeline.n8n.json",
+      "sha256": "06a83bac789b7ed21473ea83acb113af7c4821049507c65ca91c942aca630052"
+    },
+    {
+      "path": "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build/test/e2e-mock.js",
+      "sha256": "cdd56461fcb7f438f31672f5deccb7542720a957ec143c20e03337b90c4413e7"
+    },
+    {
+      "path": "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build/connectors/notion-claims.js",
+      "sha256": "7c0c51fdd3845027d89cd28a841dabf1789f49d4b81aaf3895ec1795675d2094"
+    },
+    {
+      "path": "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build/trends/package.json",
+      "sha256": "4e9e1c1a02d3550d30c29e4eee36354811d3338c984a6d6f940e6a488e7873d9"
+    }
+  ],
+  "youtube_workflow": {
+    "active": false,
+    "node_count": 66,
+    "selected_stages": [
+      {
+        "name": "Schedule Trigger (enable for production)",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "disabled": true
+      },
+      {
+        "name": "Queue For Claim Approval",
+        "type": "n8n-nodes-base.code",
+        "disabled": false
+      },
+      {
+        "name": "Needs Claim Approval?",
+        "type": "n8n-nodes-base.if",
+        "disabled": false
+      },
+      {
+        "name": "CLAIM APPROVAL GATE (human)",
+        "type": "n8n-nodes-base.wait",
+        "disabled": false
+      },
+      {
+        "name": "Parked For Manual Review",
+        "type": "n8n-nodes-base.noOp",
+        "disabled": false
+      },
+      {
+        "name": "Build Render Spec",
+        "type": "n8n-nodes-base.code",
+        "disabled": false
+      },
+      {
+        "name": "JSON2Video Render (stub \u2014 disabled)",
+        "type": "n8n-nodes-base.httpRequest",
+        "disabled": true
+      },
+      {
+        "name": "Poll Render Status (stub \u2014 disabled)",
+        "type": "n8n-nodes-base.httpRequest",
+        "disabled": true
+      },
+      {
+        "name": "Queue For Review",
+        "type": "n8n-nodes-base.code",
+        "disabled": false
+      },
+      {
+        "name": "HUMAN REVIEW GATE (approve/reject)",
+        "type": "n8n-nodes-base.wait",
+        "disabled": false
+      },
+      {
+        "name": "Approved?",
+        "type": "n8n-nodes-base.if",
+        "disabled": false
+      },
+      {
+        "name": "YouTube Upload (stub)",
+        "type": "n8n-nodes-base.noOp",
+        "disabled": false
+      },
+      {
+        "name": "Rejected By Reviewer (stub)",
+        "type": "n8n-nodes-base.noOp",
+        "disabled": false
+      },
+      {
+        "name": "Weekly Analytics Trigger",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "disabled": true
+      },
+      {
+        "name": "Fetch YouTube Analytics (stub)",
+        "type": "n8n-nodes-base.noOp",
+        "disabled": false
+      },
+      {
+        "name": "Store Analytics For Research Agent (stub)",
+        "type": "n8n-nodes-base.noOp",
+        "disabled": false
+      }
+    ]
+  },
+  "youtube_shared_handoff_exists": false,
+  "ibkr_connector_tool_exposed_to_codex": false,
+  "tests_run_this_task": [],
+  "new_cash_spend_aud": 0,
+  "subscription_tokens": null,
+  "claude_review_of_new_findings": "pending; depth-three family stops after this work unit"
+}

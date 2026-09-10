@@ -1,0 +1,122 @@
+{
+  "task_id": "20260910-fifo-expiry-prototype",
+  "project": "digital-marketplace-business",
+  "observed_at": "2026-09-10T08:28:35.341185+00:00",
+  "status": "verified_offline_prototype",
+  "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-fifo-expiry-prototype",
+  "branch": "desk/20260910-fifo-expiry-prototype",
+  "base_commit": "8169dd4ac629e3b33deb8e2159d5736063a0afd3",
+  "code_commit": "b34d43510a7f4cc13e8406427116f2774492332b",
+  "implementation": {
+    "path": "/Users/sayuj/soojos/.worktrees/task-20260910-fifo-expiry-prototype/projects/digital-marketplace-business/prototype/tracker.py",
+    "standard_library_only": true,
+    "network_calls": false,
+    "input": "Five-column UTF-8 CSV; explicit as-of date; reminder window default 30 days",
+    "outputs": "Deterministic JSON or reimportable CSV; original fields preserved; existing files never overwritten",
+    "statuses": [
+      "expired",
+      "expires_today",
+      "due_soon",
+      "current",
+      "unknown",
+      "invalid"
+    ],
+    "exit_codes": {
+      "0": "Report produced with no invalid records",
+      "1": "Report produced with invalid records to review",
+      "2": "Argument/input/output failure"
+    },
+    "source_fields": [
+      "record_id",
+      "certificate_name",
+      "issued_on",
+      "expires_on",
+      "note"
+    ]
+  },
+  "verification": {
+    "tests": 11,
+    "tdd_red": "Tests written and run before implementation; 11 test methods failed via 19 assertion/subtest failures because the CLI did not yet exist.",
+    "green_command": "python3 -m unittest discover -s tests -v",
+    "green_cwd": "/Users/sayuj/soojos/.worktrees/task-20260910-fifo-expiry-prototype/projects/digital-marketplace-business/prototype",
+    "green_exit": 0,
+    "sandbox_green_seconds": 1.619,
+    "network_denial": "Loopback bind refused with EPERM before actual test and example execution.",
+    "write_boundary": [
+      "/Users/sayuj/soojos/.worktrees/task-20260910-fifo-expiry-prototype",
+      "/private/tmp/fifo-verify-20260910"
+    ],
+    "synthetic_example_summary": {
+      "expired": 1,
+      "expires_today": 1,
+      "due_soon": 2,
+      "current": 1,
+      "unknown": 1,
+      "invalid": 0
+    },
+    "break_attempts": [
+      "Invalid leap dates, compact dates and issue-after-expiry classified invalid, originals retained.",
+      "Duplicate/blank identities classified invalid; missing expiry remained unknown.",
+      "Missing/duplicate columns, ragged rows, malformed quoting, missing file and invalid CLI arguments returned exit 2.",
+      "CSV round-trip preserved quoted commas, multiline Unicode notes and recomputed tampered statuses.",
+      "Existing output or input path refused; input bytes unchanged."
+    ],
+    "logs": [
+      "/Users/sayuj/soojos/.worktrees/task-20260910-fifo-expiry-prototype/docs/fifo-offline-verification-2026-09-10.log",
+      "/Users/sayuj/soojos/.worktrees/task-20260910-fifo-expiry-prototype/docs/fifo-tdd-red-2026-09-10.log"
+    ],
+    "source_input_hashes_unchanged": true,
+    "code_commit_diff_check": "passed"
+  },
+  "sources": [
+    {
+      "path": "/Users/sayuj/soojos/projects/digital-marketplace-business/CLAUDE.md",
+      "sha256": "a43450d7454a77082231fce68919687bd6c9f9966ee0954337f94111f26243e8",
+      "unchanged_from_planning": true
+    },
+    {
+      "path": "/Users/sayuj/soojos/context/desk/scope-readiness.md",
+      "sha256": "785d191f4648613ca8e11586d5f452ac6d1dd635ed20df8c570febd9dd09565e",
+      "unchanged_from_planning": true
+    },
+    {
+      "path": "/Users/sayuj/.soojos/claude-cloud/2026-09-09/digital-marketplace-business.md",
+      "sha256": "a93fd2f0dd321d990d121ebc5677abe4ecdf842093186eae9ef6f78cffbb6401",
+      "unchanged_from_planning": true
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "/Users/sayuj/soojos/.worktrees/task-20260910-fifo-expiry-prototype/projects/digital-marketplace-business/prototype/tracker.py",
+      "sha256": "9163ec7433391f67d94386ab028cc7deb44df7e5ce6e1d778b1870451c9b1a9d"
+    },
+    {
+      "path": "/Users/sayuj/soojos/.worktrees/task-20260910-fifo-expiry-prototype/projects/digital-marketplace-business/prototype/tests/test_tracker.py",
+      "sha256": "cbd77dfa912df9d89419a2d80b47b97769b1c4c1c40b3a04d6fa4f631ac82fbf"
+    },
+    {
+      "path": "/Users/sayuj/soojos/.worktrees/task-20260910-fifo-expiry-prototype/projects/digital-marketplace-business/prototype/examples/certificates.csv",
+      "sha256": "c6a7dcf25bf158330b406a043a7441df26a2b5984857406eed7a3150fdd6f5f4"
+    },
+    {
+      "path": "/Users/sayuj/soojos/.worktrees/task-20260910-fifo-expiry-prototype/projects/digital-marketplace-business/prototype/README.md",
+      "sha256": "e2e793e813e34b54943e30fbc59ee8a65d9f072dd93e0c49f4961654f598e2a4"
+    }
+  ],
+  "side_effects": "New code/tests/example/docs only in isolated task worktree; canonical task reports in shared desk context. Temporary test inventories removed by tests. No source, account, credentials, cloud instructions or live service changed.",
+  "limitations": [
+    "Expiry date arithmetic only; no certification validity, compliance, site eligibility or employer requirement assessment.",
+    "No real worker records, reminders, account, storefront, sale or commercial demand validated.",
+    "No Claude joint review yet. No private source conversation copied.",
+    "No automatic overwrite; a device failure during a new-file write could leave a partial output."
+  ],
+  "economics": {
+    "new_cash_aud": 0,
+    "billing_mode": "existing_subscription",
+    "actual_tokens": null,
+    "expected_return": null,
+    "received_revenue": null,
+    "note": "Unknown commercial revenue is not zero revenue; no sale claimed."
+  },
+  "next_action": "Review the prototype against the full FIFO product specification and qualified wording requirements, then run one scoped demand check before any launch or capital request."
+}

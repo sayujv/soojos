@@ -1,0 +1,83 @@
+{
+  "task_id": "20260910-youtube-script-evaluator",
+  "observed_at": "2026-09-10T08:36:44.739674+00:00",
+  "status": "verified_offline_prototype",
+  "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-youtube-script-evaluator",
+  "branch": "desk/20260910-youtube-script-evaluator",
+  "base_head": "8169dd4ac629e3b33deb8e2159d5736063a0afd3",
+  "commit_reference": "Exact completion commit recorded in context/desk/outbox/2026-09-10-20260910-youtube-script-evaluator.json",
+  "original_source_before": {
+    "root": "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build",
+    "head": "abb2d8bb1e538784f84c957fe4c93f7206fc45cb",
+    "status": " M .env.example\n M .gitignore\n M README.md\n M channels/channel-config.priced-in.json\n M connectors/json2video.js\n M test/e2e-mock.js\n M workflow/code-nodes/08-build-render-spec.js\n M workflow/pipeline.n8n.json\n?? AGENTS.md\n?? CLAUDE.md\n?? TREND_INTELLIGENCE_BRIEF.md\n?? trends/\n?? workflow/trends-collector.n8n.json\n",
+    "sha256": {
+      "CLAUDE.md": "b55d4fe15f51b00826f8025928469ab4b11dd95568bf6c7afcb809815b257675",
+      "AGENTS.md": "5391afaf973a4848cb4f70038cb0c556ba0c1e4066407fab2c5ab5124d29b1a5",
+      "PROJECT_BRIEF.md": "9472a97c3d8a9007ea480972b1198f6438f2b5e89d57c09791b50ea8505b3826",
+      "agents/TEAMS.md": "1c8fbb4367114f89f21d4e53791bfd21be0851885f0e4b9fd5a4c64a66282f4d",
+      "agents/benchmark-script.md": "3c095114461f3df1cf567cc61b4e545a7140b32ba8b7b286af36b395e9250efd",
+      "agents/agent-script.md": "62e02c085f7fbcf2959dece8193c80e4c570d965b63c4e37eb37a07e38752340",
+      "channels/channel-config.priced-in.json": "38c0b6eff0dc2712ce3ef991b041ff29ebcd3ca8d3f9ed829f453e2cf772fd65",
+      "lib/editing.js": "ceea893e3d770f4039e9de79d55b39ed2b8f6ae617348277dbf0449a81d566eb",
+      "lib/gate.js": "c4f2959a68ad52891504ea341590e1c67a48da03d3bf685815296c3330e3defc"
+    }
+  },
+  "original_source_after": {
+    "root": "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build",
+    "head": "abb2d8bb1e538784f84c957fe4c93f7206fc45cb",
+    "status": " M .env.example\n M .gitignore\n M README.md\n M channels/channel-config.priced-in.json\n M connectors/json2video.js\n M test/e2e-mock.js\n M workflow/code-nodes/08-build-render-spec.js\n M workflow/pipeline.n8n.json\n?? AGENTS.md\n?? CLAUDE.md\n?? TREND_INTELLIGENCE_BRIEF.md\n?? trends/\n?? workflow/trends-collector.n8n.json\n",
+    "sha256": {
+      "CLAUDE.md": "b55d4fe15f51b00826f8025928469ab4b11dd95568bf6c7afcb809815b257675",
+      "AGENTS.md": "5391afaf973a4848cb4f70038cb0c556ba0c1e4066407fab2c5ab5124d29b1a5",
+      "PROJECT_BRIEF.md": "9472a97c3d8a9007ea480972b1198f6438f2b5e89d57c09791b50ea8505b3826",
+      "agents/TEAMS.md": "1c8fbb4367114f89f21d4e53791bfd21be0851885f0e4b9fd5a4c64a66282f4d",
+      "agents/benchmark-script.md": "3c095114461f3df1cf567cc61b4e545a7140b32ba8b7b286af36b395e9250efd",
+      "agents/agent-script.md": "62e02c085f7fbcf2959dece8193c80e4c570d965b63c4e37eb37a07e38752340",
+      "channels/channel-config.priced-in.json": "38c0b6eff0dc2712ce3ef991b041ff29ebcd3ca8d3f9ed829f453e2cf772fd65",
+      "lib/editing.js": "ceea893e3d770f4039e9de79d55b39ed2b8f6ae617348277dbf0449a81d566eb",
+      "lib/gate.js": "c4f2959a68ad52891504ea341590e1c67a48da03d3bf685815296c3330e3defc"
+    }
+  },
+  "original_head_status_and_source_hashes_unchanged": true,
+  "verification": {
+    "node_version": "v24.19.0",
+    "command": "/Users/sayuj/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node --test projects/youtube-business/prototype/test/evaluate.test.js",
+    "test_groups": 6,
+    "passed": 6,
+    "failed": 0,
+    "initial_red": "Before implementation, all five initial CLI groups failed because evaluate.js did not yet exist.",
+    "network_denied_fixture_run": "PASS: sandbox-exec -p (version 1) (allow default) (deny network*) invoked Node evaluator with three synthetic fixture paths. Initial nested sandbox application returned Operation not permitted; authorized local retry succeeded.",
+    "fixture_narration_words": 16,
+    "fixture_verify_count": 2,
+    "fixture_repeated_prefix": "that matters because",
+    "real_benchmark_narration_words": 708,
+    "independent_python_benchmark_count": 708,
+    "real_benchmark_verify_count": 3,
+    "real_config_word_count_range": [
+      850,
+      1050
+    ],
+    "input_mutation_test": "PASS: synthetic input bytes unchanged; original HEAD/status and nine inspected non-secret hashes unchanged."
+  },
+  "implementation_hashes": {
+    "projects/youtube-business/prototype/README.md": "1f3caab00afaf6e6b82476a13ab5e18a6e06764a7fc9ced29b640a629eb701bf",
+    "projects/youtube-business/prototype/evaluate.js": "8bdaf360b8cd6683552d7f121d4c7cc640981393ee006c950e325a0d8389287f",
+    "projects/youtube-business/prototype/fixtures/benchmark.md": "a8bc8fe04fc272ac51d95b56170ff2d5e773b1a082f7bbde854bc46bd8258c2a",
+    "projects/youtube-business/prototype/fixtures/channel.json": "f05e65adf3ae4801357998f9a622d78727bcb8b1562c48405576f38d58546fdf",
+    "projects/youtube-business/prototype/fixtures/draft.json": "bf88418a4fa23ae7435e248264c8ef129649646ae1f330db3e9274e7a7fbcbdc",
+    "projects/youtube-business/prototype/test/evaluate.test.js": "340519149a131747d94a15580110f7c40b9b9c5ef1dc8444f9fad66e84ef002e"
+  },
+  "limitations": [
+    "Standalone local evaluator only; no production integration or live render/upload/API verification.",
+    "Current local config is reconstructed and specifies 850\u20131050 words; dated cloud summary specifies 900\u20131100. Review before production.",
+    "Benchmark describes roughly 910 words but this explicit narration convention measures 708; independently cross-checked.",
+    "Mechanical repeated sentence openings can produce false positives.",
+    "Editorial quality, novelty, factual validity and retention always remain ungraded and require review; no publication decision.",
+    "Latest cloud chat was not reopened by this worker; root owns the authorized Claude handoff.",
+    "No model billing counter available: tokens remain null. No revenue or return established."
+  ],
+  "next_action": "Claude and Astra review the config/benchmark conventions, then integrate on a deliberate branch in the original YouTube repository while preserving claim-approval/compliance/human-video-review gates.",
+  "actual_cost_aud": 0,
+  "actual_tokens": null,
+  "billing_mode": "existing_subscription"
+}

@@ -1,0 +1,53 @@
+{
+  "id": "20260910-claude-portfolio-review-approved",
+  "project": "soojos",
+  "task": "Provide an independent tool-free Claude review of the completed nine first-build reports, flag unsupported claims and propose the smallest next evidence step per project. Acknowledge the limits of supplied evidence; do not claim independent code/test verification. Return concise structured recommendations and dissent, then stop this depth-three family.",
+  "assignee": "claude",
+  "inputs": [
+    "context/desk/portfolio-review-brief-2026-09-10.md",
+    "context/desk/portfolio-builds-2026-09-10.md"
+  ],
+  "constraints": [
+    "Follow current charter and protected policy.",
+    "No tools, network, edits, delegation, contacts, publishing, trading or capital actions.",
+    "Use only supplied source evidence; report code/tests as coordinator evidence and unknown business returns as unknown.",
+    "Review all nine completed build entries, answer the brief concisely, then finish. This is final-depth review; no descendants or new cycle."
+  ],
+  "priority": {
+    "rank": 1,
+    "reason": "Shared Claude/Astra review of completed first builds before selecting a demand or integration experiment; no proven economic ranking yet."
+  },
+  "expected_return": {
+    "currency": "AUD",
+    "horizon_days": 90,
+    "net_low": null,
+    "net_high": null,
+    "confidence": "unassessed",
+    "basis": "Evidence required"
+  },
+  "expected_time_to_first_dollar_days": {
+    "low": null,
+    "high": null,
+    "basis": "Unassessed"
+  },
+  "created_at": "2026-09-10T09:13:16.661795+00:00",
+  "status": "queued",
+  "budget_tokens": null,
+  "budget_minutes": 15,
+  "budget_aud": 0,
+  "cycle_id": "20260910-portfolio-build-plan",
+  "parent_id": "20260910-fifo-expiry-prototype",
+  "chain_depth": 3,
+  "branch": "desk/20260910-claude-portfolio-review-approved",
+  "worktree": null,
+  "action_kind": "research",
+  "approval_refs": [],
+  "blocked_reason": null,
+  "attempts": [],
+  "alternatives_checked": [],
+  "next_attempt": null,
+  "actual_tokens": null,
+  "actual_minutes": null,
+  "actual_cost_aud": null,
+  "result_path": null
+}

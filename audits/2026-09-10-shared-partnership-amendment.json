@@ -1,0 +1,14 @@
+{
+  "recorded_at": "2026-09-10T13:52:49.612918+08:00",
+  "authority": "Sayuj direct instruction: everything should be a shared responsibility between Claude and Astra; Sayuj is the shareholder; use agents, MCPs, CLIs and other LLMs; check capital deployment first",
+  "active_changes": [
+    "Shared strategy, execution, review and outcomes",
+    "Either partner may initiate work and select capabilities",
+    "Concise shareholder approval for capital deployment"
+  ],
+  "previous_charter_sha256": "18c7be7b9508608edc240caeb73d17073bef05de1676c933008653c37c7b0448",
+  "current_charter_sha256": "950f381a466ea1d61c679892c1c515cd38664d79a29870cdb74248a5f9bf39c8",
+  "numeric_policy_changed": false,
+  "dispatch_control_replacement": "proposed; awaiting explicit approval",
+  "cloud_instructions_changed": false
+}

@@ -1,0 +1,55 @@
+{
+  "task_id": "20260910-ugc-sample-production-kit",
+  "project": "ugc",
+  "status": "verified_unfilmed_sample_kit",
+  "observed_at": "2026-09-10T08:37:47.774225+00:00",
+  "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-ugc-sample-production-kit",
+  "branch": "desk/20260910-ugc-sample-production-kit",
+  "code_commit": "d5b4faff495ef4748ec0107aef8da38da77722b5",
+  "artifacts": {
+    "readme": "/Users/sayuj/soojos/.worktrees/task-20260910-ugc-sample-production-kit/projects/ugc/prototype/README.md",
+    "storyboards": "/Users/sayuj/soojos/.worktrees/task-20260910-ugc-sample-production-kit/projects/ugc/prototype/sample-storyboards.md",
+    "validator": "/Users/sayuj/soojos/.worktrees/task-20260910-ugc-sample-production-kit/projects/ugc/prototype/validate.py",
+    "delivery_checklist": "/Users/sayuj/soojos/.worktrees/task-20260910-ugc-sample-production-kit/projects/ugc/prototype/delivery-checklist.md"
+  },
+  "verification": {
+    "tests_passed": 9,
+    "test_command": "python3 -m unittest discover -s tests -v",
+    "cwd": "/Users/sayuj/soojos/.worktrees/task-20260910-ugc-sample-production-kit/projects/ugc/prototype",
+    "exit_code": 0,
+    "test_first": "All9 test methods failed before implementation; all passed afterward.",
+    "sample_durations_seconds": [
+      24,
+      26,
+      22
+    ],
+    "production_ready": false,
+    "storyboard_matches_source_json": true,
+    "blank_template_rejected": true,
+    "sample_inputs_unchanged": true,
+    "source_hashes_rechecked": [
+      {
+        "path": "/Users/sayuj/soojos/projects/ugc/CLAUDE.md",
+        "sha256": "7c151a27b7f092a78a9c07b2436b334ddf691ff5c60549455ad25ede84bf51d7"
+      },
+      {
+        "path": "/Users/sayuj/soojos/context/desk/scope-readiness.md",
+        "sha256": "785d191f4648613ca8e11586d5f452ac6d1dd635ed20df8c570febd9dd09565e"
+      },
+      {
+        "path": "/Users/sayuj/.soojos/claude-cloud/2026-09-09/ugc.md",
+        "sha256": "fbce9dde8cb7ad32ce5630dd48e58b236adf797a7671ff3ee93865d665d12233"
+      }
+    ],
+    "log": "/Users/sayuj/soojos/.worktrees/task-20260910-ugc-sample-production-kit/docs/ugc-verification-2026-09-10.log"
+  },
+  "scope": "Original sample copy for a generic unbranded notebook; no real sponsorship, personal-experience claim, publication, outreach, account or new service.",
+  "limitations": [
+    "No videos recorded, edited, delivered or sold.",
+    "Footage and human review remain pending; structural validation cannot establish genuine rights or judge all claims in prose.",
+    "No market/rate/revenue research or Claude joint review in this task."
+  ],
+  "actual_tokens": null,
+  "actual_cost_aud": 0,
+  "next_action": "Identify available props/capture permissions and rehearse one sample; use a separate scoped review for demand and wording before launch."
+}

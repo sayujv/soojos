@@ -1,0 +1,52 @@
+{
+  "task_id": "20260910-sale-document-intake",
+  "project": "sale-readiness-platform",
+  "status": "verified_synthetic_metadata_prototype",
+  "observed_at": "2026-09-10T08:45:09.462506+00:00",
+  "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-sale-document-intake",
+  "branch": "desk/20260910-sale-document-intake",
+  "code_commit": "6d4138d8986c6ebe52b267c3c0be9906d7e2e7cd",
+  "artifacts": {
+    "cli": "/Users/sayuj/soojos/.worktrees/task-20260910-sale-document-intake/projects/sale-readiness-platform/prototype/intake.py",
+    "readme": "/Users/sayuj/soojos/.worktrees/task-20260910-sale-document-intake/projects/sale-readiness-platform/prototype/README.md",
+    "data_dictionary": "/Users/sayuj/soojos/.worktrees/task-20260910-sale-document-intake/projects/sale-readiness-platform/prototype/data-dictionary.md",
+    "examples": "/Users/sayuj/soojos/.worktrees/task-20260910-sale-document-intake/projects/sale-readiness-platform/prototype/examples"
+  },
+  "verification": {
+    "tests_passed": 10,
+    "command": "python3 -m unittest discover -s tests -v",
+    "cwd": "/Users/sayuj/soojos/.worktrees/task-20260910-sale-document-intake/projects/sale-readiness-platform/prototype",
+    "exit_code": 0,
+    "test_first": "All 10 tests failed before CLI implementation, then passed.",
+    "three_company_demo": "Alpha: 2 provided metadata records. Beta: 1 needs_review, 1 missing, including an additional missing requested slot without a record. Gamma: 3 invalid records; report produced with expected exit 1.",
+    "company_separation": true,
+    "deterministic_company_order": true,
+    "missing_evidence_not_received": true,
+    "document_contents_checked": false,
+    "source_inputs_unchanged": true,
+    "source_hashes": [
+      {
+        "path": "/Users/sayuj/soojos/projects/sale-readiness-platform/CLAUDE.md",
+        "sha256": "35bdc69550b9a231c60aff6808327403db252be4a41ba94cacba40a72ef13c9d"
+      },
+      {
+        "path": "/Users/sayuj/soojos/context/desk/scope-readiness.md",
+        "sha256": "785d191f4648613ca8e11586d5f452ac6d1dd635ed20df8c570febd9dd09565e"
+      },
+      {
+        "path": "/Users/sayuj/.soojos/claude-cloud/2026-09-09/sale-readiness-platform.md",
+        "sha256": "9a5342d613a9c62d79ca0a25d957666308e2668214e75cdefdf86721f521627e"
+      }
+    ],
+    "log": "/Users/sayuj/soojos/.worktrees/task-20260910-sale-document-intake/docs/sale-intake-verification-2026-09-10.log"
+  },
+  "scope": "Caller-declared synthetic metadata and requested document slots only; no document contents, real statements, personal data, URL fetching, OCR, LLM or account integration.",
+  "limitations": [
+    "Provided is a supplied filename/provenance/metadata-review assertion, not verified file existence, receipt or adequacy.",
+    "PRD v0.1 sections7–8, D1–D7 and current Australian/document-intelligence requirements remain unresolved; this vocabulary is provisional.",
+    "No valuation, sale-readiness score, legal review, real-company test or Claude joint review."
+  ],
+  "actual_tokens": null,
+  "actual_cost_aud": 0,
+  "next_action": "Recover current PRD/decision sources and reconcile the metadata contract before product integration or real-data intake."
+}

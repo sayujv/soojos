@@ -1,0 +1,59 @@
+{
+  "files": {
+    "policy.json": "3973ac5afeb75ea62e228a5286601d684b92cbe0dfb66343d4d63b6b71a4b87d",
+    "scope-paths-2026-09-10.json": "ca91a3768c4ca47bb8abef752c2ebbe96579cae7c40c2f5b146f24a5da9dcfc2",
+    "youtube-offline-validation-2026-09-10.json": "543191b57a98d541b91a5cc0f85096f2406d5c6df1bd15f7f95185effa5f5c94",
+    "reel-Dc-5s7EEojU-alignment-2026-09-10.json": "939035668474983bee4d2a79ddad054287fc094f4a1098279c733e53ffe64fd5",
+    "claude-handoff-policy.md": "ff441279e22a93c74d3eef9afbdf7215b36397d541b056f5680ac3097d1e68a9"
+  },
+  "tasks": [
+    {
+      "id": "20260910-reel-joint-review",
+      "status": "blocked",
+      "blocked_reason": "Hard total token enforcement is not verified for unattended model work",
+      "result_path": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-reel-joint-review.json"
+    },
+    {
+      "id": "20260910-finance-baseline",
+      "status": "blocked",
+      "blocked_reason": "Complete financial opening coverage and automatic Notion mapping are unverified",
+      "result_path": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-finance-baseline.json"
+    },
+    {
+      "id": "20260910-scope-paths",
+      "status": "blocked",
+      "blocked_reason": "Two local Git repositories verified; PredictOS canonical ownership remains ambiguous and six cloud projects have no authoritative local build evidenced.",
+      "result_path": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-scope-paths.json"
+    },
+    {
+      "id": "20260910-reel-transcript",
+      "status": "blocked",
+      "blocked_reason": "Exact reel capture and montage alignment succeeded, but sampled visual captions and related episode VTT do not verify every audible word; no usable already-authorized local speech recognizer is available. Full verbatim transcription remains unverified.",
+      "result_path": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-reel-transcript.json"
+    },
+    {
+      "id": "20260910-claude-partnership-review-v2",
+      "status": "done",
+      "blocked_reason": null,
+      "result_path": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-claude-partnership-review-v2.json"
+    },
+    {
+      "id": "20260910-claude-review-corrections",
+      "status": "done",
+      "blocked_reason": null,
+      "result_path": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-claude-review-corrections.json"
+    },
+    {
+      "id": "20260910-comparative-readiness",
+      "status": "blocked",
+      "blocked_reason": "Comparison artifacts and verification are complete, but terminal accounting missed the approved eight-minute deadline; preserved as blocked rather than falsely reporting an on-time completion.",
+      "result_path": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-comparative-readiness.json"
+    },
+    {
+      "id": "20260910-youtube-offline-validation",
+      "status": "done",
+      "blocked_reason": null,
+      "result_path": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-youtube-offline-validation.json"
+    }
+  ]
+}

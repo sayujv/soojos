@@ -1,125 +1,146 @@
 # SoojOS
 
-One repo that carries the skills, agents, hooks and MCP wiring for every project. Projects subscribe to it; nothing is ever copied between them.
+A single repo that holds the Claude Code skills, agents and hooks for all of one person's projects, published as a plugin marketplace that each project subscribes to.
 
-## Why this shape
+## The problem
 
-A skill sitting in a project's `.claude/skills/` is available in that project only. Sharing it means copying it, and copies drift. A **plugin marketplace** is the mechanism built for the opposite: plugins live here once, projects declare a subscription, and a push to this repo reaches every project on their next session.
+A skill in a project's `.claude/skills/` is visible to that project only. Sharing it across repos means copying it, and copies drift. Some projects (a trading bot, for example) need their own git history, so a monorepo is not an option.
 
-## Two roles, one repo
+Claude Code's plugin marketplace is the mechanism for the opposite: plugins live here once, each project declares a subscription in `.claude/settings.json`, and a push to this repo reaches every subscriber on their next session.
 
-SoojOS is both:
+The same repo is also the "brain": a router-style `CLAUDE.md` over a small knowledge base whose contents are meant to be queried by agents rather than read into context.
 
-- **The brain.** `cd` in here and `CLAUDE.md` routes to knowledge, decisions and projects. Segmented wikis, expertise-vs-situational context split, a read-only audit that checks every index against the disk.
-- **The marketplace.** External repos subscribe to it and inherit every skill, agent and hook without copying a file.
-
-The second role is the one a single-monorepo setup never needs and you do — Trading Bot has its own git history and can't live inside this repo.
-
-## Layout
+## Architecture
 
 ```
 soojos/
-├── CLAUDE.md                         the router — a table of contents, not a prompt
-├── knowledge/
-│   ├── INDEX.md                      a claim about what exists; the audit checks it
-│   ├── HOT-CACHE.md                  few facts, most likely to be stale
-│   ├── context/                      expertise context — loaded every session
-│   └── wikis/{youtube,reddit}/       segmented; raw/ is distilled into notes/
-├── decisions/                        numbered, binding
-├── audits/                           read-only audit reports
-├── projects/                         per-project CLAUDE.md routers
-├── .claude-plugin/marketplace.json   the catalog — what exists and where
+├── CLAUDE.md                        router: says where things are, contains nothing itself
+├── .claude-plugin/marketplace.json  catalog of the five plugins below
 ├── plugins/
-│   ├── soojos-core/                  context hygiene, decisions, critique, audit, bootstrap
-│   ├── soojos-ops/                   Notion registry + standup
-│   ├── soojos-build/                 verify, worktree lanes, code review
-│   ├── soojos-intel/                 harvest → distill → brief, plus launchd cadence
-│   └── soojos-money/                 backtest review, risk checks, secrets guard
-├── templates/                        CLAUDE.md, settings.json, context/, decisions/
-└── bin/soojos-init                   drops a project onto the standard
+│   ├── soojos-core/    skills: grill-me, session-handoff, decide, new-project, audit   agent: critic
+│   ├── soojos-build/   skills: verify, lane                                            agent: reviewer
+│   ├── soojos-ops/     skills: log-run, standup                        .mcp.json → hosted Notion MCP
+│   ├── soojos-intel/   skills: research, distill, recall, brief        agents: scout, skeptic
+│   │                   bin/research.py  bin/claims.py  scripts/retrieve.py
+│   └── soojos-money/   skills: backtest-review, risk-check             hook: guard-secrets.sh
+├── scripts/
+│   ├── dispatch.py     fire-and-poll headless `claude -p` runs per registered project
+│   └── loop.py         planner → builder → verify → commit loop against any repo
+├── knowledge/
+│   ├── claims.jsonl    the ledger: one dated, sourced claim per line
+│   ├── reports/        one markdown report per research question
+│   ├── wikis/{youtube,reddit}/raw/   fetched source material, disposable once distilled
+│   ├── context/        identity, constraints, projects — loaded every session
+│   ├── INDEX.md, HOT-CACHE.md        indexes that the `audit` skill checks against disk
+├── bin/soojos-init     bootstraps a project: settings.json, CLAUDE.md, context/, decisions/
+└── templates/          the files soojos-init writes
 ```
 
-## What's in each plugin
+### Plugins
 
-| Plugin | Skills | Agents | Other | Enable where |
-| --- | --- | --- | --- | --- |
-| `soojos-core` | `grill-me`, `session-handoff`, `decide`, `new-project`, `audit` | `critic` | — | everywhere |
-| `soojos-ops` | `log-run`, `standup` | — | Notion MCP | projects tracked in Notion |
-| `soojos-build` | `verify`, `lane` | `reviewer` | — | any repo with code |
-| `soojos-intel` | `research`, `distill`, `brief` | `scout`, `skeptic` | `research.py`, `claims.py` | the brain repo |
-| `soojos-money` | `backtest-review`, `risk-check` | — | secrets-guard hook | Trading Bot, Prediction Betting |
+Five plugins, fourteen skills, four agents, one hook. Each plugin is enable-able on its own; a repo that wants a risk check should not have to load Notion wiring.
 
-## The intel loop
+| Plugin | Purpose | Intended scope |
+| --- | --- | --- |
+| `soojos-core` | Interrogate plans before building, record decisions as numbered files, write session handoffs, bootstrap projects, audit indexes against disk | every project |
+| `soojos-build` | "Written" vs "verified" discipline; one git worktree per task; adversarial code review | any repo with code |
+| `soojos-ops` | Log runs and spend to Notion databases; cross-project standup | projects tracked in Notion |
+| `soojos-intel` | Question-scoped research from Reddit/YouTube → claims ledger → report | this repo |
+| `soojos-money` | Backtest sanity checks, go-live risk checklist, PreToolUse hook that refuses writes to `.env`, `*.pem`, `*.key`, `credentials*`, `*live_config*`, `*production.*` | trading / betting projects; `defaultEnabled: false` |
 
-Pull-based. A question comes first; the fetch is scoped to it. Nothing is scraped on a schedule.
+A subscriber's `.claude/settings.json` looks like:
 
-```
-question → research.py    → raw/          scoped fetch, Reddit + YouTube
-         → distill        → claims.jsonl  sub-agent per file, claims only
-         → report         → reports/      the human-readable answer
-         → brief <proj>   → what changed and what to do about it
-monthly  → audit          → what would give a wrong answer today
-```
-
-**Runs on the Mac.** Reddit returns 403 and YouTube IP-blocks any datacenter address. Claude Code executes on your machine, so its bash calls use your residential IP and these work — a hosted runner returns nothing, silently. First run needs `pip install youtube-transcript-api yt-dlp`.
-
-### Two consumers, two artifacts
-
-An agent deciding *whether* something is relevant, and an agent *acting* on it, need different things. Serving both with prose gives you files too long to scan and too thin to act on.
-
-- **`claims.jsonl`** — one JSON object per claim: text, confidence, source, date, projects. Agents query it with `claims.py` to answer "is there anything about X" at near-zero context cost. Clash detection is mechanical, not a matter of an agent happening to notice.
-- **`reports/`** — one markdown report per research question: the answer, a claims table, contradictions with both dates, what it changes per project, and what could not be established.
-
-Raw is disposable and never read into the main context. A 25-minute transcript is thousands of words around two or three real claims.
-
-### Confidence
-
-`verified` (checked against docs or reproduced here) · `claimed` (asserted, unchecked — most video) · `anecdote` (one person's experience — most Reddit). Income and "10x" claims never rise above `claimed`, however often repeated.
-
-## Setup — once per machine
-
-```bash
-gh repo create soojos --private --source=. --push     # or push to an existing remote
+```json
+{
+  "extraKnownMarketplaces": { "soojos": { "source": { "source": "github", "repo": "OWNER/soojos" } } },
+  "enabledPlugins": { "soojos-core@soojos": true, "soojos-build@soojos": true }
+}
 ```
 
-Then in Claude Code:
+No `plugin.json` carries a `version`, so the version resolves from the commit SHA and every push is picked up.
+
+### Intel pipeline
+
+Pull-based. A question comes first and the fetch is scoped to it; nothing is scraped on a schedule.
 
 ```
-/plugin marketplace add YOUR_GH_USER/soojos
+question → research.py → wikis/*/raw/     Reddit JSON API + youtube-transcript-api / yt-dlp
+         → distill     → claims.jsonl     one sub-agent per raw file, emits claims only
+         → report      → reports/
+         → recall / brief                 query the ledger; never open raw files into main context
+```
+
+A claim is `{id, text, confidence, source, source_type, published, recorded, projects, note, supersedes}`. Confidence is one of `verified`, `claimed`, `anecdote`. `claims.py` handles add/query/clash/stale/stats; `retrieve.py` does keyword scoring weighted by confidence and decayed by age, in Python, so a lookup costs the model almost no tokens.
+
+`research.py` must run on the Mac: Reddit and YouTube return 403 to datacenter IPs, and the script exits with an explicit "blocked at the network level" message rather than falling back to web search.
+
+### Headless runners
+
+`scripts/dispatch.py` (stdlib only) reads `~/.soojos/projects.json`, launches `claude -p --output-format json` detached in the project's cwd with that project's `allowedTools`, `permissionMode` and `maxTurns`, and writes `.json/.err/.meta/.done` files under `~/.soojos/runs/`. `status` polls a run, stores the returned `session_id` under `~/.soojos/sessions/<project>` so the next run resumes it, and reports cost and turn count. `cancel` sends SIGTERM to the process group. Output is JSON on stdout so an MCP tool or chat supervisor can drive it.
+
+`scripts/loop.py` alternates a read-only planner and a read-write builder against any repo. Each planner call starts a fresh session and is fed a digest (carried state, recent commits, last instruction, last builder report, last verify result) instead of a resumed session, to keep context bounded. It stops on planner "done", a failing verify command, two consecutive non-compliant builds, a cycle cap, or a dollar cap. Transcripts land in `<repo>/.soojos-loop/<run_id>/`.
+
+## Key design decisions
+
+- **Router, not prompt.** `CLAUDE.md` is a table of where things are. Content lives in files that are fetched when needed. Only `knowledge/context/` is loaded every session.
+- **Framework-level skills are near-constitutional.** A skill goes in SoojOS only if two or more projects would use it and it would survive the project changing entirely. Domain rules stay project-local; `soojos-money` is the one domain plugin and is off by default.
+- **The ledger is the asset, raw is disposable.** Agents answer "is there anything about X" from `claims.jsonl` via a script, not by reading reports. Every claim carries a source URL and a date; undated claims are not evidence. Clashes are resolved by `supersedes`, never by deleting the older claim.
+- **Indexes are claims to be audited.** `INDEX.md` and `HOT-CACHE.md` describe what exists; the `audit` skill is read-only and reports where they are wrong. The disk wins.
+- **Guardrails are hooks, not instructions.** The secrets guard is a PreToolUse command hook that exits 2. An instruction-only permission is not treated as a permission.
+- **Local execution for research.** The IP is the constraint, not the protocol, so the fetchers are plain scripts that run on the machine rather than a hosted service.
+- **Decisions are files.** `decide` writes `decisions/NNNN-slug.md`; decision records override this README and `CLAUDE.md` when they disagree.
+
+## Status
+
+Checked on 2026-08-29 against the working tree, `~/.soojos`, `~/.claude/settings.json`, `claude mcp list` and Claude Code 2.1.251.
+
+### Working
+
+- **Marketplace catalog and all five plugins.** 14 `SKILL.md`, 4 agents, 1 hook present. `claude plugin validate` passes on all five (with warnings).
+- **Marketplace registered at user scope** in `~/.claude/settings.json` as a directory source pointing at this checkout.
+- **`knowledge/claims.jsonl` exists.** It holds 3 claims, all `anecdote`, all from one YouTube video (`Ek1NBfnnTH0`, published 2026-08-09, distilled 2026-08-24), all tagged `soojos`. That is the entire ledger.
+- **`claims.py`** — `stats` and `query` run against the ledger. **`retrieve.py`** returns ranked results, but only via its fallback path; its default `~/soojos/intel/claims.jsonl` does not exist.
+- **`research.py` YouTube path** has been run once (the one raw file above). Distillation from that file produced the 3 claims.
+- **`guard-secrets.sh`** blocks `.env` (exit 2 with reason) and allows `main.py` (exit 0) when invoked with a PreToolUse payload.
+- **`dispatch.py`** — one run recorded (2026-08-24, project `soojos`, exit 0, 3 turns, $0.36, session id saved). Registry contains only `soojos` with `Read,Grep,Glob`.
+- **`loop.py`** — five runs on 2026-08-24; two produced commits (`loop cycle 1`, `loop cycle 2`) that are in `main`.
+- **`bin/soojos-init`** — read; writes settings/CLAUDE.md/context/decisions as described. Not executed during this check.
+
+### Not yet done
+
+- **No SoojOS MCP server exists.** There is no server code in this repo or in `$HOME`, `claude mcp list` shows only the claude.ai Gmail/Microsoft 365/Notion connectors, and `~/.claude.json` has no `mcpServers` entries. Tools such as `soojos_status`, `claims_search`, `reports_list`, `report_read`, `research_youtube`, `research_reddit`, `code_projects`, `code_dispatch`, `code_status` do not exist anywhere. `plugins/soojos-ops/.mcp.json` only points at `https://mcp.notion.com/mcp`.
+- **No plugin is enabled anywhere that was checked.** `enabledPlugins` in `~/.claude/settings.json` is `{}`, and this repo has no `.claude/settings.json` of its own. Skills are therefore not loading in sessions unless started with `--plugin-dir`. No external subscriber repo was verified.
+- **`decisions/` does not exist**, though `CLAUDE.md`, the `decide` skill and the standing rules all point at it. No decision record has been written.
+- **`context/handoff.md` does not exist**; `CLAUDE.md` links to it.
+- **`projects/` is empty.** `CLAUDE.md` names six active projects; none has a `projects/<name>/CLAUDE.md`.
+- **`audits/` is empty** and `INDEX.md` says `Last verified: never`. `INDEX.md` reports 0 reports; there is 1 (`reports/ibkr-equities-preflight-2026-08-27.md`, uncommitted). `HOT-CACHE.md` has no entries.
+- **Reddit path of `research.py` has never been run** — `wikis/reddit/raw/` is empty.
+- **Notion wiring unverified.** `log-run` hardcodes database IDs; no run was checked against Notion.
+- **`dispatch.py` is not driven by anything.** The supervisor/MCP layer it was designed for does not exist; it has been invoked by hand once.
+- **No worktree support in `dispatch.py`**; parallel lanes exist only as the manual `lane` skill.
+- **No scheduler.** Nothing runs on a cadence; the `soojos-intel` marketplace tag `cadence` describes nothing that exists.
+- **No plugin versions.** Fine for one user; required before anyone else subscribes.
+
+## Setup
+
+Once per machine, in Claude Code:
+
+```
+/plugin marketplace add OWNER/soojos      # or a local directory path
 /plugin install soojos-core@soojos
 /plugin install soojos-build@soojos
 ```
 
-Check the install summary — if it says `Run /reload-plugins to activate.`, run that.
-
-Verify with `/plugin`, then try `/soojos-core:grill-me`.
-
-## Setup — once per project
-
-From the project directory:
+Once per project, from its root:
 
 ```bash
-/path/to/soojos/bin/soojos-init YOUR_GH_USER            # core + build
-/path/to/soojos/bin/soojos-init YOUR_GH_USER soojos-ops soojos-money
+/path/to/soojos/bin/soojos-init OWNER [soojos-ops] [soojos-money]
 ```
 
-That writes `.claude/settings.json` declaring the marketplace and the enabled plugins, plus a router-style `CLAUDE.md`, `context/` and `decisions/`. Commit it, and the project is subscribed on every machine and in every worktree.
+Research fetches need `pip install youtube-transcript-api yt-dlp` and a residential IP.
 
-## Adding a skill
+To add a skill: create `plugins/<plugin>/skills/<name>/SKILL.md`, test with `claude --plugin-dir ./plugins/<plugin>`, run `claude plugin validate ./plugins/<plugin>`, commit. Plugins are copied into a cache on install, so nothing may reference paths outside its own plugin directory.
 
-1. `mkdir -p plugins/soojos-core/skills/<name>` and write `SKILL.md`.
-2. Test without installing: `claude --plugin-dir ./plugins/soojos-core`
-3. Validate: `claude plugin validate ./plugins/soojos-core`
-4. Commit and push. Other projects pick it up on `/plugin marketplace update`.
+## Requirements
 
-Write the `description` frontmatter to be slightly pushy about when to trigger — under-triggering is the common failure, not over-triggering.
-
-## Versioning
-
-No `version` field is set in any `plugin.json`, so the version resolves from the git commit SHA and every push is picked up. That is deliberate for a solo setup. If SoojOS is ever shared, add explicit versions and bump them per release.
-
-## Rules
-
-- A skill goes in SoojOS if two or more projects would use it. Otherwise it stays project-local.
-- A plugin should be enable-able independently. If Trading Bot has to load Notion wiring to get a risk check, the split is wrong.
-- Plugins are copied into a cache on install, so nothing may reference paths outside its own plugin directory.
+macOS, Claude Code 2.1.x, Python 3 (stdlib for `dispatch.py`, `loop.py`, `claims.py`, `retrieve.py`; `youtube-transcript-api` and `yt-dlp` for `research.py`).

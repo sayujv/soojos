@@ -1,0 +1,20 @@
+# Claude–Astra review of the first portfolio builds
+
+Sayuj asked for the project structure in both the Codex app and chatgpt.com to align with Claude, then for SoojOS to begin building across all approved financial-return projects. He explicitly established shared responsibility between Claude and Astra and approved delegation. The authoritative charter and protected policy are supplied separately.
+
+This is a bounded, tool-free review of supplied evidence after the first nine offline development slices. It is not a request to launch, use a provider API, inspect the host, contact prospects, resume trading, deploy capital, change settings, publish, merge, or independently continue a conversation loop. A$0 incremental cash, existing native subscription only; tokens reporting-only and unknowns remain unknown. Preserve the 15-minute, eight-turn, two-worker, depth-three and STOP controls. Report a concise structured review and finish this task family at its final depth.
+
+Read the supplied first-build catalogue as the coordinator's tested evidence, with exact worktrees/commits and limitations. You have no tools in this review and cannot independently verify tests or files. Do not claim to have reviewed source code merely from these reports. The latest root handoff can contain older phase entries: follow the dated completed task reports for current state.
+
+Address these questions:
+
+1. Does the completed work satisfy the narrow first-build objective without misrepresenting source continuity or business outcomes? Flag any specific unsupported claim or material gap, with the supplied artifact name.
+2. Name the most consequential unresolved question for each of the nine projects. Propose one small next evidence step per project and a falsifiable acceptance/stop condition. Prefer existing tools and reversible zero-cash work. Do not give imaginary revenue projections or treat test counts as demand.
+3. Select one next experiment to put first, explaining the evidence that makes it a useful learning step. Expected return and time-to-first-dollar are still unknown; distinguish the order of learning from a proven economic ranking. Drafting an offer or researching demand is not authorization to contact people, buy ads, open accounts, trade or charge customers.
+4. Challenge the architecture if the current artifacts create drift. Original sources remain authoritative; prototypes are isolated branches, with canonical navigation and append-only handoffs. Web project names/instructions do not automatically import Claude histories or give web ChatGPT access to Mac files. Automatic summaries are sent only on material changes, checked every half hour; they are not half-hourly messages regardless of change.
+
+Known constraints: PredictOS has two unresolved copies; matching run.py or newer database/mtime cannot select the current version. Equities remains under an explicit operator pause with unknown runtime state. YouTube current config says 850–1050 words whereas the dated source summary says 900–1100; benchmark prose about 910 words differs from measured narration708. Six planning sources now have first local prototypes, but demand, production asset rights, current terms, customer readiness and portfolio opening finances are not established. Paid admissions remain blocked by missing financial coverage. Telegram pilot/daily/attention receipts exist, but a later attention payload remains pending automatic-approval authorization; do not describe all Telegram delivery as untested or fully operational.
+
+All25 project names were aligned organizationally in both interfaces. Build authorization remains the nine-project scope. Six ChatGPT continuity instructions are saved/verified; four additional private context transfers remain pending specific user approval after automatic review rejection. No Claude cloud instructions changed in this phase. The remaining project containers contain names only.
+
+Be candid and brief. Preserve dissent and attribution. The other partner will reconcile your recommendations against actual evidence before deciding any next action.

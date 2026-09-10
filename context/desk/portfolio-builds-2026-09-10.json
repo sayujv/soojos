@@ -1,0 +1,376 @@
+{
+  "verified_at": "2026-09-10T17:18:36+08:00",
+  "scope": "Nine approved business projects; offline first builds",
+  "alignment": "All 25 Claude project names matched in ChatGPT cloud and organized in the Codex app; original local entries preserved.",
+  "cash_note": "All listed build work uses existing subscriptions with A$0 incremental cash. Token usage unknown. Portfolio financial baseline and returns remain unknown.",
+  "integration_note": "Code is committed in isolated development worktrees. Canonical project routers and handoffs were updated after each completed build to locate its artifacts; source-preservation checks describe the build interval. Original production repositories remain preserved. No main merge, production deployment, automatic cloud history import, or continuous chat synchronization is claimed.",
+  "projects": [
+    {
+      "id": "20260910-fifo-expiry-prototype",
+      "project": "digital-marketplace-business",
+      "name": "Digital Marketplace Business",
+      "status": "done",
+      "actual_cost_aud": 0,
+      "actual_minutes": 8.009755683333333,
+      "actual_tokens": null,
+      "billing_mode": "existing_subscription",
+      "branch": "desk/20260910-fifo-expiry-prototype",
+      "code_commit": "b34d43510a7f4cc13e8406427116f2774492332b",
+      "commit": "749fbc32450791f706a57e157a09df92cbfcf63d",
+      "evidence": [
+        "/Users/sayuj/soojos/context/desk/fifo-expiry-prototype-2026-09-10.md",
+        "/Users/sayuj/soojos/context/desk/fifo-expiry-prototype-2026-09-10.json",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-fifo-expiry-prototype/projects/digital-marketplace-business/prototype/README.md",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-fifo-expiry-prototype/projects/digital-marketplace-business/context/handoff.md",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-fifo-expiry-prototype/docs/fifo-offline-verification-2026-09-10.log",
+        "749fbc32450791f706a57e157a09df92cbfcf63d"
+      ],
+      "limitations": [
+        "No real worker inventory or qualified wording review yet.",
+        "No Claude joint review or commercial demand/pricing validation.",
+        "Date status is not certificate authenticity, compliance or site eligibility."
+      ],
+      "next_action": "One depth-three source/wording and demand review may follow within current controls, then report and stop this family; no launch or capital deployment without applicable evidence/authorization.",
+      "summary": "Implemented and verified the offline FIFO certificate expiry tracker. Six date statuses, structural errors, deterministic JSON/CSV, preserved original fields, CSV reimport and exclusive output creation. No eligibility/compliance/launch/revenue claim.",
+      "verification": [
+        "11 real CLI tests passed after observed test-first failure.",
+        "Tests and documented example repeated under explicit sandbox denying networking and writes outside worktree/temp; loopback bind failed EPERM.",
+        "Synthetic example summary matched: expired1, expires_today1, due_soon2, current1, unknown1, invalid0.",
+        "Calendar/leap-date/reminder boundaries, duplicate/blank identity, malformed input, missing file and overwrite refusal exercised.",
+        "CSV round-trip preserved quoted commas, multiline Unicode notes and recomputed tampered derived statuses; original fixture bytes unchanged.",
+        "Four implementation artifact hashes and three routed source hashes rechecked; canonical reports match committed copies. Both staged diff checks passed; final task worktree clean.",
+        "Python3.9.6 on macOS; standard library only. No dependency installation, account, credentials, external-original writes or live service activity."
+      ],
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-fifo-expiry-prototype",
+      "readme": "/Users/sayuj/soojos/.worktrees/task-20260910-fifo-expiry-prototype/projects/digital-marketplace-business/prototype/README.md",
+      "outbox": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-fifo-expiry-prototype.json",
+      "head_verified": true,
+      "clean_verified": true
+    },
+    {
+      "id": "20260910-youtube-script-evaluator",
+      "project": "youtube-business",
+      "name": "Youtube Business",
+      "status": "done",
+      "actual_cost_aud": 0,
+      "actual_minutes": 10.652220616666666,
+      "actual_tokens": null,
+      "billing_mode": "existing_subscription",
+      "branch": "desk/20260910-youtube-script-evaluator",
+      "commit": "27c19280bde8cead63c8699269738960a02ca3e5",
+      "evidence": [
+        "/Users/sayuj/soojos/context/desk/youtube-script-evaluator-2026-09-10.md",
+        "/Users/sayuj/soojos/context/desk/youtube-script-evaluator-2026-09-10.json",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-youtube-script-evaluator/projects/youtube-business/context/handoff.md",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-youtube-script-evaluator/projects/youtube-business/prototype/README.md"
+      ],
+      "implementation_commit": "33eead8bb62f907587b88139e216fefcfc42d032",
+      "limitations": [
+        "Standalone prototype only; no production pipeline integration, live render/upload/API or revenue validation.",
+        "Editorial quality, novelty, factual validity and retention remain ungraded and require human review.",
+        "Current config 850–1050 differs from dated cloud summary 900–1100; benchmark prose about 910 differs from measured 708.",
+        "Claude joint review pending consolidated root handoff."
+      ],
+      "next_action": "Jointly review narration/config conventions, then integrate deliberately in the original YouTube repository while preserving all approval gates.",
+      "verification": [
+        "Node v24.19.0: node --test projects/youtube-business/prototype/test/evaluate.test.js; 6 groups passed, 0 failed.",
+        "Real CLI tested deterministic counts, false model pass, missing/malformed/empty inputs, invalid ranges and VERIFY token, invalid flags, cue-only/unclosed cues, and unchanged input bytes.",
+        "Network-denied sandbox-exec fixture run passed; narration 16 words and two VERIFY markers.",
+        "Current original config/benchmark read directly: 708 benchmark narration words, independently counted with Python; three VERIFY markers.",
+        "Original external repository HEAD/status and nine inspected non-secret file hashes unchanged.",
+        "Final git diff HEAD~2 HEAD --check passed; isolated worktree clean; canonical reports byte-identical to committed copies."
+      ],
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-youtube-script-evaluator",
+      "readme": "/Users/sayuj/soojos/.worktrees/task-20260910-youtube-script-evaluator/projects/youtube-business/prototype/README.md",
+      "outbox": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-youtube-script-evaluator.json",
+      "head_verified": true,
+      "clean_verified": true
+    },
+    {
+      "id": "20260910-ugc-sample-production-kit",
+      "project": "ugc",
+      "name": "UGC",
+      "status": "done",
+      "actual_cost_aud": 0,
+      "actual_minutes": 7.715289716666666,
+      "actual_tokens": null,
+      "billing_mode": "existing_subscription",
+      "code_commit": "d5b4faff495ef4748ec0107aef8da38da77722b5",
+      "commit": "dd0bc2f6c4eed8bd0b436837cb82c16db805d1d6",
+      "evidence": [
+        "/Users/sayuj/soojos/context/desk/ugc-sample-production-kit-2026-09-10.md",
+        "/Users/sayuj/soojos/context/desk/ugc-sample-production-kit-2026-09-10.json",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-ugc-sample-production-kit/projects/ugc/prototype/sample-storyboards.md",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-ugc-sample-production-kit/projects/ugc/prototype/README.md",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-ugc-sample-production-kit/projects/ugc/context/handoff.md",
+        "dd0bc2f6c4eed8bd0b436837cb82c16db805d1d6"
+      ],
+      "limitations": [
+        "No videos recorded, edited, delivered or sold.",
+        "Footage and human review remain pending; structural validation cannot establish genuine rights or judge all claims in prose.",
+        "No market/rate/revenue research or Claude joint review in this task."
+      ],
+      "next_action": "Identify available props/capture permissions and rehearse one sample; use a separate scoped review for demand and wording before launch.",
+      "summary": "Three useful unfilmed UGC sample briefs/shot lists, reusable template, delivery checklist and working structural validator created. No real sponsorship, publication, outreach or revenue claim.",
+      "verification": [
+        "9 real CLI tests passed after observed test-first failure.",
+        "Bundled samples validated at24/26/22 seconds with pending footage rights and production readiness false.",
+        "Generated storyboard exactly matches source JSON; incomplete template rejected; source bytes and three routed source hashes unchanged.",
+        "Timing, labels, asset provenance/rights, invalid references, duplicate IDs, malformed/missing input and unsupported production/claim states exercised.",
+        "Both staged diff checks passed; exact commits and clean final worktree verified."
+      ],
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-ugc-sample-production-kit",
+      "readme": "/Users/sayuj/soojos/.worktrees/task-20260910-ugc-sample-production-kit/projects/ugc/prototype/README.md",
+      "outbox": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-ugc-sample-production-kit.json",
+      "head_verified": true,
+      "clean_verified": true
+    },
+    {
+      "id": "20260910-sale-document-intake",
+      "project": "sale-readiness-platform",
+      "name": "Sale Readiness Platform",
+      "status": "done",
+      "actual_cost_aud": 0,
+      "actual_minutes": 6.4695146333333335,
+      "actual_tokens": null,
+      "billing_mode": "existing_subscription",
+      "code_commit": "6d4138d8986c6ebe52b267c3c0be9906d7e2e7cd",
+      "commit": "acc4fcd0513b2e38d74ff80204d116425dd77d2e",
+      "evidence": [
+        "/Users/sayuj/soojos/context/desk/sale-document-intake-2026-09-10.md",
+        "/Users/sayuj/soojos/context/desk/sale-document-intake-2026-09-10.json",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-sale-document-intake/projects/sale-readiness-platform/prototype/README.md",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-sale-document-intake/projects/sale-readiness-platform/context/handoff.md",
+        "acc4fcd0513b2e38d74ff80204d116425dd77d2e"
+      ],
+      "limitations": [
+        "Provided is a supplied filename/provenance/metadata-review assertion, not verified file existence, receipt or adequacy.",
+        "PRD v0.1 sections7–8, D1–D7 and current Australian/document-intelligence requirements remain unresolved; this vocabulary is provisional.",
+        "No valuation, sale-readiness score, legal review, real-company test or Claude joint review."
+      ],
+      "next_action": "Recover current PRD/decision sources and reconcile the metadata contract before product integration or real-data intake.",
+      "summary": "Verified offline document-evidence metadata validator with three separate synthetic company reports, explicit missing/invalid/provenance handling and requested-slot gaps. No actual documents, financial parsing, valuation or legal/readiness conclusion.",
+      "verification": [
+        "10 real CLI tests passed after observed test-first failure.",
+        "Three-company demo produced exact documented counts; gamma intentionally returned exit 1 with its full report.",
+        "Company isolation/order, duplicate IDs/manifests, cross-company rows, missing provenance/filename/required slots, ambiguous versions and malformed/reversed periods exercised.",
+        "Referenced filenames were never opened; source inputs and three routed hashes unchanged.",
+        "Both staged diff checks passed; exact commits and clean final worktree verified."
+      ],
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-sale-document-intake",
+      "readme": "/Users/sayuj/soojos/.worktrees/task-20260910-sale-document-intake/projects/sale-readiness-platform/prototype/README.md",
+      "outbox": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-sale-document-intake.json",
+      "head_verified": true,
+      "clean_verified": true
+    },
+    {
+      "id": "20260910-acquisition-intake-normalizer",
+      "project": "business-search",
+      "name": "Business Search",
+      "status": "done",
+      "actual_cost_aud": 0,
+      "actual_minutes": 8.613026183333334,
+      "actual_tokens": null,
+      "billing_mode": "existing_subscription",
+      "branch": "desk/20260910-acquisition-intake-normalizer",
+      "commit": "0b8cd969f1d1f4a9faef800e39ae40e00751c5ac",
+      "evidence": [
+        "/Users/sayuj/soojos/context/desk/acquisition-intake-normalizer-2026-09-10.md",
+        "/Users/sayuj/soojos/context/desk/acquisition-intake-normalizer-2026-09-10.json",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-acquisition-intake-normalizer/projects/business-search/context/handoff.md",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-acquisition-intake-normalizer/projects/business-search/prototype/README.md",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-acquisition-intake-normalizer/projects/business-search/prototype/examples/normalized.synthetic.json"
+      ],
+      "limitations": [
+        "No production integration or live listing/Notion/schedule inspection by this worker; no authoritative local production repo mapped.",
+        "URL matching is conservative; cross-site/renamed listing duplicates may remain.",
+        "Location/sector suitability remains needs_review; quote containment is unverified supplied evidence, never financing approval.",
+        "No fit score, automatic deposit estimate, outreach, capital, live scrape, schedule, push or merge.",
+        "Financial returns and time to first dollar unknown; Claude joint review pending root consolidated handoff."
+      ],
+      "next_action": "Jointly review the contract against the current existing Notion pipeline/schema and schedule before integrating.",
+      "verification": [
+        "python3 projects/business-search/prototype/test_normalize.py -v on Python 3.9.6: 9 tests passed, 0 failed.",
+        "Actual CLI covers ordinary tracking duplicate URLs vs distinct paths/queries/hash routes; price unknown/zero/boundary/over-preference/conflicts; unsupported vendor finance, preserved inputs, malformed JSON/schema/URL/date/price, empty/missing files, invalid arguments and deterministic output.",
+        "Network-denied sandbox-exec run passed and output exactly matched generated synthetic example: four observations, three listing groups, one duplicate.",
+        "All three inspected input source hashes unchanged. Every input observation and source URL preserved.",
+        "Staged git diff --check passed; exact eight artifact paths committed; worktree clean and canonical reports byte-identical to committed copies."
+      ],
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-acquisition-intake-normalizer",
+      "readme": "/Users/sayuj/soojos/.worktrees/task-20260910-acquisition-intake-normalizer/projects/business-search/prototype/README.md",
+      "outbox": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-acquisition-intake-normalizer.json",
+      "head_verified": true,
+      "clean_verified": true
+    },
+    {
+      "id": "20260910-shop-economics-prototype",
+      "project": "online-shops",
+      "name": "Online Shops",
+      "status": "done",
+      "actual_cost_aud": 0,
+      "actual_minutes": 6.181458366666666,
+      "actual_tokens": null,
+      "billing_mode": "existing_subscription",
+      "code_commit": "31589929bb44bb99c330b42ea4c62e62495fe6fd",
+      "commit": "67aa72dc3f157432e4eb0ee367e430d7727734aa",
+      "evidence": [
+        "/Users/sayuj/soojos/context/desk/shop-economics-prototype-2026-09-10.md",
+        "/Users/sayuj/soojos/context/desk/shop-economics-prototype-2026-09-10.json",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-shop-economics-prototype/projects/online-shops/prototype/README.md",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-shop-economics-prototype/projects/online-shops/context/handoff.md",
+        "67aa72dc3f157432e4eb0ee367e430d7727734aa"
+      ],
+      "limitations": [
+        "Contribution excludes overhead/tax and is not profit, ROI or a demand forecast.",
+        "Advertising allowance is arithmetic, not a spending recommendation or authorization.",
+        "Synthetic examples are not supplier/traffic evidence; no market validation, actual revenue or Claude joint review."
+      ],
+      "next_action": "Obtain candidate-product supplier, delivery/returns and traffic evidence before choosing a store or preparing a capital proposal.",
+      "summary": "Verified offline Decimal-cent single-order calculator; all required cost inputs explicit, incomplete evidence stays null, negative contribution preserved, no profit/spend recommendation.",
+      "verification": [
+        "10 real CLI tests passed after observed test-first failure.",
+        "Four documented synthetic scenarios match independent exact-cent, negative, incomplete and zero-price expectations.",
+        "Missing/null/blank costs, negative/nonfinite/fractional inputs, invalid types/currency/units, large exact values, malformed/missing files and deterministic output exercised.",
+        "Input bytes and three routed source hashes unchanged; no external services or original-source writes.",
+        "Both staged diff checks passed; exact commits and clean final worktree verified."
+      ],
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-shop-economics-prototype",
+      "readme": "/Users/sayuj/soojos/.worktrees/task-20260910-shop-economics-prototype/projects/online-shops/prototype/README.md",
+      "outbox": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-shop-economics-prototype.json",
+      "head_verified": true,
+      "clean_verified": true
+    },
+    {
+      "id": "20260910-disclosed-persona-kit",
+      "project": "fan-accounts",
+      "name": "Fan Accounts",
+      "status": "done",
+      "actual_cost_aud": 0,
+      "actual_minutes": 8.796907833333334,
+      "actual_tokens": null,
+      "billing_mode": "existing_subscription",
+      "branch": "desk/20260910-disclosed-persona-kit",
+      "commit": "055b32b0c048bf21f587debb8228fa20a50502f6",
+      "evidence": [
+        "/Users/sayuj/soojos/context/desk/disclosed-persona-kit-2026-09-10.md",
+        "/Users/sayuj/soojos/context/desk/disclosed-persona-kit-2026-09-10.json",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-disclosed-persona-kit/projects/fan-accounts/context/handoff.md",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-disclosed-persona-kit/projects/fan-accounts/prototype/README.md",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-disclosed-persona-kit/projects/fan-accounts/prototype/kit/provenance.json"
+      ],
+      "limitations": [
+        "Provisional text-only fictional adult direction, not a historical business-model selection or production launch.",
+        "Validator checks structural metadata and integrity, not semantic truth, independent originality/rights, accidental resemblance, external published state or platform eligibility.",
+        "All four content assets remain unpublished with unreviewed rights; no account, real-person likeness/voice, post, subscription sale, contact, paid service or dependency.",
+        "Financial return and time to first dollar unknown. Claude joint review pending root consolidated handoff."
+      ],
+      "next_action": "Jointly review disclosed characters versus creator tools, then obtain demand/current platform-policy evidence and review rights before production.",
+      "verification": [
+        "python3 projects/fan-accounts/prototype/test_validate.py -v on Python 3.9.6: 13 actual CLI tests passed, 0 failed.",
+        "Per-post missing/blank/non-visible disclosure fails despite valid profile disclosure; published/underage/nonfictional/real-person metadata, unsupported identity/audience/media, provenance/rights/hash problems, extra posts and missing/malformed JSON fail.",
+        "Network-denied sandbox-exec validator run passed; byte-identical normal output with four assets checked, structural_checks_passed true, publication_approved false and semantic_human_review_required true.",
+        "All input bytes preserved in CLI tests; three original source hashes unchanged. Astra read all complete visible-text samples; independent partner/human review remains pending.",
+        "Staged git diff --check passed; exact eleven artifact paths committed; worktree clean and canonical evidence byte-identical to committed copies."
+      ],
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-disclosed-persona-kit",
+      "readme": "/Users/sayuj/soojos/.worktrees/task-20260910-disclosed-persona-kit/projects/fan-accounts/prototype/README.md",
+      "outbox": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-disclosed-persona-kit.json",
+      "head_verified": true,
+      "clean_verified": true
+    },
+    {
+      "id": "20260910-predictos-manifest-tool",
+      "project": "prediction-betting",
+      "name": "Prediction Betting",
+      "status": "done",
+      "actual_cost_aud": 0,
+      "actual_minutes": 8.884614599999999,
+      "actual_tokens": null,
+      "billing_mode": "existing_subscription",
+      "code_commit": "1c502fab4a1c8687e284c68c3040e69095a18284",
+      "commit": "4a45906bda93ed3cfb7237a7ff455b35f135f1f7",
+      "evidence": [
+        "/Users/sayuj/soojos/context/desk/predictos-manifest-tool-2026-09-10.md",
+        "/Users/sayuj/soojos/context/desk/predictos-manifest-tool-2026-09-10.json",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-predictos-manifest-tool/projects/prediction-betting/prototype/reports/candidates-2026-09-10.json",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-predictos-manifest-tool/projects/prediction-betting/prototype/README.md",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-predictos-manifest-tool/projects/prediction-betting/context/handoff.md",
+        "4a45906bda93ed3cfb7237a7ff455b35f135f1f7"
+      ],
+      "limitations": [
+        "Hash equality is provenance evidence, not source authority or program correctness.",
+        "Fixed allowlist does not detect changes in unlisted files.",
+        "Intended canonical folder/version and current project instructions remain unresolved; no strategy or broker work.",
+        "No Claude joint review in this task."
+      ],
+      "next_action": "Obtain the intended canonical folder/version from an authoritative current handoff or Claude before source edits. Never run run.py status as a passive check.",
+      "summary": "Verified source-only PredictOS comparator; 13 allowed files per copy, 3 equal and 10 mismatches, all 26 hashes unchanged. Canonical source unresolved; no target execution or original writes.",
+      "verification": [
+        "8 real CLI tests passed after observed test-first failure.",
+        "Actual candidates compared repeatedly; all 26 original hashes unchanged and run.py matched earlier scope evidence.",
+        "Symlink roots/parents/files and FIFOs excluded; target code marker never executed; fixed allowlist excluded config/credentials/database/archive/log files.",
+        "Report output confined to tool reports directory, exclusive creation; original saved report survived isolated output tests unchanged.",
+        "Four routed source hashes unchanged; both staged diff checks passed; exact commits and clean final worktree verified."
+      ],
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-predictos-manifest-tool",
+      "readme": "/Users/sayuj/soojos/.worktrees/task-20260910-predictos-manifest-tool/projects/prediction-betting/prototype/README.md",
+      "outbox": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-predictos-manifest-tool.json",
+      "head_verified": true,
+      "clean_verified": true
+    },
+    {
+      "id": "20260910-equities-passive-preflight",
+      "project": "trading-bot",
+      "name": "Trading Bot",
+      "status": "done",
+      "actual_cost_aud": 0,
+      "actual_minutes": 10.383775516666667,
+      "actual_tokens": null,
+      "billing_mode": "existing_subscription",
+      "branch": "desk/20260910-equities-passive-preflight",
+      "commit": "4bd3bd5aecf4abb6af11f1d71e8a9d8f35fd86da",
+      "evidence": [
+        "/Users/sayuj/soojos/context/desk/equities-passive-preflight-2026-09-10.md",
+        "/Users/sayuj/soojos/context/desk/equities-passive-preflight-2026-09-10.json",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-equities-passive-preflight/projects/trading-bot/context/handoff.md",
+        "/Users/sayuj/soojos/.worktrees/task-20260910-equities-passive-preflight/projects/trading-bot/prototype/README.md"
+      ],
+      "limitations": [
+        "Passive source/Git evidence only; no runtime health or readiness determination.",
+        "AST pattern matching does not evaluate arbitrary Python semantics, helpers, dynamic rebinding, overrides or cache state.",
+        "Historical handoff references are not fresh operator approval or automatic question-resolution status.",
+        "No original project import/test/desk/broker/Qanat/database/strategy/backtest command, attempt consumption, kill-file change, artifact manifest mutation, Momentum access, infrastructure restart or capital activity.",
+        "Financial return and time to first dollar unknown. Claude joint review pending root consolidated handoff."
+      ],
+      "next_action": "Obtain current operator answers to the existing pause/infrastructure package and a separately authorized plan, retaining Q8 and governed-attempt boundaries.",
+      "verification": [
+        "python3 projects/trading-bot/prototype/test_preflight.py -v on Python 3.9.6: 6 actual CLI test groups passed.",
+        "Synthetic tests cover missing/nonliteral/reassigned/conditional/augmented source settings, missing files/repositories, syntax errors, true/false source literals with runtime always unknown, and a source-code sentinel that must never execute. All synthetic source/Git file bytes unchanged.",
+        "Actual original report run under network denial and write denial for both Equities and Momentum; clean main34ae039f3357771c8ec247da3a431cea265ab864 and five inspected source hashes unchanged.",
+        "AST identified literal False default argument at config/settings.py:91; runtime execution, service and broker remain unknown. Recorded operator pause and four dated open-question references retained.",
+        "Staged git diff --check passed; exact six artifact paths committed; isolated worktree clean and canonical reports match committed copies."
+      ],
+      "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-equities-passive-preflight",
+      "readme": "/Users/sayuj/soojos/.worktrees/task-20260910-equities-passive-preflight/projects/trading-bot/prototype/README.md",
+      "outbox": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-equities-passive-preflight.json",
+      "head_verified": true,
+      "clean_verified": true
+    }
+  ],
+  "cloud_context_verified": 10,
+  "cloud_context_pending": 0,
+  "claude_full_review": {
+    "state": "failed_before_structured_result",
+    "exit_code": 1,
+    "actual_minutes": 3.2841764076333333,
+    "actual_tokens": null,
+    "incremental_cash_aud": 0,
+    "approval_received": true
+  },
+  "claude_handoff": {
+    "id": "CLAUDE-HANDOFF-8687df1662a3d97e",
+    "state": "delivered",
+    "acknowledgement_verified": true
+  },
+  "notion_update": "pending_specific_approval"
+}

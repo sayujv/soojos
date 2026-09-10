@@ -1,0 +1,132 @@
+{
+  "checked_awst": "2026-09-09",
+  "source": "Claude native Projects UI",
+  "scope": "Names and source URLs only; cloud content not exported",
+  "projects": [
+    {
+      "name": "Travel",
+      "url": "https://claude.ai/project/019ee54a-1da6-734c-9dca-5c453675bf16",
+      "slug": "travel"
+    },
+    {
+      "name": "LinkedIn Catch-up App",
+      "url": "https://claude.ai/project/01a06aab-4e38-707b-8296-6a4f749611c6",
+      "slug": "linkedin-catch-up-app"
+    },
+    {
+      "name": "Trading Bot",
+      "url": "https://claude.ai/project/019e07f0-05b0-774b-976a-43fc75ee4520",
+      "slug": "trading-bot"
+    },
+    {
+      "name": "SoojOS",
+      "url": "https://claude.ai/project/019eef0a-d16a-7440-b45e-a791e4f22c61",
+      "slug": "soojos"
+    },
+    {
+      "name": "Online Shops",
+      "url": "https://claude.ai/project/01a04b5a-a792-74c9-af4b-9f9b670cbdc6",
+      "slug": "online-shops"
+    },
+    {
+      "name": "Fan Accounts",
+      "url": "https://claude.ai/project/01a04b59-b75d-7277-bc7d-79b47de8b81d",
+      "slug": "fan-accounts"
+    },
+    {
+      "name": "Project Manager",
+      "url": "https://claude.ai/project/01a04b55-3017-715f-a0bd-5857c8250733",
+      "slug": "project-manager"
+    },
+    {
+      "name": "Laptop",
+      "url": "https://claude.ai/project/01a040ec-c954-7089-b0cc-58c05f3cd621",
+      "slug": "laptop"
+    },
+    {
+      "name": "Language Learner",
+      "url": "https://claude.ai/project/01a03d68-d928-75c7-a48d-28357aa7ad9e",
+      "slug": "language-learner"
+    },
+    {
+      "name": "SKLPC",
+      "url": "https://claude.ai/project/019f8d58-8669-72ec-9cb2-5c4ccea2af32",
+      "slug": "sklpc"
+    },
+    {
+      "name": "Email",
+      "url": "https://claude.ai/project/019ffa4b-34be-718a-ada0-4f35a62f4de9",
+      "slug": "email"
+    },
+    {
+      "name": "Video Viewer",
+      "url": "https://claude.ai/project/019f1205-2e3e-7265-93d2-380d9a69e547",
+      "slug": "video-viewer"
+    },
+    {
+      "name": "Digital Marketplace Business",
+      "url": "https://claude.ai/project/019ff3da-d711-7273-8418-d30674269850",
+      "slug": "digital-marketplace-business"
+    },
+    {
+      "name": "Youtube Business",
+      "url": "https://claude.ai/project/019f59b9-0812-730e-9fce-d1e8af39fb7d",
+      "slug": "youtube-business"
+    },
+    {
+      "name": "Sale Readiness Platform",
+      "url": "https://claude.ai/project/019fa67d-7c10-7245-9338-6b43e4289b77",
+      "slug": "sale-readiness-platform"
+    },
+    {
+      "name": "Home Builds",
+      "url": "https://claude.ai/project/019ff3fa-cc0f-7699-90a9-0f3a1759a52d",
+      "slug": "home-builds"
+    },
+    {
+      "name": "Recipes",
+      "url": "https://claude.ai/project/019feaf4-8f0d-767c-89c6-b0391de3b87c",
+      "slug": "recipes"
+    },
+    {
+      "name": "UGC",
+      "url": "https://claude.ai/project/019fe767-7641-7385-987b-6cf3db0f2789",
+      "slug": "ugc"
+    },
+    {
+      "name": "Credit Cards",
+      "url": "https://claude.ai/project/019fb352-584c-7180-9a7d-1e8e64da893d",
+      "slug": "credit-cards"
+    },
+    {
+      "name": "CFI Training",
+      "url": "https://claude.ai/project/019f8289-6e04-7204-a11a-173498985f02",
+      "slug": "cfi-training"
+    },
+    {
+      "name": "Business Search",
+      "url": "https://claude.ai/project/019f4a28-cd9f-722b-8eef-59fb998bf44c",
+      "slug": "business-search"
+    },
+    {
+      "name": "PKF",
+      "url": "https://claude.ai/project/019ed394-16d7-7147-aa41-45f1183f3d7c",
+      "slug": "pkf"
+    },
+    {
+      "name": "Trading Bot Conductor",
+      "url": "https://claude.ai/space/b390aef4-0015-4131-9fd6-46ba9b67e8ce",
+      "slug": "trading-bot-conductor"
+    },
+    {
+      "name": "Prediction Betting",
+      "url": "https://claude.ai/project/019e8be7-b348-7419-b122-865ebcfa07f9",
+      "slug": "prediction-betting"
+    },
+    {
+      "name": "Personal",
+      "url": "https://claude.ai/project/019e5a36-06bc-7188-ae21-0a4d74323070",
+      "slug": "personal"
+    }
+  ]
+}

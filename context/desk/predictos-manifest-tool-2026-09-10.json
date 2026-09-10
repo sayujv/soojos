@@ -1,0 +1,84 @@
+{
+  "task_id": "20260910-predictos-manifest-tool",
+  "project": "prediction-betting",
+  "status": "verified_source_only_comparator",
+  "observed_at": "2026-09-10T09:01:13.723254+00:00",
+  "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-predictos-manifest-tool",
+  "branch": "desk/20260910-predictos-manifest-tool",
+  "code_commit": "1c502fab4a1c8687e284c68c3040e69095a18284",
+  "canonical_source": "unresolved",
+  "artifacts": {
+    "cli": "/Users/sayuj/soojos/.worktrees/task-20260910-predictos-manifest-tool/projects/prediction-betting/prototype/manifest.py",
+    "readme": "/Users/sayuj/soojos/.worktrees/task-20260910-predictos-manifest-tool/projects/prediction-betting/prototype/README.md",
+    "actual_comparison": "/Users/sayuj/soojos/.worktrees/task-20260910-predictos-manifest-tool/projects/prediction-betting/prototype/reports/candidates-2026-09-10.json"
+  },
+  "verification": {
+    "tests_passed": 8,
+    "command": "python3 -m unittest discover -s tests -v",
+    "cwd": "/Users/sayuj/soojos/.worktrees/task-20260910-predictos-manifest-tool/projects/prediction-betting/prototype",
+    "exit_code": 0,
+    "test_first": "All 8 test methods failed before implementation, then passed.",
+    "actual_summary": {
+      "equal": 3,
+      "mismatch": 10,
+      "left_only": 0,
+      "right_only": 0,
+      "absent_both": 0,
+      "not_comparable": 0
+    },
+    "original_hashes_unchanged": 26,
+    "original_source_files_per_side": 13,
+    "run_py_matches_prior_scope_hash": true,
+    "routing_source_hashes": [
+      {
+        "path": "/Users/sayuj/soojos/projects/prediction-betting/CLAUDE.md",
+        "sha256": "4469e4cbb09094a4a78e38126807d6c6909ae5b696fc4bd0e5b36a0b8a1ac48a"
+      },
+      {
+        "path": "/Users/sayuj/soojos/context/desk/scope-readiness.md",
+        "sha256": "785d191f4648613ca8e11586d5f452ac6d1dd635ed20df8c570febd9dd09565e"
+      },
+      {
+        "path": "/Users/sayuj/.soojos/claude-cloud/2026-09-09/prediction-betting.md",
+        "sha256": "df25f1137362f00fd5d94106d967f20d8ceb372d109fd500a44972cb89c15723"
+      },
+      {
+        "path": "/Users/sayuj/soojos/context/desk/scope-paths-2026-09-10.json",
+        "sha256": "ca91a3768c4ca47bb8abef752c2ebbe96579cae7c40c2f5b146f24a5da9dcfc2"
+      }
+    ],
+    "output_path_tests_leave_saved_report_unchanged": true,
+    "log": "/Users/sayuj/soojos/.worktrees/task-20260910-predictos-manifest-tool/docs/predictos-manifest-verification-2026-09-10.log"
+  },
+  "allowlist": [
+    "modules/__init__.py",
+    "modules/ai_scorer.py",
+    "modules/betfair.py",
+    "modules/dashboard.py",
+    "modules/db.py",
+    "modules/ibkr.py",
+    "modules/nba.py",
+    "modules/polymarket.py",
+    "modules/scorer.py",
+    "modules/sentiment.py",
+    "modules/worldcup.py",
+    "requirements.txt",
+    "run.py"
+  ],
+  "controls": [
+    "No-follow descriptor traversal rejects symlink roots/ancestors and excludes linked files/module directories.",
+    "Only regular allowlisted source files opened, read-only; no target import or execution.",
+    "Config/credential/certificate/database/archive/log paths and unlisted Python files excluded.",
+    "Reports limited to simple .json names under the tool reports directory, with exclusive creation and no symlink following.",
+    "File changes during hashing are not accepted as comparable; no mtime/database-size ranking or source selection."
+  ],
+  "limitations": [
+    "Hash equality is provenance evidence, not source authority or program correctness.",
+    "Fixed allowlist does not detect changes in unlisted files.",
+    "Intended canonical folder/version and current project instructions remain unresolved; no strategy or broker work.",
+    "No Claude joint review in this task."
+  ],
+  "actual_tokens": null,
+  "actual_cost_aud": 0,
+  "next_action": "Obtain the intended canonical folder/version from an authoritative current handoff or Claude before source edits. Never run run.py status as a passive check."
+}

@@ -4,3 +4,8 @@ __pycache__/
 .env
 *.key
 .soojos-loop/
+.worktrees/
+.serena/
+context/desk/queue.jsonl
+context/desk/outbox/
+context/desk/worker-capabilities.json

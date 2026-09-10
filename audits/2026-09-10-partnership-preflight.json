@@ -1,0 +1,69 @@
+{
+  "checkpoint": "2026-09-10T10:41:26.383778+08:00",
+  "source_path": "/Users/sayuj/.codex/attachments/d5847d2e-473e-49a4-86fa-481783032cae/pasted-text.txt",
+  "source_sha256": "b06b61e056ff667857f6e48a64e4586614eb723fe861cd8a559b54a0e1a1b1bb",
+  "before": {
+    "CLAUDE.md": {
+      "sha256": "650a30fabd263ed15839da5c8b38d194118c133ed7342938755ac99c9eaf318a",
+      "bytes": 2875
+    },
+    "context/shared-agent-workflow.md": {
+      "sha256": "e49a80b2407a6916ed50de88f438428b3eb28aa91dab8318972f6ab7b2b1901e",
+      "bytes": 7098
+    },
+    "context/handoff.md": {
+      "sha256": "b08766e9de6aee6a479f6b9d806c132fdd114aaa76ba86d4f6b34710ce7c6e33",
+      "bytes": 5260
+    }
+  },
+  "changes": {
+    "context/partnership-charter.md": {
+      "sha256": "18c7be7b9508608edc240caeb73d17073bef05de1676c933008653c37c7b0448",
+      "bytes": 6910
+    },
+    "CLAUDE.md": {
+      "sha256": "82b8e0af5173845dba530251d6c5ca53e336b1b70e381a7ea45a389113da73fe",
+      "bytes": 3609
+    },
+    "context/shared-agent-workflow.md": {
+      "sha256": "6d597a92444b610167ca60f0e9a357ab7c9ec9e652124ac60b139da706b9c00f",
+      "bytes": 8417
+    },
+    "decisions/0002-partnership-charter-and-activation-gate.md": {
+      "sha256": "1534870ec3d1c2f9ad2869557e6813193e20ead4da619b03929f57b38ea6ddf7",
+      "bytes": 1472
+    },
+    "context/partnership-review-2026-09-10.md": {
+      "sha256": "99caaf9f5386db576bcc86cff0da8113bebe58dd1ac21d334abad885e7ed8f1c",
+      "bytes": 17841
+    },
+    "context/handoff.md": {
+      "sha256": "caeca0802cd1a65d5cc8518c65c93f003f66f057e5ada0f0c07beea743a02085",
+      "bytes": 7108
+    }
+  },
+  "completed_at": "2026-09-10T10:46:16.534961+08:00",
+  "verification": {
+    "charter_formal_paragraphs_preserved": 12,
+    "resourcefulness_paragraphs_preserved": 3,
+    "handoff_append_only": true,
+    "handoff_original_bytes": 5260,
+    "queue_sample_valid_json": true,
+    "required_queue_fields_present": true,
+    "runtime_desk_absent": true,
+    "git_diff_check": "passed",
+    "cli_version": "2.1.263",
+    "claude_model_request_run": false,
+    "telegram_send_run": false,
+    "cloud_instructions_changed": false,
+    "project_code_changed": false,
+    "deletion_run": false,
+    "commit_push_merge_run": false
+  },
+  "preserved_backup_manifests": [
+    "/Users/sayuj/.agents/bridge-backups/20260909/applied.json",
+    "/Users/sayuj/.agents/bridge-backups/20260909-cloud/manifest.json",
+    "/Users/sayuj/.agents/bridge-backups/20260909-cloud-final/manifest.json",
+    "/Users/sayuj/.agents/bridge-backups/20260909-followup/applied.json"
+  ]
+}

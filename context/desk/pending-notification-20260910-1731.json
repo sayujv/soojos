@@ -1,0 +1,10 @@
+{
+  "key": "attention-51c2dff48818fb852ca88c18",
+  "kind": "attention",
+  "state": "pending_not_sent",
+  "message": "Partnership desk: 20260910-reel-joint-review\nHard total token enforcement is not verified for unattended model work\nAction: Verify a supported hard cumulative token boundary, or obtain Sayuj approval for a different control; keep worker paused meanwhile\nReview: https://app.notion.com/p/8a53f6afca2540949075d7a18d229533?v=160731622b444e09b18f46409f2733f2",
+  "reason": "Prior automatic approval rejection over payload/destination remains unresolved. Additionally the current renderer chooses the first historical blocked task, whose pre-v2 token reason is superseded; this is not an accurate current action request. No send or workaround attempted.",
+  "renderer_selected_task": "20260910-reel-joint-review",
+  "current_token_policy": "v2/report_only/no hard cap",
+  "requires_message_review_before_delivery": true
+}

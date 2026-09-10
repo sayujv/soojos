@@ -1,0 +1,41 @@
+{
+  "verified_at": "2026-09-10T09:24:54.890678+00:00",
+  "matching_cloud_names": 25,
+  "original_local_entries_preserved": 8,
+  "in_scope_cloud_instructions_verified": 10,
+  "all_nine_completed": true,
+  "all_nine_exact_clean_heads_verified": true,
+  "prototype_test_counts_by_report": [
+    "11 real CLI tests passed after observed test-first failure.",
+    "Node v24.19.0: node --test projects/youtube-business/prototype/test/evaluate.test.js; 6 groups passed, 0 failed.",
+    "9 real CLI tests passed after observed test-first failure.",
+    "10 real CLI tests passed after observed test-first failure.",
+    "python3 projects/business-search/prototype/test_normalize.py -v on Python 3.9.6: 9 tests passed, 0 failed.",
+    "10 real CLI tests passed after observed test-first failure.",
+    "python3 projects/fan-accounts/prototype/test_validate.py -v on Python 3.9.6: 13 actual CLI tests passed, 0 failed.",
+    "8 real CLI tests passed after observed test-first failure.",
+    "python3 projects/trading-bot/prototype/test_preflight.py -v on Python 3.9.6: 6 actual CLI test groups passed."
+  ],
+  "new_capital_deployed_aud": 0,
+  "coordinator_tokens": null,
+  "coordinator_whole_session_minutes": "not fully metered; each admitted task reports its own actual duration",
+  "claude_handoff": {
+    "id": "CLAUDE-HANDOFF-8687df1662a3d97e",
+    "state": "delivered",
+    "acknowledgement_verified": true
+  },
+  "full_claude_review": {
+    "state": "failed_before_structured_result",
+    "exit_code": 1,
+    "actual_minutes": 3.2841764076333333,
+    "actual_tokens": null,
+    "incremental_cash_aud": 0,
+    "approval_received": true
+  },
+  "notion_update": "pending_specific_approval",
+  "automation_exact_saved_prompt_verified": true,
+  "automation_active": true,
+  "automation_rrule": "FREQ=HOURLY;BYMINUTE=0,30;BYSECOND=0",
+  "automation_prompt_sha256": "3c41831833bb909e136a2633b580de24cbe828cf5a9bebc3ca5850fbea5b67a2",
+  "future_scheduled_delivery_observed": false
+}

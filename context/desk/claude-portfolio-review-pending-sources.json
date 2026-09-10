@@ -1,0 +1,50 @@
+{
+  "task_id": "20260910-claude-portfolio-review",
+  "payload_sha256": "146ea86b8fa40f75d43351b296f7ae627a93589064261ca0c73820d647178994",
+  "bytes": 61096,
+  "destination": "Native Claude Max through desk.py run; external Claude service",
+  "sources": [
+    {
+      "path": "/Users/sayuj/soojos/CLAUDE.md",
+      "sha256": "1cfea70d3c2b06645d8b5858277d48d47852b896d80466a65da603f9bbda1ce1",
+      "included_bytes": 4920,
+      "source_bytes": 4920,
+      "tail_only": false
+    },
+    {
+      "path": "/Users/sayuj/soojos/context/partnership-charter.md",
+      "sha256": "682c37b4d33cfbea21e4c32d0a16d7cb60a40aad45e8095a5f1d4055df1bb3ba",
+      "included_bytes": 8866,
+      "source_bytes": 8866,
+      "tail_only": false
+    },
+    {
+      "path": "/Users/sayuj/soojos/context/shared-agent-workflow.md",
+      "sha256": "06bcd6221de96fa60fa294997e31ebb51bf6e4ef6aaf1a854574a2a70bc27f2e",
+      "included_bytes": 10115,
+      "source_bytes": 10115,
+      "tail_only": false
+    },
+    {
+      "path": "/Users/sayuj/soojos/context/handoff.md",
+      "sha256": "69c9f32e61226a7e4d0900a0b3b71bd515fe678d2176dc672b13769287cfb173",
+      "included_bytes": 16000,
+      "source_bytes": 25954,
+      "tail_only": true
+    },
+    {
+      "path": "/Users/sayuj/soojos/context/desk/portfolio-review-brief-2026-09-10.md",
+      "sha256": "2bf29554440449f9dfdc4f922cac6046dd3626a48961cbe8527e91483c6a4f5a",
+      "included_bytes": 4106,
+      "source_bytes": 4106,
+      "tail_only": false
+    },
+    {
+      "path": "/Users/sayuj/soojos/context/desk/portfolio-builds-2026-09-10.md",
+      "sha256": "4589e194cd278e3fc9280c0b9fdb5e9a56174f329bcfd6a6c169e560b62b8746",
+      "included_bytes": 14197,
+      "source_bytes": 14197,
+      "tail_only": false
+    }
+  ]
+}

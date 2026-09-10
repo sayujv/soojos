@@ -1,0 +1,150 @@
+{
+  "automation_id": "partnership-desk-check",
+  "automation_status": "ACTIVE",
+  "automation_kind": "thread heartbeat",
+  "cadence": "Every 30 minutes at the hour and half hour",
+  "daily_digest": "Due from 07:00 Australia/Perth",
+  "weekly_digest": "Monday from 07:00 Australia/Perth, combined with daily",
+  "host_availability_required": true,
+  "future_scheduled_run_observed": true,
+  "telegram": {
+    "status": "new_delivery_pending_approval_resolution",
+    "pilot_message_id": 2589,
+    "daily_message_id": 2590,
+    "attention_message_id": 2591,
+    "unchanged_second_check": "duplicate_suppressed for daily and attention; changed=false",
+    "latest_delivery_review": "Notification-enabled check rejected by automatic approval review over payload/destination; local checks confirmed all then-due keys already acknowledged, with no new messages needed. No bypass or settings change.",
+    "latest_pending_keys": [
+      {
+        "key": "attention-497205ded6006cfde6ba98aa",
+        "kind": "attention"
+      }
+    ],
+    "historical_status": "Initial pilot/daily/attention messages verified; see preserved message IDs",
+    "latest_pending_payload": "/Users/sayuj/soojos/context/desk/pending-notification-20260910-execution-checkpoint.json"
+  },
+  "unattended_model_workers": "Enabled for approved subscription-only Claude research/reviews; native Codex work uses desk admission",
+  "finance_coverage": "unknown; paid admission blocked",
+  "notion_api_sync": "unconfigured",
+  "notion_browser_access": "verified",
+  "notion_installation_log": "https://app.notion.com/p/3d78f4017d178058b841fdda45b82d08",
+  "test_fixture_pids_12195_12196_12197": "not present in approved ps check",
+  "code_commit": "8169dd4ac629e3b33deb8e2159d5736063a0afd3",
+  "code_root": "/Users/sayuj/soojos/.worktrees/20260910-harness",
+  "branch": "desk/20260910-harness",
+  "recorded_at": "2026-09-10T16:02:26.659022+08:00",
+  "first_scheduled_run": {
+    "automation_id": "partnership-desk-check",
+    "triggered_at": "2026-09-10T05:01:49.680Z",
+    "observed_at": "2026-09-10T13:02:49.863155+08:00",
+    "status": "ok",
+    "changed": false,
+    "new_telegram_messages": 0,
+    "delivery_outcomes": [
+      "duplicate_suppressed",
+      "duplicate_suppressed"
+    ],
+    "worker_dispatches": 0,
+    "paid_actions": 0,
+    "code_commit": "86cb978394d6cac2acd9fd406a2de8d3ebeb93a9",
+    "worktree_clean": true,
+    "note": "First observed scheduled check. Does not establish exact 07:00 delivery or future host availability."
+  },
+  "policy_version": 2,
+  "token_mode": "report_only",
+  "task_tokens": null,
+  "token_policy_sha256": "7bc935000a850afe0f227ced26f2d427593b1193d0f4742307ecaec5444edf20",
+  "charter_sha256": "682c37b4d33cfbea21e4c32d0a16d7cb60a40aad45e8095a5f1d4055df1bb3ba",
+  "v2_scheduled_dispatch_observed": true,
+  "v2_validation": {
+    "tests_passed": 121,
+    "test_seconds": 8.2,
+    "independent_review": "passed",
+    "actual_review_tasks": [
+      "20260910-claude-partnership-review-v2",
+      "20260910-claude-review-corrections"
+    ],
+    "reported_tokens_total": 131063,
+    "actual_minutes_total": 2.5702679021000003,
+    "new_cash_spend_aud": 0,
+    "api_equivalent_estimate_usd": 0.3733612,
+    "api_equivalent_is_not_cash_spend": true,
+    "billing": "existing native Max subscription, matching-org disabled paid usage credits checked",
+    "review_corrections": "Approved policy now included in every prompt and retained in both immutable reports; Claude accepted numeric-policy and repository-count corrections"
+  },
+  "automation_policy": "Updated existing ACTIVE half-hour heartbeat for v2 admission, shared responsibility and truthful usage/cost reporting; host availability required",
+  "next_task": null,
+  "notion_latest_update": "Consolidated scope, YouTube, reel and verified Claude handoff saved to the existing Automation Log Notes; exact saved text and preserved prior history verified at 2026-09-10T16:02:26.659022+08:00",
+  "historical_v1_gate": {
+    "task_id": "20260910-reel-joint-review",
+    "token_blocker": "Resolved by explicitly approved policy v2; original blocked report is immutable history",
+    "remaining_work": "Source-specific reel review remains pending; governance reviews do not complete that intake"
+  },
+  "latest_native_codex_task": {
+    "id": "20260910-claude-app-handoff",
+    "status": "done",
+    "actual_minutes": 14.4740022,
+    "actual_tokens": null,
+    "actual_cost_aud": 0.0,
+    "result_path": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-claude-app-handoff.json",
+    "commit": "0a1bba3a794413212c7042d729f742784e95cd58"
+  },
+  "historical_comparative_readiness": {
+    "task_id": "20260910-comparative-readiness",
+    "status": "blocked",
+    "reason": "Eight-minute deadline exceeded during final accounting; artifacts complete and preserved",
+    "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-comparative-readiness",
+    "branch": "desk/20260910-comparative-readiness",
+    "commit": "6bb2918a0077ff43c2dd619351af27be8255133b",
+    "family_stopped_at_depth": 3,
+    "new_cash_spend_aud": 0,
+    "actual_tokens": null,
+    "report": "/Users/sayuj/soojos/context/desk/comparative-readiness-2026-09-10.md",
+    "terminal_outbox": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-comparative-readiness.json",
+    "actual_minutes": 8.655665950000001
+  },
+  "claude_app_handoff": {
+    "status": "delivered_and_acknowledged",
+    "id": "CLAUDE-HANDOFF-36e9bcd7f6f68a38",
+    "destination": "https://claude.ai/chat/c3921ae7-ea92-40a4-8ff6-2a3c11b323eb",
+    "receipt": "/Users/sayuj/soojos/context/desk/claude-handoff-current-receipt.json",
+    "automation_active": true,
+    "cadence": "Existing half-hour check; deliver only after material changes",
+    "future_scheduled_delivery_observed": false,
+    "prompt_sha256": "ba665f2254a57354fdf4b13d9d0292c39f856720aa92da5ce006a43acf5b845f"
+  },
+  "latest_execution_checkpoints": [
+    {
+      "id": "20260910-scope-paths",
+      "status": "blocked",
+      "actual_minutes": 5.376862333333333,
+      "actual_tokens": null,
+      "actual_cost_aud": 0,
+      "result_path": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-scope-paths.json"
+    },
+    {
+      "id": "20260910-reel-transcript",
+      "status": "blocked",
+      "actual_minutes": 11.13615445,
+      "actual_tokens": null,
+      "actual_cost_aud": 0,
+      "result_path": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-reel-transcript.json"
+    },
+    {
+      "id": "20260910-youtube-offline-validation",
+      "status": "done",
+      "actual_minutes": 2.8007758166666665,
+      "actual_tokens": null,
+      "actual_cost_aud": 0.0,
+      "result_path": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-youtube-offline-validation.json"
+    },
+    {
+      "id": "20260910-claude-app-handoff",
+      "status": "done",
+      "actual_minutes": 14.4740022,
+      "actual_tokens": null,
+      "actual_cost_aud": 0.0,
+      "result_path": "/Users/sayuj/soojos/context/desk/outbox/2026-09-10-20260910-claude-app-handoff.json"
+    }
+  ]
+}

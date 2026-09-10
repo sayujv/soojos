@@ -1,0 +1,1410 @@
+{
+  "observed_at": "2026-09-10T16:24+08:00",
+  "before": {
+    "projects": [
+      {
+        "projectId": "86c4cee2-f71c-4dd3-b92a-76c126044627",
+        "projectKind": "local",
+        "label": "momentum-os",
+        "path": "/Users/sayuj/AI/Claude/momentum-os",
+        "hostId": "local",
+        "hostDisplayName": null,
+        "isGitRepository": true
+      },
+      {
+        "projectId": "0c30f0b0-d511-4ffc-b28e-21dae4601b3f",
+        "projectKind": "local",
+        "label": "soojos",
+        "path": "/Users/sayuj/soojos",
+        "hostId": "local",
+        "hostDisplayName": null,
+        "isGitRepository": true
+      },
+      {
+        "projectId": "73673a4d-6636-49a1-9a9c-63507e58e43c",
+        "projectKind": "local",
+        "label": "sayuj",
+        "path": "/Users/sayuj",
+        "hostId": "local",
+        "hostDisplayName": null,
+        "isGitRepository": false
+      },
+      {
+        "projectId": "253a3f5c-6235-4925-a569-a24aa7cbf064",
+        "projectKind": "local",
+        "label": "Trading Bot Conductor",
+        "path": "/Users/sayuj/Documents/Claude/Projects/Trading Bot Conductor",
+        "hostId": "local",
+        "hostDisplayName": null,
+        "isGitRepository": false
+      },
+      {
+        "projectId": "7eff4862-7dd1-4c67-b2b6-79e8eca24d85",
+        "projectKind": "local",
+        "label": "equities-desk",
+        "path": "/Users/sayuj/AI/Claude/equities-desk",
+        "hostId": "local",
+        "hostDisplayName": null,
+        "isGitRepository": true
+      },
+      {
+        "projectId": "ec4f6988-00f3-437b-900e-1cfe5e46559f",
+        "projectKind": "local",
+        "label": "tmp",
+        "path": "/Users/sayuj/.claude/jobs/f7a1371e/tmp",
+        "hostId": "local",
+        "hostDisplayName": null,
+        "isGitRepository": false
+      },
+      {
+        "projectId": "f69f2c72-f9ef-49f7-bd80-c9579c8b9bdf",
+        "projectKind": "local",
+        "label": "scratch-2026-09-07-aeff12",
+        "path": "/Users/sayuj/Library/Application Support/Claude/scratch-workspaces/6c743d62-f525-4bcc-be1f-4e125398affa/aedb04e3-c14d-4487-9917-3197efd00e95/scratch-2026-09-07-aeff12",
+        "hostId": "local",
+        "hostDisplayName": null,
+        "isGitRepository": false
+      },
+      {
+        "projectId": "036cca7b-4edf-4f9d-bc13-365c8ed794ab",
+        "projectKind": "local",
+        "label": "Claude",
+        "path": "/Users/sayuj/AI/Claude",
+        "hostId": "local",
+        "hostDisplayName": null,
+        "isGitRepository": false
+      }
+    ],
+    "sections": [
+      {
+        "sectionId": "pinned",
+        "name": "Pinned",
+        "itemKeys": []
+      },
+      {
+        "sectionId": "threads",
+        "name": "Projects",
+        "itemKeys": [
+          "codex:project:86c4cee2-f71c-4dd3-b92a-76c126044627",
+          "codex:project:0c30f0b0-d511-4ffc-b28e-21dae4601b3f",
+          "codex:project:73673a4d-6636-49a1-9a9c-63507e58e43c",
+          "codex:project:253a3f5c-6235-4925-a569-a24aa7cbf064",
+          "codex:project:7eff4862-7dd1-4c67-b2b6-79e8eca24d85",
+          "codex:project:ec4f6988-00f3-437b-900e-1cfe5e46559f",
+          "codex:project:f69f2c72-f9ef-49f7-bd80-c9579c8b9bdf",
+          "codex:project:036cca7b-4edf-4f9d-bc13-365c8ed794ab"
+        ]
+      },
+      {
+        "sectionId": "chats",
+        "name": "Tasks",
+        "itemKeys": [
+          "codex:thread:local:01a06c96-523b-7563-9743-8bb3ece3ecac",
+          "codex:thread:local:01a079e1-b4c8-7bf1-a9d9-15cfa759a776",
+          "chatgpt:conversation:6a9bb819-43a8-83ec-9100-20d6983fab94",
+          "codex:thread:local:01a06c97-e96f-74b0-b231-c4e8d9e04eee",
+          "codex:thread:local:01a06c96-5efe-7872-b1ae-cc58b87c3cdc",
+          "codex:thread:local:01a06c96-5ea2-7dc0-9ed8-31852fea0508",
+          "codex:thread:local:01a06c96-5dd5-7282-a222-4b0e822867c0",
+          "codex:thread:local:01a06c96-5e2d-7ba3-8d12-7ffa17f701d1",
+          "codex:thread:local:01a06c96-5bd4-7562-bbc6-c149a7bbd7fd",
+          "codex:thread:local:01a06c96-5b2b-7e73-9159-337f45f1980e",
+          "codex:thread:local:01a06c96-55df-7db0-8c77-691c4cfb1ba3",
+          "codex:thread:local:01a06c96-55f0-7d51-b7a7-6f7fba5acede",
+          "codex:thread:local:01a06c96-5ad6-7c91-b756-a2210ea572b6",
+          "codex:thread:local:01a06c96-55d1-76d1-80a8-37deda5ff77e",
+          "codex:thread:local:01a06c96-55ba-72f3-b9f0-58426dd86eb2",
+          "codex:thread:local:01a06c96-55bb-7370-97ec-878ae57ef93c",
+          "codex:thread:local:01a06c96-5478-73c0-80d0-da35d997c38a",
+          "codex:thread:local:01a06c96-539c-73b2-a350-d2172814a8e8",
+          "codex:thread:local:01a06c96-5396-7770-9850-e4a3fce26535",
+          "codex:thread:local:01a06c96-5382-7c90-8acc-91a87f1547bf",
+          "codex:thread:local:01a06c96-5382-7c90-8acc-9603c52ecd56",
+          "codex:thread:local:01a06c96-5382-7c90-8acc-91f5ad22f143",
+          "codex:thread:local:01a06c96-523b-7563-9743-876d6b0cd0e5",
+          "codex:thread:local:01a06c96-523a-73d1-968e-a50c2d60dea7",
+          "codex:thread:local:01a06c96-523a-73d1-968e-9fa0afde4e6d",
+          "codex:thread:local:01a06c96-523a-73d1-968e-9cd2ff5cfb8d",
+          "codex:thread:local:01a06c96-3ecd-7533-8418-fe27c88acaf6"
+        ]
+      }
+    ],
+    "threads": [
+      {
+        "id": "01a084f0-3ece-7e80-9dc3-de25e494ff0a",
+        "kind": "codex",
+        "title": "Connect Claude projects to Codex",
+        "projectId": "0c30f0b0-d511-4ffc-b28e-21dae4601b3f"
+      },
+      {
+        "id": "01a0848a-5823-76f0-b417-400a0b7ea39f",
+        "kind": "codex",
+        "title": "Solve Halloran murder case",
+        "projectId": "86c4cee2-f71c-4dd3-b92a-76c126044627"
+      },
+      {
+        "id": "01a07ddf-1103-7940-bbfb-b751efe7d64f",
+        "kind": "codex",
+        "title": "IBKR Build",
+        "projectId": "f69f2c72-f9ef-49f7-bd80-c9579c8b9bdf"
+      },
+      {
+        "id": "01a07ae9-d358-7192-aaef-5ec9aac413e6",
+        "kind": "codex",
+        "title": "IBKR Qanat integration remediation v3.2",
+        "projectId": "f69f2c72-f9ef-49f7-bd80-c9579c8b9bdf"
+      },
+      {
+        "id": "01a07ae9-d355-73c3-92a8-981cbef32f85",
+        "kind": "codex",
+        "title": "Research intake build implications",
+        "projectId": "73673a4d-6636-49a1-9a9c-63507e58e43c"
+      },
+      {
+        "id": "01a07ae9-d360-7a90-a949-ed4299aa86e0",
+        "kind": "codex",
+        "title": "Phase 1 verification checklist",
+        "projectId": "036cca7b-4edf-4f9d-bc13-365c8ed794ab"
+      },
+      {
+        "id": "01a06c96-523b-7563-9743-8bb3ece3ecac",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a079e1-b4c8-7bf1-a9d9-15cfa759a776",
+        "kind": "codex",
+        "title": "Review equities-desk build",
+        "projectId": null
+      },
+      {
+        "id": "6a9bb819-43a8-83ec-9100-20d6983fab94",
+        "kind": "chatgpt",
+        "title": "Solve The Case",
+        "projectId": null
+      },
+      {
+        "id": "01a0722e-7062-7cc2-ba79-541541e53d0d",
+        "kind": "codex",
+        "title": "Research intake build implications",
+        "projectId": "73673a4d-6636-49a1-9a9c-63507e58e43c"
+      },
+      {
+        "id": "01a0722e-7067-7571-bc68-99abeef43de2",
+        "kind": "codex",
+        "title": "Use the ibkr-sync skill now (producer claude-headless). Write the snapshot file under artifacts/state/connector_inbox...",
+        "projectId": "7eff4862-7dd1-4c67-b2b6-79e8eca24d85"
+      },
+      {
+        "id": "01a0722e-7068-7c80-b99b-0ff77511a231",
+        "kind": "codex",
+        "title": "Use the ibkr-sync skill now (producer claude-headless). You have no Write tool: pipe the snapshot JSON to './desk con...",
+        "projectId": "7eff4862-7dd1-4c67-b2b6-79e8eca24d85"
+      },
+      {
+        "id": "01a0722e-7067-7571-bc68-998f5e66d2bf",
+        "kind": "codex",
+        "title": "Use the ibkr-sync skill now (producer claude-headless). Run every step including the import, then print the report bl...",
+        "projectId": "7eff4862-7dd1-4c67-b2b6-79e8eca24d85"
+      },
+      {
+        "id": "01a0722e-7076-7c52-891c-1af4c2d43f74",
+        "kind": "codex",
+        "title": "Reply with exactly the word PONG and nothing else.",
+        "projectId": "ec4f6988-00f3-437b-900e-1cfe5e46559f"
+      },
+      {
+        "id": "01a06c97-e96f-74b0-b231-c4e8d9e04eee",
+        "kind": "codex",
+        "title": "Check IBKR MomentumOS build",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5efe-7872-b1ae-cc58b87c3cdc",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5ea2-7dc0-9ed8-31852fea0508",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5dd5-7282-a222-4b0e822867c0",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5e2d-7ba3-8d12-7ffa17f701d1",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5bd4-7562-bbc6-c149a7bbd7fd",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5b2b-7e73-9159-337f45f1980e",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-55df-7db0-8c77-691c4cfb1ba3",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-55f0-7d51-b7a7-6f7fba5acede",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5ad6-7c91-b756-a2210ea572b6",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-55d1-76d1-80a8-37deda5ff77e",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-55ba-72f3-b9f0-58426dd86eb2",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-55bb-7370-97ec-878ae57ef93c",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5478-73c0-80d0-da35d997c38a",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-539c-73b2-a350-d2172814a8e8",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5396-7770-9850-e4a3fce26535",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5382-7c90-8acc-91a87f1547bf",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5382-7c90-8acc-9603c52ecd56",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5382-7c90-8acc-91f5ad22f143",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-523b-7563-9743-876d6b0cd0e5",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-523a-73d1-968e-a50c2d60dea7",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-523a-73d1-968e-9fa0afde4e6d",
+        "kind": "codex",
+        "title": "Cowork recents",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-523a-73d1-968e-9cd2ff5cfb8d",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-3e83-77b0-950d-ad335e45595d",
+        "kind": "codex",
+        "title": "Research intake build implications",
+        "projectId": "73673a4d-6636-49a1-9a9c-63507e58e43c"
+      },
+      {
+        "id": "01a06c96-3e9b-7fa3-b078-1d901e410af8",
+        "kind": "codex",
+        "title": "Research intake build implications",
+        "projectId": "73673a4d-6636-49a1-9a9c-63507e58e43c"
+      },
+      {
+        "id": "01a06c96-3e98-7413-b721-e6d5e04e2ffa",
+        "kind": "codex",
+        "title": "Research intake build implications",
+        "projectId": "73673a4d-6636-49a1-9a9c-63507e58e43c"
+      },
+      {
+        "id": "01a06c96-3e84-7f00-9168-b04906e90f61",
+        "kind": "codex",
+        "title": "Imported session",
+        "projectId": "86c4cee2-f71c-4dd3-b92a-76c126044627"
+      },
+      {
+        "id": "01a06c96-3e8a-7422-9db6-26c8aa3dc871",
+        "kind": "codex",
+        "title": "Cowork video transcript and visual snippet extractor",
+        "projectId": "86c4cee2-f71c-4dd3-b92a-76c126044627"
+      },
+      {
+        "id": "01a06c96-3e8e-7041-8efc-aa5afedace8f",
+        "kind": "codex",
+        "title": "SKILL.md watch directory",
+        "projectId": "0c30f0b0-d511-4ffc-b28e-21dae4601b3f"
+      },
+      {
+        "id": "01a06c96-3ea0-7731-9a37-772d75eb5023",
+        "kind": "codex",
+        "title": "Plugin marketplace inventory",
+        "projectId": "0c30f0b0-d511-4ffc-b28e-21dae4601b3f"
+      },
+      {
+        "id": "01a06c96-3eba-7f23-b653-b0720bfe6810",
+        "kind": "codex",
+        "title": "README rewrite for SoojOS",
+        "projectId": "0c30f0b0-d511-4ffc-b28e-21dae4601b3f"
+      },
+      {
+        "id": "01a06c96-3eac-74c0-b841-eefb969fd193",
+        "kind": "codex",
+        "title": "Telegram delivery fix deployment",
+        "projectId": "86c4cee2-f71c-4dd3-b92a-76c126044627"
+      },
+      {
+        "id": "01a06c96-3ebc-7c73-ab00-dff321e0bb2f",
+        "kind": "codex",
+        "title": "ibkr equities environment audit",
+        "projectId": "0c30f0b0-d511-4ffc-b28e-21dae4601b3f"
+      },
+      {
+        "id": "01a06c96-3ea8-76e1-a128-e50b542d22ff",
+        "kind": "codex",
+        "title": "Telegram delivery fix deployment",
+        "projectId": "86c4cee2-f71c-4dd3-b92a-76c126044627"
+      },
+      {
+        "id": "01a06c96-3ed6-7e93-bde2-d591dd632210",
+        "kind": "codex",
+        "title": "Build graduation protocol seal infrastructure and ledgers",
+        "projectId": "86c4cee2-f71c-4dd3-b92a-76c126044627"
+      },
+      {
+        "id": "01a06c96-3ecd-7533-8418-fe27c88acaf6",
+        "kind": "codex",
+        "title": "paste buffer debugging",
+        "projectId": null
+      }
+    ]
+  },
+  "after": {
+    "projects": [
+      {
+        "projectId": "86c4cee2-f71c-4dd3-b92a-76c126044627",
+        "projectKind": "local",
+        "label": "momentum-os",
+        "path": "/Users/sayuj/AI/Claude/momentum-os",
+        "hostId": "local",
+        "hostDisplayName": null,
+        "isGitRepository": true
+      },
+      {
+        "projectId": "0c30f0b0-d511-4ffc-b28e-21dae4601b3f",
+        "projectKind": "local",
+        "label": "soojos",
+        "path": "/Users/sayuj/soojos",
+        "hostId": "local",
+        "hostDisplayName": null,
+        "isGitRepository": true
+      },
+      {
+        "projectId": "73673a4d-6636-49a1-9a9c-63507e58e43c",
+        "projectKind": "local",
+        "label": "sayuj",
+        "path": "/Users/sayuj",
+        "hostId": "local",
+        "hostDisplayName": null,
+        "isGitRepository": false
+      },
+      {
+        "projectId": "253a3f5c-6235-4925-a569-a24aa7cbf064",
+        "projectKind": "local",
+        "label": "Trading Bot Conductor",
+        "path": "/Users/sayuj/Documents/Claude/Projects/Trading Bot Conductor",
+        "hostId": "local",
+        "hostDisplayName": null,
+        "isGitRepository": false
+      },
+      {
+        "projectId": "7eff4862-7dd1-4c67-b2b6-79e8eca24d85",
+        "projectKind": "local",
+        "label": "equities-desk",
+        "path": "/Users/sayuj/AI/Claude/equities-desk",
+        "hostId": "local",
+        "hostDisplayName": null,
+        "isGitRepository": true
+      },
+      {
+        "projectId": "ec4f6988-00f3-437b-900e-1cfe5e46559f",
+        "projectKind": "local",
+        "label": "tmp",
+        "path": "/Users/sayuj/.claude/jobs/f7a1371e/tmp",
+        "hostId": "local",
+        "hostDisplayName": null,
+        "isGitRepository": false
+      },
+      {
+        "projectId": "f69f2c72-f9ef-49f7-bd80-c9579c8b9bdf",
+        "projectKind": "local",
+        "label": "scratch-2026-09-07-aeff12",
+        "path": "/Users/sayuj/Library/Application Support/Claude/scratch-workspaces/6c743d62-f525-4bcc-be1f-4e125398affa/aedb04e3-c14d-4487-9917-3197efd00e95/scratch-2026-09-07-aeff12",
+        "hostId": "local",
+        "hostDisplayName": null,
+        "isGitRepository": false
+      },
+      {
+        "projectId": "036cca7b-4edf-4f9d-bc13-365c8ed794ab",
+        "projectKind": "local",
+        "label": "Claude",
+        "path": "/Users/sayuj/AI/Claude",
+        "hostId": "local",
+        "hostDisplayName": null,
+        "isGitRepository": false
+      },
+      {
+        "projectId": "g-p-6aa26728ef508191879ac0b319ff83b1",
+        "projectKind": "chatgpt",
+        "label": "Digital Marketplace Business",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa26726a548819184abcac7de7cac09",
+        "projectKind": "chatgpt",
+        "label": "Youtube Business",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa2672466ec8191a8527ef0b7b32124",
+        "projectKind": "chatgpt",
+        "label": "Sale Readiness Platform",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa2672201108191b0e6dda18efe3711",
+        "projectKind": "chatgpt",
+        "label": "Prediction Betting",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa267163f7481919316c559a5877059",
+        "projectKind": "chatgpt",
+        "label": "Trading Bot",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa266e290f481919242d1c7b2a70cdf",
+        "projectKind": "chatgpt",
+        "label": "SoojOS",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa26767fc988191b329956ff292e7d6",
+        "projectKind": "chatgpt",
+        "label": "Personal",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa26765a2488191af40af6eff63c508",
+        "projectKind": "chatgpt",
+        "label": "Trading Bot Conductor",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa2676344548191a11fdf868559afd2",
+        "projectKind": "chatgpt",
+        "label": "PKF",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa26760c0588191bbdfb11125dbc718",
+        "projectKind": "chatgpt",
+        "label": "CFI Training",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa2675e4bac8191a25a242f235ecfdf",
+        "projectKind": "chatgpt",
+        "label": "Credit Cards",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa2675bbbe4819183f20077cf9b665f",
+        "projectKind": "chatgpt",
+        "label": "Recipes",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa26759751c81919d06c84aa653d326",
+        "projectKind": "chatgpt",
+        "label": "Home Builds",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa2675728e88191b996f142d7fac5bc",
+        "projectKind": "chatgpt",
+        "label": "Video Viewer",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa26754bea48191810f9eed9a4ef17e",
+        "projectKind": "chatgpt",
+        "label": "Email",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa2675294748191833da08988513649",
+        "projectKind": "chatgpt",
+        "label": "SKLPC",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa2675031d08191b5b296d31d365f80",
+        "projectKind": "chatgpt",
+        "label": "Language Learner",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa2674dca588191987f8988c7edfb85",
+        "projectKind": "chatgpt",
+        "label": "Laptop",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa2674b4cf48191b58984f6b6f6b622",
+        "projectKind": "chatgpt",
+        "label": "Project Manager",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa26748c7448191adb0c2e93b23e214",
+        "projectKind": "chatgpt",
+        "label": "LinkedIn Catch-up App",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa267464c108191a44cd5b91a1c98c4",
+        "projectKind": "chatgpt",
+        "label": "Travel",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa26732dab081918882e266a449ff47",
+        "projectKind": "chatgpt",
+        "label": "Fan Accounts",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa2672fe1048191ba6661a28b851191",
+        "projectKind": "chatgpt",
+        "label": "UGC",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa2672db2608191bcaa05a9c95ed20d",
+        "projectKind": "chatgpt",
+        "label": "Business Search",
+        "hostId": null,
+        "hostDisplayName": null
+      },
+      {
+        "projectId": "g-p-6aa2672b636c81919374a65d5e4853c4",
+        "projectKind": "chatgpt",
+        "label": "Online Shops",
+        "hostId": null,
+        "hostDisplayName": null
+      }
+    ],
+    "sections": [
+      {
+        "sectionId": "pinned",
+        "name": "Pinned",
+        "itemKeys": []
+      },
+      {
+        "sectionId": "3f3160d0-7d97-4acc-97bf-675c1a971fa2",
+        "name": "SoojOS",
+        "itemKeys": [
+          "codex:project:0c30f0b0-d511-4ffc-b28e-21dae4601b3f",
+          "chatgpt:project:g-p-6aa266e290f481919242d1c7b2a70cdf",
+          "codex:thread:local:01a084f0-3ece-7e80-9dc3-de25e494ff0a"
+        ]
+      },
+      {
+        "sectionId": "a05505f0-778a-4828-83d7-42625e41c4b7",
+        "name": "Business projects",
+        "itemKeys": [
+          "codex:project:253a3f5c-6235-4925-a569-a24aa7cbf064",
+          "codex:project:7eff4862-7dd1-4c67-b2b6-79e8eca24d85",
+          "chatgpt:project:g-p-6aa26765a2488191af40af6eff63c508",
+          "chatgpt:project:g-p-6aa26732dab081918882e266a449ff47",
+          "chatgpt:project:g-p-6aa2672fe1048191ba6661a28b851191",
+          "chatgpt:project:g-p-6aa2672db2608191bcaa05a9c95ed20d",
+          "chatgpt:project:g-p-6aa2672b636c81919374a65d5e4853c4",
+          "chatgpt:project:g-p-6aa26728ef508191879ac0b319ff83b1",
+          "chatgpt:project:g-p-6aa26726a548819184abcac7de7cac09",
+          "chatgpt:project:g-p-6aa2672466ec8191a8527ef0b7b32124",
+          "chatgpt:project:g-p-6aa2672201108191b0e6dda18efe3711",
+          "chatgpt:project:g-p-6aa267163f7481919316c559a5877059",
+          "codex:thread:local:01a079e1-b4c8-7bf1-a9d9-15cfa759a776",
+          "codex:thread:local:01a06c97-e96f-74b0-b231-c4e8d9e04eee"
+        ]
+      },
+      {
+        "sectionId": "85ff39ce-3c2d-4c7f-9dbd-db3e341214b0",
+        "name": "Other Claude projects",
+        "itemKeys": [
+          "chatgpt:project:g-p-6aa26767fc988191b329956ff292e7d6",
+          "chatgpt:project:g-p-6aa2676344548191a11fdf868559afd2",
+          "chatgpt:project:g-p-6aa26760c0588191bbdfb11125dbc718",
+          "chatgpt:project:g-p-6aa2675e4bac8191a25a242f235ecfdf",
+          "chatgpt:project:g-p-6aa2675bbbe4819183f20077cf9b665f",
+          "chatgpt:project:g-p-6aa26759751c81919d06c84aa653d326",
+          "chatgpt:project:g-p-6aa2675728e88191b996f142d7fac5bc",
+          "chatgpt:project:g-p-6aa26754bea48191810f9eed9a4ef17e",
+          "chatgpt:project:g-p-6aa2675294748191833da08988513649",
+          "chatgpt:project:g-p-6aa2675031d08191b5b296d31d365f80",
+          "chatgpt:project:g-p-6aa2674dca588191987f8988c7edfb85",
+          "chatgpt:project:g-p-6aa2674b4cf48191b58984f6b6f6b622",
+          "chatgpt:project:g-p-6aa26748c7448191adb0c2e93b23e214",
+          "chatgpt:project:g-p-6aa267464c108191a44cd5b91a1c98c4"
+        ]
+      },
+      {
+        "sectionId": "6cb03b6f-6350-4337-9c99-94a409bcaa6a",
+        "name": "Imported history",
+        "itemKeys": [
+          "codex:project:86c4cee2-f71c-4dd3-b92a-76c126044627",
+          "codex:project:73673a4d-6636-49a1-9a9c-63507e58e43c",
+          "codex:project:ec4f6988-00f3-437b-900e-1cfe5e46559f",
+          "codex:project:f69f2c72-f9ef-49f7-bd80-c9579c8b9bdf",
+          "codex:project:036cca7b-4edf-4f9d-bc13-365c8ed794ab",
+          "codex:thread:local:01a06c96-523b-7563-9743-8bb3ece3ecac",
+          "codex:thread:local:01a06c96-5efe-7872-b1ae-cc58b87c3cdc",
+          "codex:thread:local:01a06c96-5ea2-7dc0-9ed8-31852fea0508",
+          "codex:thread:local:01a06c96-5dd5-7282-a222-4b0e822867c0",
+          "codex:thread:local:01a06c96-5e2d-7ba3-8d12-7ffa17f701d1",
+          "codex:thread:local:01a06c96-5bd4-7562-bbc6-c149a7bbd7fd",
+          "codex:thread:local:01a06c96-5b2b-7e73-9159-337f45f1980e",
+          "codex:thread:local:01a06c96-55df-7db0-8c77-691c4cfb1ba3",
+          "codex:thread:local:01a06c96-55f0-7d51-b7a7-6f7fba5acede",
+          "codex:thread:local:01a06c96-5ad6-7c91-b756-a2210ea572b6",
+          "codex:thread:local:01a06c96-55d1-76d1-80a8-37deda5ff77e",
+          "codex:thread:local:01a06c96-55ba-72f3-b9f0-58426dd86eb2",
+          "codex:thread:local:01a06c96-55bb-7370-97ec-878ae57ef93c",
+          "codex:thread:local:01a06c96-5478-73c0-80d0-da35d997c38a",
+          "codex:thread:local:01a06c96-539c-73b2-a350-d2172814a8e8",
+          "codex:thread:local:01a06c96-5396-7770-9850-e4a3fce26535",
+          "codex:thread:local:01a06c96-5382-7c90-8acc-91a87f1547bf",
+          "codex:thread:local:01a06c96-5382-7c90-8acc-9603c52ecd56",
+          "codex:thread:local:01a06c96-5382-7c90-8acc-91f5ad22f143",
+          "codex:thread:local:01a06c96-523b-7563-9743-876d6b0cd0e5",
+          "codex:thread:local:01a06c96-523a-73d1-968e-a50c2d60dea7",
+          "codex:thread:local:01a06c96-523a-73d1-968e-9fa0afde4e6d",
+          "codex:thread:local:01a06c96-523a-73d1-968e-9cd2ff5cfb8d",
+          "codex:thread:local:01a06c96-3ecd-7533-8418-fe27c88acaf6"
+        ]
+      },
+      {
+        "sectionId": "threads",
+        "name": "Projects",
+        "itemKeys": []
+      },
+      {
+        "sectionId": "chats",
+        "name": "Tasks",
+        "itemKeys": [
+          "chatgpt:conversation:6a9bb819-43a8-83ec-9100-20d6983fab94"
+        ]
+      }
+    ],
+    "threads": [
+      {
+        "id": "01a084f0-3ece-7e80-9dc3-de25e494ff0a",
+        "kind": "codex",
+        "title": "SoojOS partnership desk",
+        "projectId": "0c30f0b0-d511-4ffc-b28e-21dae4601b3f"
+      },
+      {
+        "id": "01a0848a-5823-76f0-b417-400a0b7ea39f",
+        "kind": "codex",
+        "title": "Solve Halloran murder case",
+        "projectId": "86c4cee2-f71c-4dd3-b92a-76c126044627"
+      },
+      {
+        "id": "01a07ddf-1103-7940-bbfb-b751efe7d64f",
+        "kind": "codex",
+        "title": "IBKR Build",
+        "projectId": "f69f2c72-f9ef-49f7-bd80-c9579c8b9bdf"
+      },
+      {
+        "id": "01a07ae9-d358-7192-aaef-5ec9aac413e6",
+        "kind": "codex",
+        "title": "IBKR Qanat integration remediation v3.2",
+        "projectId": "f69f2c72-f9ef-49f7-bd80-c9579c8b9bdf"
+      },
+      {
+        "id": "01a07ae9-d355-73c3-92a8-981cbef32f85",
+        "kind": "codex",
+        "title": "Research intake build implications",
+        "projectId": "73673a4d-6636-49a1-9a9c-63507e58e43c"
+      },
+      {
+        "id": "01a07ae9-d360-7a90-a949-ed4299aa86e0",
+        "kind": "codex",
+        "title": "Phase 1 verification checklist",
+        "projectId": "036cca7b-4edf-4f9d-bc13-365c8ed794ab"
+      },
+      {
+        "id": "01a06c96-523b-7563-9743-8bb3ece3ecac",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a079e1-b4c8-7bf1-a9d9-15cfa759a776",
+        "kind": "codex",
+        "title": "Review equities-desk build",
+        "projectId": null
+      },
+      {
+        "id": "6a9bb819-43a8-83ec-9100-20d6983fab94",
+        "kind": "chatgpt",
+        "title": "Solve The Case",
+        "projectId": null
+      },
+      {
+        "id": "01a0722e-7062-7cc2-ba79-541541e53d0d",
+        "kind": "codex",
+        "title": "Research intake build implications",
+        "projectId": "73673a4d-6636-49a1-9a9c-63507e58e43c"
+      },
+      {
+        "id": "01a0722e-7067-7571-bc68-99abeef43de2",
+        "kind": "codex",
+        "title": "Use the ibkr-sync skill now (producer claude-headless). Write the snapshot file under artifacts/state/connector_inbox...",
+        "projectId": "7eff4862-7dd1-4c67-b2b6-79e8eca24d85"
+      },
+      {
+        "id": "01a0722e-7068-7c80-b99b-0ff77511a231",
+        "kind": "codex",
+        "title": "Use the ibkr-sync skill now (producer claude-headless). You have no Write tool: pipe the snapshot JSON to './desk con...",
+        "projectId": "7eff4862-7dd1-4c67-b2b6-79e8eca24d85"
+      },
+      {
+        "id": "01a0722e-7067-7571-bc68-998f5e66d2bf",
+        "kind": "codex",
+        "title": "Use the ibkr-sync skill now (producer claude-headless). Run every step including the import, then print the report bl...",
+        "projectId": "7eff4862-7dd1-4c67-b2b6-79e8eca24d85"
+      },
+      {
+        "id": "01a0722e-7076-7c52-891c-1af4c2d43f74",
+        "kind": "codex",
+        "title": "Reply with exactly the word PONG and nothing else.",
+        "projectId": "ec4f6988-00f3-437b-900e-1cfe5e46559f"
+      },
+      {
+        "id": "01a06c97-e96f-74b0-b231-c4e8d9e04eee",
+        "kind": "codex",
+        "title": "Check IBKR MomentumOS build",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5efe-7872-b1ae-cc58b87c3cdc",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5ea2-7dc0-9ed8-31852fea0508",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5dd5-7282-a222-4b0e822867c0",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5e2d-7ba3-8d12-7ffa17f701d1",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5bd4-7562-bbc6-c149a7bbd7fd",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5b2b-7e73-9159-337f45f1980e",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-55df-7db0-8c77-691c4cfb1ba3",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-55f0-7d51-b7a7-6f7fba5acede",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5ad6-7c91-b756-a2210ea572b6",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-55d1-76d1-80a8-37deda5ff77e",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-55ba-72f3-b9f0-58426dd86eb2",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-55bb-7370-97ec-878ae57ef93c",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5478-73c0-80d0-da35d997c38a",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-539c-73b2-a350-d2172814a8e8",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5396-7770-9850-e4a3fce26535",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5382-7c90-8acc-91a87f1547bf",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5382-7c90-8acc-9603c52ecd56",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-5382-7c90-8acc-91f5ad22f143",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-523b-7563-9743-876d6b0cd0e5",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-523a-73d1-968e-a50c2d60dea7",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-523a-73d1-968e-9fa0afde4e6d",
+        "kind": "codex",
+        "title": "Cowork recents",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-523a-73d1-968e-9cd2ff5cfb8d",
+        "kind": "codex",
+        "title": "Daily finance job scan",
+        "projectId": null
+      },
+      {
+        "id": "01a06c96-3e83-77b0-950d-ad335e45595d",
+        "kind": "codex",
+        "title": "Research intake build implications",
+        "projectId": "73673a4d-6636-49a1-9a9c-63507e58e43c"
+      },
+      {
+        "id": "01a06c96-3e9b-7fa3-b078-1d901e410af8",
+        "kind": "codex",
+        "title": "Research intake build implications",
+        "projectId": "73673a4d-6636-49a1-9a9c-63507e58e43c"
+      },
+      {
+        "id": "01a06c96-3e98-7413-b721-e6d5e04e2ffa",
+        "kind": "codex",
+        "title": "Research intake build implications",
+        "projectId": "73673a4d-6636-49a1-9a9c-63507e58e43c"
+      },
+      {
+        "id": "01a06c96-3e84-7f00-9168-b04906e90f61",
+        "kind": "codex",
+        "title": "Imported session",
+        "projectId": "86c4cee2-f71c-4dd3-b92a-76c126044627"
+      },
+      {
+        "id": "01a06c96-3e8a-7422-9db6-26c8aa3dc871",
+        "kind": "codex",
+        "title": "Cowork video transcript and visual snippet extractor",
+        "projectId": "86c4cee2-f71c-4dd3-b92a-76c126044627"
+      },
+      {
+        "id": "01a06c96-3e8e-7041-8efc-aa5afedace8f",
+        "kind": "codex",
+        "title": "SKILL.md watch directory",
+        "projectId": "0c30f0b0-d511-4ffc-b28e-21dae4601b3f"
+      },
+      {
+        "id": "01a06c96-3ea0-7731-9a37-772d75eb5023",
+        "kind": "codex",
+        "title": "Plugin marketplace inventory",
+        "projectId": "0c30f0b0-d511-4ffc-b28e-21dae4601b3f"
+      },
+      {
+        "id": "01a06c96-3eba-7f23-b653-b0720bfe6810",
+        "kind": "codex",
+        "title": "README rewrite for SoojOS",
+        "projectId": "0c30f0b0-d511-4ffc-b28e-21dae4601b3f"
+      },
+      {
+        "id": "01a06c96-3eac-74c0-b841-eefb969fd193",
+        "kind": "codex",
+        "title": "Telegram delivery fix deployment",
+        "projectId": "86c4cee2-f71c-4dd3-b92a-76c126044627"
+      },
+      {
+        "id": "01a06c96-3ebc-7c73-ab00-dff321e0bb2f",
+        "kind": "codex",
+        "title": "ibkr equities environment audit",
+        "projectId": "0c30f0b0-d511-4ffc-b28e-21dae4601b3f"
+      },
+      {
+        "id": "01a06c96-3ea8-76e1-a128-e50b542d22ff",
+        "kind": "codex",
+        "title": "Telegram delivery fix deployment",
+        "projectId": "86c4cee2-f71c-4dd3-b92a-76c126044627"
+      },
+      {
+        "id": "01a06c96-3ed6-7e93-bde2-d591dd632210",
+        "kind": "codex",
+        "title": "Build graduation protocol seal infrastructure and ledgers",
+        "projectId": "86c4cee2-f71c-4dd3-b92a-76c126044627"
+      },
+      {
+        "id": "01a06c96-3ecd-7533-8418-fe27c88acaf6",
+        "kind": "codex",
+        "title": "paste buffer debugging",
+        "projectId": "86c4cee2-f71c-4dd3-b92a-76c126044627"
+      }
+    ]
+  },
+  "projectMoves": [
+    {
+      "projectId": "86c4cee2-f71c-4dd3-b92a-76c126044627",
+      "label": "momentum-os",
+      "section": "Imported history"
+    },
+    {
+      "projectId": "0c30f0b0-d511-4ffc-b28e-21dae4601b3f",
+      "label": "soojos",
+      "section": "SoojOS"
+    },
+    {
+      "projectId": "73673a4d-6636-49a1-9a9c-63507e58e43c",
+      "label": "sayuj",
+      "section": "Imported history"
+    },
+    {
+      "projectId": "253a3f5c-6235-4925-a569-a24aa7cbf064",
+      "label": "Trading Bot Conductor",
+      "section": "Business projects"
+    },
+    {
+      "projectId": "7eff4862-7dd1-4c67-b2b6-79e8eca24d85",
+      "label": "equities-desk",
+      "section": "Business projects"
+    },
+    {
+      "projectId": "ec4f6988-00f3-437b-900e-1cfe5e46559f",
+      "label": "tmp",
+      "section": "Imported history"
+    },
+    {
+      "projectId": "f69f2c72-f9ef-49f7-bd80-c9579c8b9bdf",
+      "label": "scratch-2026-09-07-aeff12",
+      "section": "Imported history"
+    },
+    {
+      "projectId": "036cca7b-4edf-4f9d-bc13-365c8ed794ab",
+      "label": "Claude",
+      "section": "Imported history"
+    },
+    {
+      "projectId": "g-p-6aa26767fc988191b329956ff292e7d6",
+      "label": "Personal",
+      "section": "Other Claude projects"
+    },
+    {
+      "projectId": "g-p-6aa26765a2488191af40af6eff63c508",
+      "label": "Trading Bot Conductor",
+      "section": "Business projects"
+    },
+    {
+      "projectId": "g-p-6aa2676344548191a11fdf868559afd2",
+      "label": "PKF",
+      "section": "Other Claude projects"
+    },
+    {
+      "projectId": "g-p-6aa26760c0588191bbdfb11125dbc718",
+      "label": "CFI Training",
+      "section": "Other Claude projects"
+    },
+    {
+      "projectId": "g-p-6aa2675e4bac8191a25a242f235ecfdf",
+      "label": "Credit Cards",
+      "section": "Other Claude projects"
+    },
+    {
+      "projectId": "g-p-6aa2675bbbe4819183f20077cf9b665f",
+      "label": "Recipes",
+      "section": "Other Claude projects"
+    },
+    {
+      "projectId": "g-p-6aa26759751c81919d06c84aa653d326",
+      "label": "Home Builds",
+      "section": "Other Claude projects"
+    },
+    {
+      "projectId": "g-p-6aa2675728e88191b996f142d7fac5bc",
+      "label": "Video Viewer",
+      "section": "Other Claude projects"
+    },
+    {
+      "projectId": "g-p-6aa26754bea48191810f9eed9a4ef17e",
+      "label": "Email",
+      "section": "Other Claude projects"
+    },
+    {
+      "projectId": "g-p-6aa2675294748191833da08988513649",
+      "label": "SKLPC",
+      "section": "Other Claude projects"
+    },
+    {
+      "projectId": "g-p-6aa2675031d08191b5b296d31d365f80",
+      "label": "Language Learner",
+      "section": "Other Claude projects"
+    },
+    {
+      "projectId": "g-p-6aa2674dca588191987f8988c7edfb85",
+      "label": "Laptop",
+      "section": "Other Claude projects"
+    },
+    {
+      "projectId": "g-p-6aa2674b4cf48191b58984f6b6f6b622",
+      "label": "Project Manager",
+      "section": "Other Claude projects"
+    },
+    {
+      "projectId": "g-p-6aa26748c7448191adb0c2e93b23e214",
+      "label": "LinkedIn Catch-up App",
+      "section": "Other Claude projects"
+    },
+    {
+      "projectId": "g-p-6aa267464c108191a44cd5b91a1c98c4",
+      "label": "Travel",
+      "section": "Other Claude projects"
+    },
+    {
+      "projectId": "g-p-6aa26732dab081918882e266a449ff47",
+      "label": "Fan Accounts",
+      "section": "Business projects"
+    },
+    {
+      "projectId": "g-p-6aa2672fe1048191ba6661a28b851191",
+      "label": "UGC",
+      "section": "Business projects"
+    },
+    {
+      "projectId": "g-p-6aa2672db2608191bcaa05a9c95ed20d",
+      "label": "Business Search",
+      "section": "Business projects"
+    },
+    {
+      "projectId": "g-p-6aa2672b636c81919374a65d5e4853c4",
+      "label": "Online Shops",
+      "section": "Business projects"
+    },
+    {
+      "projectId": "g-p-6aa26728ef508191879ac0b319ff83b1",
+      "label": "Digital Marketplace Business",
+      "section": "Business projects"
+    },
+    {
+      "projectId": "g-p-6aa26726a548819184abcac7de7cac09",
+      "label": "Youtube Business",
+      "section": "Business projects"
+    },
+    {
+      "projectId": "g-p-6aa2672466ec8191a8527ef0b7b32124",
+      "label": "Sale Readiness Platform",
+      "section": "Business projects"
+    },
+    {
+      "projectId": "g-p-6aa2672201108191b0e6dda18efe3711",
+      "label": "Prediction Betting",
+      "section": "Business projects"
+    },
+    {
+      "projectId": "g-p-6aa267163f7481919316c559a5877059",
+      "label": "Trading Bot",
+      "section": "Business projects"
+    },
+    {
+      "projectId": "g-p-6aa266e290f481919242d1c7b2a70cdf",
+      "label": "SoojOS",
+      "section": "SoojOS"
+    }
+  ],
+  "taskMoves": [
+    {
+      "id": "01a06c96-523b-7563-9743-8bb3ece3ecac",
+      "title": "Daily finance job scan",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a079e1-b4c8-7bf1-a9d9-15cfa759a776",
+      "title": "Review equities-desk build",
+      "section": "Business projects"
+    },
+    {
+      "id": "01a06c97-e96f-74b0-b231-c4e8d9e04eee",
+      "title": "Check IBKR MomentumOS build",
+      "section": "Business projects"
+    },
+    {
+      "id": "01a06c96-5efe-7872-b1ae-cc58b87c3cdc",
+      "title": "Daily finance job scan",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a06c96-5ea2-7dc0-9ed8-31852fea0508",
+      "title": "Daily finance job scan",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a06c96-5dd5-7282-a222-4b0e822867c0",
+      "title": "Daily finance job scan",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a06c96-5e2d-7ba3-8d12-7ffa17f701d1",
+      "title": "Daily finance job scan",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a06c96-5bd4-7562-bbc6-c149a7bbd7fd",
+      "title": "Daily finance job scan",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a06c96-5b2b-7e73-9159-337f45f1980e",
+      "title": "Daily finance job scan",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a06c96-55df-7db0-8c77-691c4cfb1ba3",
+      "title": "Daily finance job scan",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a06c96-55f0-7d51-b7a7-6f7fba5acede",
+      "title": "Daily finance job scan",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a06c96-5ad6-7c91-b756-a2210ea572b6",
+      "title": "Daily finance job scan",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a06c96-55d1-76d1-80a8-37deda5ff77e",
+      "title": "Daily finance job scan",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a06c96-55ba-72f3-b9f0-58426dd86eb2",
+      "title": "Daily finance job scan",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a06c96-55bb-7370-97ec-878ae57ef93c",
+      "title": "Daily finance job scan",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a06c96-5478-73c0-80d0-da35d997c38a",
+      "title": "Daily finance job scan",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a06c96-539c-73b2-a350-d2172814a8e8",
+      "title": "Daily finance job scan",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a06c96-5396-7770-9850-e4a3fce26535",
+      "title": "Daily finance job scan",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a06c96-5382-7c90-8acc-91a87f1547bf",
+      "title": "Daily finance job scan",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a06c96-5382-7c90-8acc-9603c52ecd56",
+      "title": "Daily finance job scan",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a06c96-5382-7c90-8acc-91f5ad22f143",
+      "title": "Daily finance job scan",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a06c96-523b-7563-9743-876d6b0cd0e5",
+      "title": "Daily finance job scan",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a06c96-523a-73d1-968e-a50c2d60dea7",
+      "title": "Daily finance job scan",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a06c96-523a-73d1-968e-9fa0afde4e6d",
+      "title": "Cowork recents",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a06c96-523a-73d1-968e-9cd2ff5cfb8d",
+      "title": "Daily finance job scan",
+      "section": "Imported history"
+    },
+    {
+      "id": "01a06c96-3ecd-7533-8418-fe27c88acaf6",
+      "title": "paste buffer debugging",
+      "section": "Imported history"
+    }
+  ],
+  "sections": {
+    "SoojOS": "3f3160d0-7d97-4acc-97bf-675c1a971fa2",
+    "Business projects": "a05505f0-778a-4828-83d7-42625e41c4b7",
+    "Other Claude projects": "85ff39ce-3c2d-4c7f-9dbd-db3e341214b0",
+    "Imported history": "6cb03b6f-6350-4337-9c99-94a409bcaa6a"
+  },
+  "verification": {
+    "cloud_project_count": 25,
+    "original_local_projects_preserved": 8,
+    "current_task_title": "SoojOS partnership desk",
+    "cloud_chat_history_migrated": false,
+    "live_claude_inventory_rechecked_at": "2026-09-10T16:32:27.726198+08:00",
+    "live_claude_project_count": 25,
+    "live_claude_names_match_created_projects": true
+  },
+  "instructions": {
+    "soojos": "saved_and_reopened_verified",
+    "first_five_business_projects": "saved_and_reopened_verified_2026-09-10T16:28+08:00",
+    "remaining_four": "automatic_approval_review_rejected_no_retry"
+  }
+}

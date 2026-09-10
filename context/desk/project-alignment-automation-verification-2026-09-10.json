@@ -1,0 +1,12 @@
+{
+  "verified_at": "2026-09-10T08:52:57.675267+00:00",
+  "id": "partnership-desk-check",
+  "status": "ACTIVE",
+  "rrule": "FREQ=HOURLY;BYMINUTE=0,30;BYSECOND=0",
+  "target_thread_id": "01a084f0-3ece-7e80-9dc3-de25e494ff0a",
+  "previous_prompt_sha256": "ba665f2254a57354fdf4b13d9d0292c39f856720aa92da5ce006a43acf5b845f",
+  "current_prompt_sha256": "fed00eb55ac298d89cd224169b682e5c7de7e90d26bb2ab8d3a84909af525035",
+  "exact_saved_prompt_reread": true,
+  "change": "Replaced finalized comparative-readiness next-step sentence with current queue/portfolio instructions and the four pending ChatGPT transfers. Other prompt content and scheduling fields preserved.",
+  "future_scheduled_delivery_observed": false
+}

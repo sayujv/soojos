@@ -1,0 +1,56 @@
+{
+  "id": "20260910-portfolio-continuity-checkpoint",
+  "project": "soojos",
+  "task": "Consolidate the nine completed first builds, exact branch evidence and project routing; log the existing Notion row and deliver one material summary to the authorized existing Claude conversation with verified receipt. This is user-requested continuity bookkeeping, not a new build cycle.",
+  "assignee": "codex",
+  "inputs": [
+    "context/desk/portfolio-builds-2026-09-10.md",
+    "context/desk/claude-handoff-policy.md",
+    "context/desk/project-alignment-2026-09-10.md"
+  ],
+  "constraints": [
+    "Follow the governing charter and approved scope",
+    "Do not send before all nine first builds are terminal and consolidated; preserve private context transfer approval still pending.",
+    "Use only the authorized existing SoojOS Claude conversation, exact saved handoff ID/text and fresh credits-off evidence; no project instruction, account, financial or live action.",
+    "Check STOP before prepare/type/send; preserve drafts/active replies, journal attempting before Send and verify before delivered.",
+    "Commit only this checkpoint artifacts in a separate desk task worktree; preserve all main checkout uncommitted work.",
+    "Finish truthfully within15minutes; tokens unknown, new cash0. Preserve existing Notion notes and do not invent financial rows."
+  ],
+  "priority": {
+    "rank": 1,
+    "reason": "Complete the user-requested shared continuity and reviewable evidence after the current first-build cycle; direct monetary return not established."
+  },
+  "expected_return": {
+    "currency": "AUD",
+    "horizon_days": 90,
+    "net_low": null,
+    "net_high": null,
+    "confidence": "unassessed",
+    "basis": "Evidence required"
+  },
+  "expected_time_to_first_dollar_days": {
+    "low": null,
+    "high": null,
+    "basis": "Unassessed"
+  },
+  "created_at": "2026-09-10T09:00:12.299562+00:00",
+  "status": "queued",
+  "budget_tokens": null,
+  "budget_minutes": 15,
+  "budget_aud": 0,
+  "cycle_id": "20260910-portfolio-continuity-checkpoint",
+  "parent_id": null,
+  "chain_depth": 1,
+  "branch": "desk/20260910-portfolio-continuity-checkpoint",
+  "worktree": null,
+  "action_kind": "research",
+  "approval_refs": [],
+  "blocked_reason": null,
+  "attempts": [],
+  "alternatives_checked": [],
+  "next_attempt": null,
+  "actual_tokens": null,
+  "actual_minutes": null,
+  "actual_cost_aud": null,
+  "result_path": null
+}

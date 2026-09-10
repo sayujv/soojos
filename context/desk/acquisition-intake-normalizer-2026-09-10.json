@@ -1,0 +1,78 @@
+{
+  "task_id": "20260910-acquisition-intake-normalizer",
+  "observed_at": "2026-09-10T08:46:27.890886+00:00",
+  "status": "verified_offline_prototype",
+  "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-acquisition-intake-normalizer",
+  "branch": "desk/20260910-acquisition-intake-normalizer",
+  "base_head": "8169dd4ac629e3b33deb8e2159d5736063a0afd3",
+  "commit_reference": "Exact commit and measured elapsed minutes recorded in immutable context/desk/outbox/2026-09-10-20260910-acquisition-intake-normalizer.json",
+  "source_hashes_before": {
+    "/Users/sayuj/soojos/projects/business-search/CLAUDE.md": "91945217a50d5043c5a8dc258ff706e38ddf0f763b1748dffe18cf109d125a5a",
+    "/Users/sayuj/soojos/context/desk/scope-readiness.md": "785d191f4648613ca8e11586d5f452ac6d1dd635ed20df8c570febd9dd09565e",
+    "/Users/sayuj/.soojos/claude-cloud/2026-09-09/business-search.md": "e358c215766d6be4525d9de366e455f7cbaa06e40edaa65eb453eeffac6a16a3"
+  },
+  "source_hashes_after": {
+    "/Users/sayuj/soojos/projects/business-search/CLAUDE.md": "91945217a50d5043c5a8dc258ff706e38ddf0f763b1748dffe18cf109d125a5a",
+    "/Users/sayuj/soojos/context/desk/scope-readiness.md": "785d191f4648613ca8e11586d5f452ac6d1dd635ed20df8c570febd9dd09565e",
+    "/Users/sayuj/.soojos/claude-cloud/2026-09-09/business-search.md": "e358c215766d6be4525d9de366e455f7cbaa06e40edaa65eb453eeffac6a16a3"
+  },
+  "source_files_unchanged": true,
+  "verification": {
+    "command": "python3 projects/business-search/prototype/test_normalize.py -v",
+    "python_version": "3.9.6",
+    "tests": 9,
+    "passed": 9,
+    "failed": 0,
+    "initial_red": "Before implementation, seven initial CLI tests could not pass because normalize.py did not exist.",
+    "network_denied_command": "/usr/bin/sandbox-exec -p '(version 1) (allow default) (deny network*)' /Library/Developer/CommandLineTools/usr/bin/python3 projects/business-search/prototype/normalize.py --input projects/business-search/prototype/examples/listings.synthetic.json",
+    "network_denied_result": "PASS; stdout byte-identical to generated normalized.synthetic.json",
+    "synthetic_example": {
+      "input_observations": 4,
+      "listing_groups": 3,
+      "duplicate_observations": 1,
+      "price_preference_checks": [
+        "within_preference",
+        "above_preference",
+        "unknown"
+      ]
+    },
+    "input_preservation": "Every CLI test verifies input bytes unchanged; all original records/URLs retained in grouped output.",
+    "edge_cases": [
+      "recognized tracking query parameters",
+      "different listing paths",
+      "identity queries and hash routes",
+      "path case and trailing slashes",
+      "repeated identity query order",
+      "missing price",
+      "zero price",
+      "exact A$1.5M boundary and one cent above",
+      "conflicting prices and locations",
+      "unsupported finance quote",
+      "invalid JSON/schema/URL/date/numbers",
+      "empty batch",
+      "missing input file",
+      "invalid arguments",
+      "deterministic output"
+    ]
+  },
+  "implementation_hashes": {
+    "projects/business-search/prototype/README.md": "4b3ddeb01897d32cc5bdb39ae5849490adb12e432005ea5b6ba37da7e29c1b7c",
+    "projects/business-search/prototype/examples/listings.synthetic.json": "8c89f2d346614d8dafaac7c3ae45b63624844549031e0449479837c11bfe6a68",
+    "projects/business-search/prototype/examples/normalized.synthetic.json": "5aef6249a95ebc4b967cffc64dd01246d91684743c0ad618325107ed2a2e613a",
+    "projects/business-search/prototype/normalize.py": "4da87e0216e4338dc050bf6bbdba55e8b890eb251a53ad2f9e057f22e6314d92",
+    "projects/business-search/prototype/test_normalize.py": "4c323e6a31e111a83186cc45544c6afa6b19f436c403f3bc094f38fc047cffcf"
+  },
+  "limitations": [
+    "Synthetic/manual metadata only; URLs and seller quotes were not fetched or independently verified.",
+    "Conservative URL matching may miss cross-site/renamed listings; no fuzzy entity resolution.",
+    "Exact quote containment is only a provenance check, not semantic truth or seller-authenticity verification.",
+    "Location and sector remain needs_review; no invented fit score, automatic 30% deposit or financing approval.",
+    "No authoritative local production repository mapped; existing Notion pipeline/schedule not inspected or altered by this worker.",
+    "No seller outreach, offer, scrape, new schedule, live service, capital deployment, push or main merge.",
+    "No verified financial return or time to first dollar. Token usage unavailable."
+  ],
+  "next_action": "Claude and Astra review the normalization contract against the current existing Notion pipeline/schema and schedule before any production integration; preserve seller evidence and financing uncertainty.",
+  "actual_cost_aud": 0,
+  "actual_tokens": null,
+  "billing_mode": "existing_subscription"
+}

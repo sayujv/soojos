@@ -1,0 +1,111 @@
+{
+  "task_id": "20260910-disclosed-persona-kit",
+  "observed_at": "2026-09-10T08:55:44.911907+00:00",
+  "status": "verified_offline_prototype",
+  "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-disclosed-persona-kit",
+  "branch": "desk/20260910-disclosed-persona-kit",
+  "base_head": "8169dd4ac629e3b33deb8e2159d5736063a0afd3",
+  "commit_reference": "Exact commit and measured elapsed minutes are recorded in immutable context/desk/outbox/2026-09-10-20260910-disclosed-persona-kit.json",
+  "source_hashes_before": {
+    "/Users/sayuj/soojos/projects/fan-accounts/CLAUDE.md": "748c1d72d24b2f9e81ff4303ea848c8e80eab24421b91f865776f5054b0414ba",
+    "/Users/sayuj/soojos/context/desk/scope-readiness.md": "785d191f4648613ca8e11586d5f452ac6d1dd635ed20df8c570febd9dd09565e",
+    "/Users/sayuj/.soojos/claude-cloud/2026-09-09/fan-accounts.md": "a4c05bc0f1f275c4c99516080b01780291632d28114940580c6b1176e8e240ca"
+  },
+  "source_hashes_after": {
+    "/Users/sayuj/soojos/projects/fan-accounts/CLAUDE.md": "748c1d72d24b2f9e81ff4303ea848c8e80eab24421b91f865776f5054b0414ba",
+    "/Users/sayuj/soojos/context/desk/scope-readiness.md": "785d191f4648613ca8e11586d5f452ac6d1dd635ed20df8c570febd9dd09565e",
+    "/Users/sayuj/.soojos/claude-cloud/2026-09-09/fan-accounts.md": "a4c05bc0f1f275c4c99516080b01780291632d28114940580c6b1176e8e240ca"
+  },
+  "source_files_unchanged": true,
+  "content_summary": {
+    "persona": "Mira Loop, explicitly fictional adult aged 31, imaginary Pocket Observatory host",
+    "samples": [
+      "Three lines for a rough idea \u2014 generic educational exercise",
+      "The library of unfinished maps \u2014 original microfiction",
+      "One key, three meanings \u2014 generic creative writing prompt"
+    ],
+    "disclosure_first_line": "Fictional adult character. AI-assisted text. Unpublished sample.",
+    "content_assets": 4,
+    "media_assets": 0,
+    "publication_status": "unpublished",
+    "platform": null,
+    "business_model": "unselected",
+    "rights_status": "unreviewed_for_publication"
+  },
+  "verification": {
+    "command": "python3 projects/fan-accounts/prototype/test_validate.py -v",
+    "python_version": "3.9.6",
+    "tests": 13,
+    "passed": 13,
+    "failed": 0,
+    "initial_red": "Eleven initial CLI tests could not pass before validate.py existed.",
+    "network_denied_command": "/usr/bin/sandbox-exec -p '(version 1) (allow default) (deny network*)' /Library/Developer/CommandLineTools/usr/bin/python3 projects/fan-accounts/prototype/validate.py --kit projects/fan-accounts/prototype/kit",
+    "network_denied_result": "PASS; stdout byte-identical to normal validator run.",
+    "input_preservation": "All CLI tests compare input bytes before/after. Three original source hashes unchanged.",
+    "test_cases": [
+      "normal structural pass with publication_approved false",
+      "missing per-post disclosure despite valid profile disclosure",
+      "blank disclosure",
+      "metadata-only disclosure not first visible line",
+      "published sample status",
+      "underage/nonfictional/real-person metadata",
+      "missing rights status",
+      "missing inventory asset/origin",
+      "duplicate inventory IDs",
+      "asset content hash mismatch",
+      "extra uninventoried post",
+      "declared fake identity/subscriber metrics",
+      "external media asset",
+      "missing/malformed JSON",
+      "deterministic output"
+    ],
+    "manual_assistant_read": "Astra read all four complete visible_text fields; they contain explicit disclosure and generic non-sexual creative/educational text. This is not independent human review."
+  },
+  "validator_result": {
+    "schema_version": 1,
+    "structural_checks_passed": true,
+    "content_assets_checked": 4,
+    "publication_approved": false,
+    "semantic_human_review_required": true,
+    "input_sha256": {
+      "persona.json": "22d4bfd4da6b17c96ec59d7ccd88fbe6c9a628b82f1be587f9243ba91e29806d",
+      "posts/post-01.json": "f57a15dc77f183670097b959106aaff4e908f5180f1394169c9eef66df0c0726",
+      "posts/post-02.json": "e8c15b5c18fdf8638ad19bb6ff104d914e3d2d25d23e8f5429eb52ed13ebb497",
+      "posts/post-03.json": "867d0c68e0cfc6b279132503ca6a69197c0ceee5ab5c75b24dccf599b51d1f25",
+      "provenance.json": "67524a4f55ec0b0cfa208a897cf0aa1f6914684d9bc11b3995064b0c2525520e"
+    },
+    "errors": [],
+    "human_review_required": [
+      "Read all visible text for real-person resemblance, impersonation, implied intimacy and misleading claims.",
+      "Confirm non-sexual content and that disclosure remains prominent in any future rendering.",
+      "Review originality/rights and independently confirm any future source or asset permission.",
+      "Choose a legitimate business model only after demand and current platform-policy research."
+    ],
+    "limitations": [
+      "These are structural metadata and byte-integrity checks, not proof of semantic truth, copyright rights or identity.",
+      "Unpublished is a local declared status; this tool does not inspect accounts or platform state.",
+      "No platform account, post, subscription, earnings claim or monetization permission is created."
+    ]
+  },
+  "implementation_hashes": {
+    "projects/fan-accounts/prototype/README.md": "6f7c83f0d90cb7e8c6534976a81b5060fd4b63b890ef55800ae74bd7269b7dc2",
+    "projects/fan-accounts/prototype/kit/persona.json": "22d4bfd4da6b17c96ec59d7ccd88fbe6c9a628b82f1be587f9243ba91e29806d",
+    "projects/fan-accounts/prototype/kit/posts/post-01.json": "f57a15dc77f183670097b959106aaff4e908f5180f1394169c9eef66df0c0726",
+    "projects/fan-accounts/prototype/kit/posts/post-02.json": "e8c15b5c18fdf8638ad19bb6ff104d914e3d2d25d23e8f5429eb52ed13ebb497",
+    "projects/fan-accounts/prototype/kit/posts/post-03.json": "867d0c68e0cfc6b279132503ca6a69197c0ceee5ab5c75b24dccf599b51d1f25",
+    "projects/fan-accounts/prototype/kit/provenance.json": "67524a4f55ec0b0cfa208a897cf0aa1f6914684d9bc11b3995064b0c2525520e",
+    "projects/fan-accounts/prototype/test_validate.py": "35721683dd772eb3987b2fdc327496c4bba1f031ae0b45d7b11698a2bca5a4f4",
+    "projects/fan-accounts/prototype/validate.py": "3f77f57ee9a7868b23faca3daf334d4c76f002e82c09b33d4ddcfe7d35a412e7"
+  },
+  "limitations": [
+    "Structural metadata and hash checks cannot establish semantic truth, originality, rights, no accidental resemblance, real publication state or platform eligibility.",
+    "Independent Claude/human review remains pending.",
+    "Provisional sample does not claim the historical project selected this business model.",
+    "No external content source, real-person likeness/voice generation, account, posting, subscription offer, contact, paid service or new dependency.",
+    "No financial return or received revenue established; token usage unavailable."
+  ],
+  "next_action": "Jointly review the provisional disclosed character versus creator tools, then gather demand/current platform-policy evidence and review rights before any production/account/publication action.",
+  "actual_cost_aud": 0,
+  "actual_tokens": null,
+  "billing_mode": "existing_subscription"
+}

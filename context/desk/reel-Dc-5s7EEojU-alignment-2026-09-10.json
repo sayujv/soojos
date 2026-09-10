@@ -1,0 +1,160 @@
+{
+  "task_id": "20260910-reel-transcript",
+  "observed_at": "2026-09-10T15:49:48.338507+08:00",
+  "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-reel-transcript",
+  "branch": "desk/20260910-reel-transcript",
+  "starting_commit": "8169dd4ac629e3b33deb8e2159d5736063a0afd3",
+  "outcome": "partial evidence; full verbatim audio transcription not verified",
+  "source_url": "https://www.instagram.com/reel/Dc-5s7EEojU/",
+  "episode_url": "https://www.youtube.com/watch?v=yW6c0K8uGvw",
+  "browser_duration_seconds": 49.6,
+  "downloaded_container_duration_seconds": 49.706,
+  "contiguous_episode_passage": false,
+  "full_audio_transcription_verified": false,
+  "ocr_frames": 100,
+  "ocr_frame_errors": 0,
+  "ocr_frames_per_second": 2,
+  "visually_inspected_frame_seconds": [
+    0,
+    7,
+    18.5,
+    49.5
+  ],
+  "alignment_boundary_precision": "approximate; caption anchors, not sample-accurate audio cut points",
+  "segments": [
+    {
+      "reel_seconds": [
+        0,
+        2.1
+      ],
+      "episode_window": "25:33\u201325:35",
+      "meaning": "Invitation to reuse the research process",
+      "confidence": "caption anchors"
+    },
+    {
+      "reel_seconds": [
+        2.2,
+        7.8
+      ],
+      "episode_window": "25:56\u201326:09 plus an unmatched/edited bridge",
+      "meaning": "90% assertion and a single research source",
+      "confidence": "partial; reel bridge wording not a contiguous VTT match"
+    },
+    {
+      "reel_seconds": [
+        8,
+        10.7
+      ],
+      "episode_window": "25:47\u201325:51",
+      "meaning": "SSRN identified",
+      "confidence": "caption anchors; edited omissions"
+    },
+    {
+      "reel_seconds": [
+        10.8,
+        18.7
+      ],
+      "episode_window": "28:42\u201328:57",
+      "meaning": "Research collection and searching for useful findings",
+      "confidence": "caption anchors; omissions"
+    },
+    {
+      "reel_seconds": [
+        18.8,
+        23.7
+      ],
+      "episode_window": "28:00\u201328:05 and 28:17",
+      "meaning": "Academic and industry research",
+      "confidence": "caption anchors; reordered source"
+    },
+    {
+      "reel_seconds": [
+        23.8,
+        31.1
+      ],
+      "episode_window": "28:22\u201328:37",
+      "meaning": "Practitioners publish strategy research",
+      "confidence": "caption anchors; examples cut"
+    },
+    {
+      "reel_seconds": [
+        31.2,
+        34.6
+      ],
+      "episode_window": "29:04\u201329:11",
+      "meaning": "LLMs can help examine papers",
+      "confidence": "caption anchors; omissions"
+    },
+    {
+      "reel_seconds": [
+        34.7,
+        47.2
+      ],
+      "episode_window": "29:15\u201329:31",
+      "meaning": "Understand findings and rationale, then formulate rules",
+      "confidence": "caption anchors; not full audio wording"
+    },
+    {
+      "reel_seconds": [
+        47.3,
+        49.6
+      ],
+      "episode_window": "50:00\u201350:04 (key VTT cue 50:02.640)",
+      "meaning": "Closing persistence metaphor",
+      "confidence": "caption and closing-frame match"
+    }
+  ],
+  "sources": [
+    {
+      "path": "/Users/sayuj/soojos/knowledge/reports/2026-09-10-reel-Dc-5s7EEojU.md",
+      "bytes": 3038,
+      "sha256": "fe37234153486d11cdbd9299c88f340f436ec77e197c9d4782771f71d3be0bb0"
+    },
+    {
+      "path": "/Users/sayuj/.soojos/desk/research/yW6c0K8uGvw.en.vtt",
+      "bytes": 734311,
+      "sha256": "0fab590f937ff341a42aa840821c7294a5aa7bf139b5a4fab19ba317f96d4054"
+    },
+    {
+      "path": "/Users/sayuj/.soojos/desk/research/yW6c0K8uGvw.provenance.json",
+      "bytes": 306,
+      "sha256": "8998adafdfede60043808e72264e8a1ba9f7b5a5543137dec7df68439604d993"
+    },
+    {
+      "path": "/Users/sayuj/.soojos/desk/research/reel-Dc-5s7EEojU-20260910/reel.mp4",
+      "bytes": 5883116,
+      "sha256": "57f3775957bbc2c921cc92d64e4cd7ee6248d294133d54dca0b5df099ca78177"
+    },
+    {
+      "path": "/Users/sayuj/.soojos/desk/research/reel-Dc-5s7EEojU-20260910/ocr.json",
+      "bytes": 209387,
+      "sha256": "5253587c41c211b4c0a8202fa53358b89bb52915e58931cf5d45a636696c5c31"
+    },
+    {
+      "path": "/Users/sayuj/.soojos/desk/research/reel-Dc-5s7EEojU-20260910/provenance.json",
+      "bytes": 2231,
+      "sha256": "46784a4f4658eb1321e9995f36bb228d43aece4350d03ce80319bfd8916582f6"
+    }
+  ],
+  "attempts": [
+    "Ledger retrieval found the existing broader episode workflow claim; it did not establish exact reel speech.",
+    "Signed-in dedicated Chrome tab verified reel identity, burned-in captions, 49.6-second duration and no track elements.",
+    "Observed media bundle attempted 26 target segments; 0 succeeded.",
+    "watch caption lookup failed sandbox DNS; approved local-network retry accessed source but reported no captions.",
+    "Installed yt-dlp executable downloaded exact public reel without cookies; 5883116 bytes. Python module invocation was unavailable, so installed executable was used.",
+    "AVFoundation decoding failed in sandbox; authorized local offline retry decoded all 100 frames and ran Vision OCR. Four frames visually checked, including the OCR correction INTERESTING.",
+    "Episode VTT checksum verified; caption anchors demonstrate source reordering and a closing cue at 50:02.640.",
+    "Read-only native Speech capability check: authorization raw1, supports_on_device=false; no speech request or permission change."
+  ],
+  "alternatives_checked": [
+    "Existing watch/yt-dlp, browser text tracks and asset export, local AVFoundation/Vision, existing native Speech and installed Python speech/video libraries.",
+    "No ffmpeg or Whisper key in watch preflight; no installed Python whisper/faster_whisper/mlx_whisper/av/cv2 packages in inspected runtimes.",
+    "No paid transcription, new dependency, provider API, account or credential route used."
+  ],
+  "next_step": "Verify the saved exact reel audio with an available local transcription capability or direct human listening; compare all words and cut boundaries to the saved OCR/VTT before calling it verbatim.",
+  "new_cash_spend_aud": 0,
+  "subscription_tokens": null,
+  "claude_review": "pending",
+  "project_tests_run": [],
+  "claims_ledger_mutated": false
+}

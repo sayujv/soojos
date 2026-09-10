@@ -1,0 +1,34 @@
+
+1. Compliance gate (lib/gate.js — same logic as the n8n gate node)
+  ✓ BLOCKS unresolved [VERIFY] token even when the verdict claims clean
+  ✓ BLOCKS when the verdict itself reports unresolved tokens
+  ✓ BLOCKS on unparseable verdict (fail closed)
+  ✓ PASSES a clean script with a passing verdict
+
+2. Render spec (connectors/json2video.js — voice+assembly in one call)
+  ✓ hard-fails on a script with unresolved [VERIFY] (fail closed before the render spend)
+  ✓ hard-fails when no ElevenLabs connection id is available
+  ✓ spec has scenes derived from [visual: ...] cues
+  ✓ every scene has a voice element with the channel voice + settings
+  ✓ cued scenes carry the matching b-roll clip
+  ✓ captions element present per config caption style
+  ✓ low-volume music bed uses the mood-selected track
+
+3. Mocked render round-trip (no network)
+  ✓ mock render reports done with a video URL
+
+4. Thumbnail (thumbnails/generate.js)
+  ✓ generates SVG + mock PNG path from the idea
+
+5. Review-queue entry (what review/server.js renders)
+  ✓ review payload has every required field
+
+6. Script editing team (lib/editing.js + connectors/notion-claims.js — offline)
+  ✓ critic output parses and blocking state derives
+  ✓ hook options parse, auto-select takes recommended, revision feedback applies both
+  ✓ fact-check cache-hit path works without network (normalise, match, expire)
+  ✓ insufficient claims block; refuted always blocks; soften/cut/override resolve
+  ✓ claims queue entry carries everything the review app renders
+
+ALL PASSED — 19 checks ok
+

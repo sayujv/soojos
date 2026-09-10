@@ -1,0 +1,129 @@
+{
+  "task_id": "20260910-scope-paths",
+  "observed_at": "2026-09-10T15:38:34.968589+08:00",
+  "rows": [
+    {
+      "project": "trading-bot",
+      "mapping_status": "Verified local Git repository",
+      "source": "/Users/sayuj/AI/Claude/equities-desk",
+      "finding": "main; 34ae039f3357771c8ec247da3a431cea265ab864; clean. Original instructions reread. Latest handoff documents operator pause. Momentum stays dormant."
+    },
+    {
+      "project": "prediction-betting",
+      "mapping_status": "Two non-Git candidates; authority unresolved",
+      "source": "/Users/sayuj/Desktop/predictos; /Users/sayuj/Downloads/Projects/Predictos/predictos",
+      "finding": "Both readable; neither has current CLAUDE.md, AGENTS.md, README.md or shared handoff. Desktop has later compatibility edits and database metadata; latest source chat does not settle folder ownership."
+    },
+    {
+      "project": "sale-readiness-platform",
+      "mapping_status": "Cloud planning source; no verified local repository",
+      "source": "https://claude.ai/chat/9af32fff-2bbb-4714-9a5e-4b382cc00023",
+      "finding": "Latest chat dated Aug 3 says no artifact past draft and wave-one domain work not started. Document-first/Australian PRD amendments remain described work, not verified implementation."
+    },
+    {
+      "project": "youtube-business",
+      "mapping_status": "Verified local Git repository",
+      "source": "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build",
+      "finding": "main; abb2d8bb1e538784f84c957fe4c93f7206fc45cb; eight modified tracked paths and five untracked entries. Existing changes preserved; shared local handoff absent."
+    },
+    {
+      "project": "digital-marketplace-business",
+      "mapping_status": "Cloud planning source; no verified local repository",
+      "source": "https://claude.ai/chat/a80af1b3-0285-4b41-a2d4-131171ec8eda",
+      "finding": "Latest chat Aug 12 ends with proposed FIFO certification tracker specification and shared infrastructure; no build artifact or installed storefront proven."
+    },
+    {
+      "project": "online-shops",
+      "mapping_status": "Cloud exploration source; no verified local repository",
+      "source": "https://claude.ai/chat/4567672d-2ba1-4748-bfbd-cd12ebfc2340",
+      "finding": "Latest chat Aug 29 remains at the initial readiness questionnaire. No chosen niche/stack/store or deployment established."
+    },
+    {
+      "project": "business-search",
+      "mapping_status": "Cloud source and named Notion pipeline",
+      "source": "https://claude.ai/chat/1dc00ac2-d67e-4088-b358-ffd85bcbc8be",
+      "finding": "Latest chat Jul 10 names Notion page 2411c6fd1c734eb7bf57451b596f120d and supplies revised Australian weekly prompt. A working schedule is not established by that prompt; no local Git repository verified."
+    },
+    {
+      "project": "ugc",
+      "mapping_status": "Cloud assessment source; no verified local repository",
+      "source": "https://claude.ai/chat/0feb961f-a271-42ef-b35c-27677443ccab",
+      "finding": "Latest chat Aug 10 is opportunity assessment and proposed portfolio experiment; no launch or build artifact established. Earnings claims were not revalidated."
+    },
+    {
+      "project": "fan-accounts",
+      "mapping_status": "Cloud exploration source; no verified local repository",
+      "source": "https://claude.ai/chat/6e1041b5-dadb-468f-abbd-fe531ecca8ba",
+      "finding": "Latest chat Aug 29 ends with disclosed virtual-character/creator-tool alternatives; no chosen alternative or build. Only disclosed personas remain authorized."
+    }
+  ],
+  "inspected_parent_directory_names": [
+    "/Users/sayuj/Downloads/Projects",
+    "/Users/sayuj/Documents/Claude/Projects",
+    "/Users/sayuj/AI/Claude"
+  ],
+  "source_hashes": [
+    {
+      "path": "/Users/sayuj/soojos/projects/trading-bot/CLAUDE.md",
+      "sha256": "af2afb5e97db3a03e7bc70d5448d6cac6f4aaed9f98401fd239968a057a06c11"
+    },
+    {
+      "path": "/Users/sayuj/soojos/projects/prediction-betting/CLAUDE.md",
+      "sha256": "4469e4cbb09094a4a78e38126807d6c6909ae5b696fc4bd0e5b36a0b8a1ac48a"
+    },
+    {
+      "path": "/Users/sayuj/soojos/projects/sale-readiness-platform/CLAUDE.md",
+      "sha256": "35bdc69550b9a231c60aff6808327403db252be4a41ba94cacba40a72ef13c9d"
+    },
+    {
+      "path": "/Users/sayuj/soojos/projects/youtube-business/CLAUDE.md",
+      "sha256": "ac5869fcd81ce362c3bf881e9b898f636e6a880558348965adaf36ffc7395b69"
+    },
+    {
+      "path": "/Users/sayuj/soojos/projects/digital-marketplace-business/CLAUDE.md",
+      "sha256": "a43450d7454a77082231fce68919687bd6c9f9966ee0954337f94111f26243e8"
+    },
+    {
+      "path": "/Users/sayuj/soojos/projects/online-shops/CLAUDE.md",
+      "sha256": "3303701ed4c3565b5afb7ab93bb8afa3091321c35cb6a278ccbe6c2d127367cf"
+    },
+    {
+      "path": "/Users/sayuj/soojos/projects/business-search/CLAUDE.md",
+      "sha256": "91945217a50d5043c5a8dc258ff706e38ddf0f763b1748dffe18cf109d125a5a"
+    },
+    {
+      "path": "/Users/sayuj/soojos/projects/ugc/CLAUDE.md",
+      "sha256": "7c151a27b7f092a78a9c07b2436b334ddf691ff5c60549455ad25ede84bf51d7"
+    },
+    {
+      "path": "/Users/sayuj/soojos/projects/fan-accounts/CLAUDE.md",
+      "sha256": "748c1d72d24b2f9e81ff4303ea848c8e80eab24421b91f865776f5054b0414ba"
+    },
+    {
+      "path": "/Users/sayuj/Desktop/predictos/run.py",
+      "sha256": "45e704ccbd4924c1dcb8bbc7623d54ef7dd4d948589802572dd236aad9f25454"
+    },
+    {
+      "path": "/Users/sayuj/Downloads/Projects/Predictos/predictos/run.py",
+      "sha256": "45e704ccbd4924c1dcb8bbc7623d54ef7dd4d948589802572dd236aad9f25454"
+    }
+  ],
+  "tests_run": [],
+  "live_project_commands_run": [],
+  "new_cash_aud": 0,
+  "tokens": null,
+  "scope_limits": "Known project parents and exact PredictOS candidates inspected; not an exhaustive whole-Mac search. Original cloud project instructions unchanged. Latest loaded messages read, not full conversation archives.",
+  "predictos": {
+    "desktop_source_changes": "10 nonempty modules differ solely by added from __future__ import annotations; mtime 2026-06-03 16:25:04 AWST",
+    "desktop_db_metadata": {
+      "path": "/Users/sayuj/Desktop/predictos/data/predictos.db",
+      "size": 1720320,
+      "mtime": "2026-06-03 16:35:36 AWST",
+      "contents_read": false
+    },
+    "archive_provenance": "Downloads run/module contents match corresponding predictos_v5.zip and predictos_v5_1.zip members; whole archive hashes differ, so they are not byte-identical duplicates. Earlier archive README describes old module/command names.",
+    "do_not_execute": "run.py status attempts a live IBKR connection; importing run.py creates runtime directories. Neither was executed.",
+    "cloud_chat": "https://claude.ai/chat/2f62eaaa-f25d-4bcf-a44c-2e24c5de8b79",
+    "cloud_limit": "Latest loaded messages do not identify intended canonical copy; unsupported historical edge/broker claims were not adopted."
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "task_id": "20260910-shop-economics-prototype",
+  "project": "online-shops",
+  "status": "verified_offline_arithmetic_prototype",
+  "observed_at": "2026-09-10T08:51:44.930821+00:00",
+  "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-shop-economics-prototype",
+  "branch": "desk/20260910-shop-economics-prototype",
+  "code_commit": "31589929bb44bb99c330b42ea4c62e62495fe6fd",
+  "artifacts": {
+    "cli": "/Users/sayuj/soojos/.worktrees/task-20260910-shop-economics-prototype/projects/online-shops/prototype/economics.py",
+    "readme": "/Users/sayuj/soojos/.worktrees/task-20260910-shop-economics-prototype/projects/online-shops/prototype/README.md",
+    "examples": "/Users/sayuj/soojos/.worktrees/task-20260910-shop-economics-prototype/projects/online-shops/prototype/examples"
+  },
+  "verification": {
+    "tests_passed": 10,
+    "command": "python3 -m unittest discover -s tests -v",
+    "cwd": "/Users/sayuj/soojos/.worktrees/task-20260910-shop-economics-prototype/projects/online-shops/prototype",
+    "exit_code": 0,
+    "test_first": "All 10 test methods failed before implementation, then passed.",
+    "four_synthetic_examples": {
+      "exact-cent": {
+        "contribution_aud": "18.61",
+        "advertising_allowance_aud": "26.50"
+      },
+      "negative-contribution": {
+        "contribution_aud": "-21.34",
+        "advertising_allowance_aud": "-13.45"
+      },
+      "incomplete-costs": {
+        "status": "incomplete",
+        "contribution_aud": null,
+        "advertising_allowance_aud": null
+      },
+      "zero-price": {
+        "contribution_aud": "-31.34",
+        "advertising_allowance_aud": "-23.45"
+      }
+    },
+    "large_exact_cent_case_passed": true,
+    "input_bytes_unchanged": true,
+    "source_hashes": [
+      {
+        "path": "/Users/sayuj/soojos/projects/online-shops/CLAUDE.md",
+        "sha256": "3303701ed4c3565b5afb7ab93bb8afa3091321c35cb6a278ccbe6c2d127367cf"
+      },
+      {
+        "path": "/Users/sayuj/soojos/context/desk/scope-readiness.md",
+        "sha256": "785d191f4648613ca8e11586d5f452ac6d1dd635ed20df8c570febd9dd09565e"
+      },
+      {
+        "path": "/Users/sayuj/.soojos/claude-cloud/2026-09-09/online-shops.md",
+        "sha256": "cfe0f2dc4f4ad20174ca0b2f27b8d901391de45b8139f774345161b1fad60503"
+      }
+    ],
+    "log": "/Users/sayuj/soojos/.worktrees/task-20260910-shop-economics-prototype/docs/shop-economics-verification-2026-09-10.log"
+  },
+  "scope": "AUD, one unit per order; all eight amounts explicit; Decimal arithmetic and scaled precision; no store, order, account, tax determination or financial action.",
+  "limitations": [
+    "Contribution excludes overhead/tax and is not profit, ROI or a demand forecast.",
+    "Advertising allowance is arithmetic, not a spending recommendation or authorization.",
+    "Synthetic examples are not supplier/traffic evidence; no market validation, actual revenue or Claude joint review."
+  ],
+  "actual_tokens": null,
+  "actual_cost_aud": 0,
+  "next_action": "Obtain candidate-product supplier, delivery/returns and traffic evidence before choosing a store or preparing a capital proposal."
+}

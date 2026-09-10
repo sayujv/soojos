@@ -1,0 +1,173 @@
+{
+  "task_id": "20260910-equities-passive-preflight",
+  "observed_at": "2026-09-10T09:06:29.715386+00:00",
+  "status": "verified_passive_prototype",
+  "worktree": "/Users/sayuj/soojos/.worktrees/task-20260910-equities-passive-preflight",
+  "branch": "desk/20260910-equities-passive-preflight",
+  "base_head": "8169dd4ac629e3b33deb8e2159d5736063a0afd3",
+  "commit_reference": "Exact completion commit and measured elapsed time are in context/desk/outbox/2026-09-10-20260910-equities-passive-preflight.json",
+  "original_source_before": {
+    "root": "/Users/sayuj/AI/Claude/equities-desk",
+    "branch": "main",
+    "head": "34ae039f3357771c8ec247da3a431cea265ab864",
+    "status": "",
+    "sha256": {
+      "CLAUDE.md": "d9d80b99c8f928e9220e4817f072639801f27ef322d3de4bd85e0f34f5c09d77",
+      "AGENTS.md": "0f0f06d2a0607cbab4dd83bd20aca5f0dbeb5aad8cc8e1be5cc9ad2f3a882809",
+      "README.md": "1a88b2f5684bee0693c03a27c10e3a822ac2a596d950375ec257a0c89b6e9c8a",
+      "artifacts/reports/context/handoff.md": "840e8ee88e09c023dff8e1243cf583ef9a908617e2a9518957f2e5a78e918eec",
+      "config/settings.py": "020c52a9a50f05fd5f9900fb047857f42e01c0a6242b8224c67c64b1b4b3d565"
+    }
+  },
+  "original_source_after": {
+    "root": "/Users/sayuj/AI/Claude/equities-desk",
+    "branch": "main",
+    "head": "34ae039f3357771c8ec247da3a431cea265ab864",
+    "status": "",
+    "sha256": {
+      "CLAUDE.md": "d9d80b99c8f928e9220e4817f072639801f27ef322d3de4bd85e0f34f5c09d77",
+      "AGENTS.md": "0f0f06d2a0607cbab4dd83bd20aca5f0dbeb5aad8cc8e1be5cc9ad2f3a882809",
+      "README.md": "1a88b2f5684bee0693c03a27c10e3a822ac2a596d950375ec257a0c89b6e9c8a",
+      "artifacts/reports/context/handoff.md": "840e8ee88e09c023dff8e1243cf583ef9a908617e2a9518957f2e5a78e918eec",
+      "config/settings.py": "020c52a9a50f05fd5f9900fb047857f42e01c0a6242b8224c67c64b1b4b3d565"
+    }
+  },
+  "original_git_and_five_hashes_unchanged": true,
+  "verification": {
+    "command": "python3 projects/trading-bot/prototype/test_preflight.py -v",
+    "python_version": "3.9.6",
+    "test_groups": 6,
+    "passed": 6,
+    "failed": 0,
+    "initial_red": "Six initial CLI tests could not pass before preflight.py existed.",
+    "protected_original_run": "sandbox-exec denied network access and all file writes to original Equities and Momentum paths; passive CLI completed successfully.",
+    "source_default": "False literal argument at config/settings.py:91; runtime execution remains unknown.",
+    "source_code_not_executed": "Synthetic settings contained a file-writing sentinel statement; it never ran. Tests also compared all synthetic repository/Git file bytes unchanged.",
+    "missing_and_ambiguous": "Missing, nonliteral, reassigned, conditional and augmented settings yielded unknown; missing repository/files and syntax errors never became false."
+  },
+  "actual_passive_report": {
+    "schema_version": 1,
+    "mode": "passive_source_report",
+    "repository": "/Users/sayuj/AI/Claude/equities-desk",
+    "collection_complete": true,
+    "git": {
+      "status": "observed",
+      "branch": "main",
+      "head": "34ae039f3357771c8ec247da3a431cea265ab864",
+      "status_porcelain": "",
+      "detached_head": false,
+      "submodule_worktree_status": "not_inspected"
+    },
+    "files": {
+      "CLAUDE.md": {
+        "status": "read",
+        "sha256": "d9d80b99c8f928e9220e4817f072639801f27ef322d3de4bd85e0f34f5c09d77",
+        "bytes": 2668
+      },
+      "AGENTS.md": {
+        "status": "read",
+        "sha256": "0f0f06d2a0607cbab4dd83bd20aca5f0dbeb5aad8cc8e1be5cc9ad2f3a882809",
+        "bytes": 1111
+      },
+      "README.md": {
+        "status": "read",
+        "sha256": "1a88b2f5684bee0693c03a27c10e3a822ac2a596d950375ec257a0c89b6e9c8a",
+        "bytes": 11983
+      },
+      "artifacts/reports/context/handoff.md": {
+        "status": "read",
+        "sha256": "840e8ee88e09c023dff8e1243cf583ef9a908617e2a9518957f2e5a78e918eec",
+        "bytes": 10122
+      },
+      "config/settings.py": {
+        "status": "read",
+        "sha256": "020c52a9a50f05fd5f9900fb047857f42e01c0a6242b8224c67c64b1b4b3d565",
+        "bytes": 4228
+      }
+    },
+    "execution_source_default": {
+      "status": "literal_source_default",
+      "value": false,
+      "reason": "one_supported_literal_source_candidate",
+      "evidence": [
+        {
+          "line": 91,
+          "kind": "Settings.execution_enabled._bool_default_argument",
+          "literal_boolean": false,
+          "supported_syntax": true
+        }
+      ],
+      "interpretation": "Literal source declaration/default argument only; helper behavior and runtime values are not evaluated."
+    },
+    "runtime_execution": {
+      "status": "unknown",
+      "value": null,
+      "reason": "Runtime settings, credentials, process state and dotenv files were not read."
+    },
+    "service_status": "unknown",
+    "broker_status": "unknown",
+    "authorizes_resume": false,
+    "operator_pause": {
+      "status": "recorded_pause",
+      "references": [
+        {
+          "path": "artifacts/reports/context/handoff.md",
+          "line": 16,
+          "section": "2026-09-10 \u2014 Codex adapter committed; anomaly candidates filed; infrastructure phase awaiting the operator",
+          "excerpt": "- Strategy work is paused by the operator (2026-09-08). The note is filed, not encoded; the mismatches to resolve before encoding: it targets Momentum OS (terminated) and the VPS orderflow store; the desk holds one year of daily bars for a 926-name thematic universe, not decades of NYSE-breakpoint data with delistings; the rules are long-short decile sorts and the desk's live path is long-only (`ALLOW_CROSSING` false); the harness has a shuffled-signal null, not a trade-sequence bootstrap. Neare"
+        }
+      ],
+      "task_boundary": "Preserve the operator pause; this task does not authorize strategy or infrastructure resumption.",
+      "authority_rechecked": false
+    },
+    "open_question_references": [
+      {
+        "path": "artifacts/reports/context/handoff.md",
+        "line": 17,
+        "section": "2026-09-10 \u2014 Codex adapter committed; anomaly candidates filed; infrastructure phase awaiting the operator",
+        "excerpt": "- Infrastructure phase: five questions put to the operator on 2026-09-08 (execution wiring, where the loop runs, LLM cap and model, source sign-offs, handoff semantics) with a recommended package; unanswered."
+      },
+      {
+        "path": "artifacts/reports/context/handoff.md",
+        "line": 40,
+        "section": "2026-09-08 \u2014 Qanat signal substrate built (v3.2 reshaped) and merged",
+        "excerpt": "- Q8 deferred: no equivalence run, nothing retired; `overnight_premium` stays engine-only."
+      },
+      {
+        "path": "artifacts/reports/context/handoff.md",
+        "line": 45,
+        "section": "2026-09-08 \u2014 Qanat signal substrate built (v3.2 reshaped) and merged",
+        "excerpt": "- Operator decides whether to spend attempt 2 on a Qanat-backed strategy: `./desk backtest run earnings_drift --start 2025-09-08` (lands sources, pre-checks, binds the alpha, prices with the engine, records the Qanat digest)."
+      },
+      {
+        "path": "artifacts/reports/context/handoff.md",
+        "line": 67,
+        "section": "2026-09-07 \u2014 v3.1 committed and merged; v3.2 (Qanat) grilled, verdict reshape; operator to decide",
+        "excerpt": "- v3.2 verdict reshape: Qanat computes weights under its replay, our engine prices with integer shares and IBKR costs, Q8 deferred. Five grill questions await the operator (what Qanat buys beyond lineage, console and MCP; the Q8 gate; Q4 vs Q8 on `overnight_premium`; the null outside Qanat; branch policy)."
+      }
+    ],
+    "reference_limit": "Dated handoff excerpts are recorded evidence, not proof that historical questions remain unresolved or that operator authority changed.",
+    "limitations": [
+      "No project module import, desk command, broker/Qanat call, database read, strategy or backtest execution.",
+      "No environment/credential-file read, runtime health probe, attempt consumption, kill-file or artifact-manifest mutation.",
+      "AST patterns are conservative source evidence, not a Python interpreter or proof of final runtime configuration.",
+      "Only five fixed allowlisted files and read-only Git metadata are inspected; Momentum is not inspected or changed."
+    ]
+  },
+  "implementation_hashes": {
+    "projects/trading-bot/prototype/README.md": "1f243caa652e5ce62cbd973ec21124068d0214d24b044c1d68449eb8318a067c",
+    "projects/trading-bot/prototype/preflight.py": "6bf84b2ddcced574d9d400fa351147cb36933a83bc0c4bfe59fcc991c7416ecc",
+    "projects/trading-bot/prototype/test_preflight.py": "a3c96bdcbf0256972f1e5d201e5a85b4de0d34d44fcfc3566aba9aff1b474d3f"
+  },
+  "limitations": [
+    "Passive source/Git evidence only; runtime execution, services and broker status are always unknown.",
+    "AST recognizes documented syntax; it does not evaluate arbitrary Python semantics, dynamic rebinding, helpers, overrides or caches.",
+    "Handoff references preserve dated records, not a fresh operator authorization or historical-question resolution.",
+    "No original project import/test/desk/broker/Qanat/database/strategy/backtest command; no attempt consumption, source change, manifest mutation or Momentum access.",
+    "No received revenue, financial return or time-to-first-dollar established; tokens unavailable."
+  ],
+  "next_action": "Obtain the operator current answers to the existing pause/infrastructure package and a separately authorized plan; preserve Q8/governed-attempt boundaries.",
+  "actual_cost_aud": 0,
+  "actual_tokens": null,
+  "billing_mode": "existing_subscription"
+}

@@ -1,0 +1,964 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-10T08:19:43.688828+00:00",
+  "author": "Astra/Codex native planning subagent",
+  "task_id": "20260910-portfolio-build-plan",
+  "authority": "Sayuj: align both apps with Claude, then have SoojOS begin building all projects; ordinary implementation delegated. This plan remains inside the nine-project charter and current controls.",
+  "status": "plan_complete_implementation_not_claimed",
+  "implementation_dispatched_by_this_task": false,
+  "source_freshness": "Current local routes, original Equities/YouTube instructions and Git state read in this task. Private September 9 summaries supplemented by September 10 scope task, which inspected latest listed cloud conversations. This task did not itself reopen cloud apps.",
+  "source_snapshots": [
+    {
+      "path": "/Users/sayuj/.soojos/claude-cloud/2026-09-09/business-search.md",
+      "kind": "file",
+      "sha256": "e358c215766d6be4525d9de366e455f7cbaa06e40edaa65eb453eeffac6a16a3"
+    },
+    {
+      "path": "/Users/sayuj/.soojos/claude-cloud/2026-09-09/digital-marketplace-business.md",
+      "kind": "file",
+      "sha256": "a93fd2f0dd321d990d121ebc5677abe4ecdf842093186eae9ef6f78cffbb6401"
+    },
+    {
+      "path": "/Users/sayuj/.soojos/claude-cloud/2026-09-09/fan-accounts.md",
+      "kind": "file",
+      "sha256": "a4c05bc0f1f275c4c99516080b01780291632d28114940580c6b1176e8e240ca"
+    },
+    {
+      "path": "/Users/sayuj/.soojos/claude-cloud/2026-09-09/online-shops.md",
+      "kind": "file",
+      "sha256": "cfe0f2dc4f4ad20174ca0b2f27b8d901391de45b8139f774345161b1fad60503"
+    },
+    {
+      "path": "/Users/sayuj/.soojos/claude-cloud/2026-09-09/prediction-betting.md",
+      "kind": "file",
+      "sha256": "df25f1137362f00fd5d94106d967f20d8ceb372d109fd500a44972cb89c15723"
+    },
+    {
+      "path": "/Users/sayuj/.soojos/claude-cloud/2026-09-09/sale-readiness-platform.md",
+      "kind": "file",
+      "sha256": "9a5342d613a9c62d79ca0a25d957666308e2668214e75cdefdf86721f521627e"
+    },
+    {
+      "path": "/Users/sayuj/.soojos/claude-cloud/2026-09-09/trading-bot.md",
+      "kind": "file",
+      "sha256": "0d3681e4adfe435714219f60ff0cdd2a4a323cbefa98cab22cf7b88c8acb18be"
+    },
+    {
+      "path": "/Users/sayuj/.soojos/claude-cloud/2026-09-09/ugc.md",
+      "kind": "file",
+      "sha256": "fbce9dde8cb7ad32ce5630dd48e58b236adf797a7671ff3ee93865d665d12233"
+    },
+    {
+      "path": "/Users/sayuj/.soojos/claude-cloud/2026-09-09/youtube-business.md",
+      "kind": "file",
+      "sha256": "d4d545cf8b7ecbf84e9b953f19b5524fe13e0d6ff2cad210054534cc024b4d67"
+    },
+    {
+      "path": "/Users/sayuj/AI/Claude/equities-desk/CLAUDE.md",
+      "kind": "file",
+      "sha256": "d9d80b99c8f928e9220e4817f072639801f27ef322d3de4bd85e0f34f5c09d77"
+    },
+    {
+      "path": "/Users/sayuj/AI/Claude/equities-desk/README.md",
+      "kind": "file",
+      "sha256": "1a88b2f5684bee0693c03a27c10e3a822ac2a596d950375ec257a0c89b6e9c8a"
+    },
+    {
+      "path": "/Users/sayuj/AI/Claude/equities-desk/artifacts/reports/context/handoff.md",
+      "kind": "file",
+      "sha256": "840e8ee88e09c023dff8e1243cf583ef9a908617e2a9518957f2e5a78e918eec"
+    },
+    {
+      "path": "/Users/sayuj/AI/Claude/equities-desk/config/settings.py",
+      "kind": "file",
+      "sha256": "020c52a9a50f05fd5f9900fb047857f42e01c0a6242b8224c67c64b1b4b3d565"
+    },
+    {
+      "path": "/Users/sayuj/Desktop/predictos",
+      "kind": "directory",
+      "sha256": null
+    },
+    {
+      "path": "/Users/sayuj/Downloads/Projects/Predictos/predictos",
+      "kind": "directory",
+      "sha256": null
+    },
+    {
+      "path": "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build/CLAUDE.md",
+      "kind": "file",
+      "sha256": "b55d4fe15f51b00826f8025928469ab4b11dd95568bf6c7afcb809815b257675"
+    },
+    {
+      "path": "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build/PROJECT_BRIEF.md",
+      "kind": "file",
+      "sha256": "9472a97c3d8a9007ea480972b1198f6438f2b5e89d57c09791b50ea8505b3826"
+    },
+    {
+      "path": "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build/agents/TEAMS.md",
+      "kind": "file",
+      "sha256": "1c8fbb4367114f89f21d4e53791bfd21be0851885f0e4b9fd5a4c64a66282f4d"
+    },
+    {
+      "path": "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build/agents/benchmark-script.md",
+      "kind": "file",
+      "sha256": "3c095114461f3df1cf567cc61b4e545a7140b32ba8b7b286af36b395e9250efd"
+    },
+    {
+      "path": "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build/lib/gate.js",
+      "kind": "file",
+      "sha256": "c4f2959a68ad52891504ea341590e1c67a48da03d3bf685815296c3330e3defc"
+    },
+    {
+      "path": "/Users/sayuj/soojos/context/desk/scope-paths-2026-09-10.json",
+      "kind": "file",
+      "sha256": "ca91a3768c4ca47bb8abef752c2ebbe96579cae7c40c2f5b146f24a5da9dcfc2"
+    },
+    {
+      "path": "/Users/sayuj/soojos/context/desk/scope-readiness.md",
+      "kind": "file",
+      "sha256": "785d191f4648613ca8e11586d5f452ac6d1dd635ed20df8c570febd9dd09565e"
+    },
+    {
+      "path": "/Users/sayuj/soojos/context/desk/youtube-offline-validation-2026-09-10.json",
+      "kind": "file",
+      "sha256": "543191b57a98d541b91a5cc0f85096f2406d5c6df1bd15f7f95185effa5f5c94"
+    },
+    {
+      "path": "/Users/sayuj/soojos/projects/business-search/CLAUDE.md",
+      "kind": "file",
+      "sha256": "91945217a50d5043c5a8dc258ff706e38ddf0f763b1748dffe18cf109d125a5a"
+    },
+    {
+      "path": "/Users/sayuj/soojos/projects/digital-marketplace-business/CLAUDE.md",
+      "kind": "file",
+      "sha256": "a43450d7454a77082231fce68919687bd6c9f9966ee0954337f94111f26243e8"
+    },
+    {
+      "path": "/Users/sayuj/soojos/projects/fan-accounts/CLAUDE.md",
+      "kind": "file",
+      "sha256": "748c1d72d24b2f9e81ff4303ea848c8e80eab24421b91f865776f5054b0414ba"
+    },
+    {
+      "path": "/Users/sayuj/soojos/projects/online-shops/CLAUDE.md",
+      "kind": "file",
+      "sha256": "3303701ed4c3565b5afb7ab93bb8afa3091321c35cb6a278ccbe6c2d127367cf"
+    },
+    {
+      "path": "/Users/sayuj/soojos/projects/prediction-betting/CLAUDE.md",
+      "kind": "file",
+      "sha256": "4469e4cbb09094a4a78e38126807d6c6909ae5b696fc4bd0e5b36a0b8a1ac48a"
+    },
+    {
+      "path": "/Users/sayuj/soojos/projects/sale-readiness-platform/CLAUDE.md",
+      "kind": "file",
+      "sha256": "35bdc69550b9a231c60aff6808327403db252be4a41ba94cacba40a72ef13c9d"
+    },
+    {
+      "path": "/Users/sayuj/soojos/projects/trading-bot/CLAUDE.md",
+      "kind": "file",
+      "sha256": "af2afb5e97db3a03e7bc70d5448d6cac6f4aaed9f98401fd239968a057a06c11"
+    },
+    {
+      "path": "/Users/sayuj/soojos/projects/ugc/CLAUDE.md",
+      "kind": "file",
+      "sha256": "7c151a27b7f092a78a9c07b2436b334ddf691ff5c60549455ad25ede84bf51d7"
+    },
+    {
+      "path": "/Users/sayuj/soojos/projects/youtube-business/CLAUDE.md",
+      "kind": "file",
+      "sha256": "ac5869fcd81ce362c3bf881e9b898f636e6a880558348965adaf36ffc7395b69"
+    }
+  ],
+  "repositories": {
+    "equities": {
+      "path": "/Users/sayuj/AI/Claude/equities-desk",
+      "head": "34ae039f3357771c8ec247da3a431cea265ab864",
+      "status": "clean",
+      "runtime": "not checked; source handoff says paused"
+    },
+    "youtube": {
+      "path": "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build",
+      "head": "abb2d8bb1e538784f84c957fe4c93f7206fc45cb",
+      "status": "8 modified tracked paths, 5 untracked entries; preserved",
+      "offline_validation": "19 pipeline checks and both trends suites passed in prior task, not rerun here"
+    }
+  },
+  "design": {
+    "verdict": "reshape",
+    "choice": "Nine small offline artifacts, sequenced under the existing two-worker desk control, with production/live integrations deferred to evidence-specific gates.",
+    "alternatives_considered": [
+      "Build nine complete businesses now: exceeds bounded task budgets and silently invents unresolved sources/product choices.",
+      "Wait for perfect source recovery everywhere: delays useful reversible work whose inputs are already clear.",
+      "Selected: one independently testable offline slice per project, retaining ambiguity and the current trading pause."
+    ],
+    "assumptions": [
+      {
+        "claim": "Existing plan permits zero-new-cash local work inside the approved scope.",
+        "classification": "safe",
+        "basis": "Current user request and approved policy v2."
+      },
+      {
+        "claim": "The six cloud planning projects have no newer hidden build.",
+        "classification": "unverified",
+        "handling": "No absence claim; prototypes are isolated and must be reconciled before integration."
+      },
+      {
+        "claim": "A prototype has demand or positive expected return.",
+        "classification": "load-bearing for launch, unverified",
+        "handling": "No launch/capital decision; returns and first-dollar timing null until evidence."
+      },
+      {
+        "claim": "Read-only source defaults establish live trading safety.",
+        "classification": "false",
+        "handling": "No runtime assertion, import, broker access or pause resumption."
+      }
+    ],
+    "failure_modes": [
+      "Duplicating a newer Claude build: isolate prototypes, label source freshness and reconcile current handoff before integration.",
+      "Treating synthetic examples or deterministic tests as market proof: require separate demand/cost/received-revenue evidence.",
+      "Silent external calls or financial activation through old entrypoints: forbid original imports/entrypoints; exercise new code on allowlisted fixtures only."
+    ],
+    "cheapest_test": "Run the FIFO date tracker on boundary fixtures and review its output against the source purpose, within one 15-minute unit and A$0 incremental cash. This tests product function, not demand."
+  },
+  "execution": {
+    "order": [
+      "20260910-fifo-expiry-prototype",
+      "20260910-youtube-script-evaluator",
+      "20260910-ugc-sample-production-kit",
+      "20260910-sale-document-intake",
+      "20260910-acquisition-intake-normalizer",
+      "20260910-shop-economics-prototype",
+      "20260910-disclosed-persona-kit",
+      "20260910-predictos-manifest-tool",
+      "20260910-equities-passive-preflight"
+    ],
+    "max_workers": 2,
+    "tasks_must_finish_before_descendants": true,
+    "max_chain_depth": 3,
+    "ancestry": "These proposed first builds are depth-two children of this completed planning task. A depth-three review is the final family slot; report and stop there. Do not create replacement families to avoid controls.",
+    "enqueue_note": "The JSON contains desk-compatible proposals with queued status for later admission; this planning task did not add them to queue.jsonl. The coordinator may deduplicate with an already-started equivalent task rather than dispatch twice.",
+    "location_note": "Create new standalone prototype code under projects/<slug>/prototype inside its SoojOS task worktree. Do not duplicate external repositories or promote these prototype folders as canonical production sources. Read original instructions for each source."
+  },
+  "economic_ranking": {
+    "ranked_by_verified_expected_return": false,
+    "reason": "All nine lack comparable demand/conversion/received-revenue evidence. Numeric return/first-dollar ranges remain null; execution order reflects cheapest clear experiment only.",
+    "next_evidence": "After each functional slice, seek one specific demand/source check and define a falsifiable success/stop condition before any capital proposal."
+  },
+  "tasks": [
+    {
+      "id": "20260910-fifo-expiry-prototype",
+      "project": "digital-marketplace-business",
+      "task": "Build an offline FIFO certification expiry tracker. The existing source explicitly selects a FIFO certification/mobilisation tracker first; date tracking is useful without asserting site eligibility.",
+      "assignee": "codex",
+      "inputs": [
+        "/Users/sayuj/soojos/projects/digital-marketplace-business/CLAUDE.md",
+        "/Users/sayuj/soojos/context/desk/scope-readiness.md",
+        "/Users/sayuj/.soojos/claude-cloud/2026-09-09/digital-marketplace-business.md"
+      ],
+      "constraints": [
+        "Read the current project CLAUDE.md, shared workflow and latest handoff immediately before work; STOP including dangling symlinks prevents dispatch.",
+        "Zero new cash, no new dependencies or services, no credentials/account edits, no live financial activity, no dormant-service restarts, no cloud instruction edits, no push or main merge.",
+        "Use a distinct desk/<task-id> worktree; commit exact tested artifacts. Preserve all original project files and uncommitted changes. No blind copy or two-way sync.",
+        "Synthetic or explicitly supplied non-secret inputs only. Label prototypes and synthetic examples; unknown evidence remains unknown. No production or revenue claim from a passing local test.",
+        "Maximum 15 minutes including verification and Desk.finish; unknown tokens are null, not zero. Use current desk admission and truthful existing-subscription accounting.",
+        "No legal/compliance rules, training recommendations, employer validation, reminders sent, storefront or payment integration. The tracker records dates supplied by its user."
+      ],
+      "priority": {
+        "rank": 1,
+        "reason": "Execution order reflects clarity of the current artifact and cheapest useful evidence, not a proven economic ranking. The existing source explicitly selects a FIFO certification/mobilisation tracker first; date tracking is useful without asserting site eligibility."
+      },
+      "expected_return": {
+        "currency": "AUD",
+        "horizon_days": 90,
+        "net_low": null,
+        "net_high": null,
+        "confidence": "unassessed",
+        "basis": "No verified buyer demand, conversion rate or received-revenue evidence. This offline slice costs A$0 incremental cash; its own direct revenue is not established."
+      },
+      "expected_time_to_first_dollar_days": {
+        "low": null,
+        "high": null,
+        "basis": "Unknown; requires qualified demand and an approved path to delivery/collection. A prototype completion date is not time to revenue."
+      },
+      "created_at": "2026-09-10T08:19:43.688828+00:00",
+      "status": "queued",
+      "budget_tokens": null,
+      "budget_minutes": 15,
+      "budget_aud": 0,
+      "cycle_id": "20260910-portfolio-build-plan",
+      "parent_id": "20260910-portfolio-build-plan",
+      "chain_depth": 2,
+      "branch": "desk/20260910-fifo-expiry-prototype",
+      "worktree": null,
+      "action_kind": "code",
+      "approval_refs": [],
+      "planning_state": "proposed_not_enqueued",
+      "readiness": "ready_offline",
+      "implementation_root": "projects/digital-marketplace-business/prototype",
+      "interfaces": {
+        "input": "CSV records: record_id, certificate_name, issued_on, expires_on, note; explicit --as-of YYYY-MM-DD and nonnegative reminder_days. Dates are date-only, not timestamps.",
+        "output": "tracker.py CLI -> deterministic CSV/JSON with expired, expires_today, due_soon, current, unknown or invalid status. README and synthetic fixtures beside the program."
+      },
+      "steps": [
+        "Read the FIFO source and define the six status meanings before coding (2 min).",
+        "Implement the pure date classifier and CSV reader/writer with the standard library (6 min).",
+        "Exercise boundary/error fixtures and import/export round-trip (4 min).",
+        "Commit evidence, append task handoff and finish accounting (3 min)."
+      ],
+      "acceptance_criteria": [
+        "Expiry yesterday/today/tomorrow and exactly the reminder boundary have distinct documented results.",
+        "A valid 29 February is accepted; an invalid calendar date, duplicate record_id or issue-after-expiry row is reported invalid rather than silently corrected.",
+        "Missing expiry remains unknown. No assertion that a worker is qualified, compliant or allowed on site.",
+        "Quoted commas and UTF-8 notes survive CSV round-trip; output is stable for a fixed as-of date; no network used."
+      ],
+      "source_questions_before_production": [
+        "Before expanding or launching, retrieve the full current FIFO specification and obtain qualified review of compliance-adjacent wording. Buyer demand, pricing and competing free tools remain unverified."
+      ],
+      "evidence_of_completion": [
+        "Exact commit and worktree",
+        "Commands and actual results",
+        "Source hashes/status before and after where external inputs are read",
+        "Shared handoff and Desk outbox with measured minutes, unknown tokens and actual incremental cash"
+      ]
+    },
+    {
+      "id": "20260910-youtube-script-evaluator",
+      "project": "youtube-business",
+      "task": "Build the deterministic part of the YouTube script regression evaluator. TEAMS.md places QA/evaluator before more agents. The current offline pipeline passed 19 checks and both trends suites, but there is no QA evaluator implementation in the inspected file inventory.",
+      "assignee": "codex",
+      "inputs": [
+        "/Users/sayuj/soojos/projects/youtube-business/CLAUDE.md",
+        "/Users/sayuj/soojos/context/desk/scope-readiness.md",
+        "/Users/sayuj/.soojos/claude-cloud/2026-09-09/youtube-business.md",
+        "/Users/sayuj/soojos/context/desk/youtube-offline-validation-2026-09-10.json",
+        "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build/CLAUDE.md",
+        "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build/PROJECT_BRIEF.md",
+        "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build/agents/TEAMS.md",
+        "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build/agents/benchmark-script.md",
+        "/Users/sayuj/Downloads/Projects/Youtube Build/Youtube Build/lib/gate.js"
+      ],
+      "constraints": [
+        "Read the current project CLAUDE.md, shared workflow and latest handoff immediately before work; STOP including dangling symlinks prevents dispatch.",
+        "Zero new cash, no new dependencies or services, no credentials/account edits, no live financial activity, no dormant-service restarts, no cloud instruction edits, no push or main merge.",
+        "Use a distinct desk/<task-id> worktree; commit exact tested artifacts. Preserve all original project files and uncommitted changes. No blind copy or two-way sync.",
+        "Synthetic or explicitly supplied non-secret inputs only. Label prototypes and synthetic examples; unknown evidence remains unknown. No production or revenue claim from a passing local test.",
+        "Maximum 15 minutes including verification and Desk.finish; unknown tokens are null, not zero. Use current desk admission and truthful existing-subscription accounting.",
+        "This is a standalone prototype under the SoojOS task branch, not a second copy of the YouTube repository. Later integration requires a deliberate branch in the original project.",
+        "No live LLM/render/Notion/upload calls, no cron enabling, no channel-config placeholder changes, no human claim approval or publishing."
+      ],
+      "priority": {
+        "rank": 2,
+        "reason": "Execution order reflects clarity of the current artifact and cheapest useful evidence, not a proven economic ranking. TEAMS.md places QA/evaluator before more agents. The current offline pipeline passed 19 checks and both trends suites, but there is no QA evaluator implementation in the inspected file inventory."
+      },
+      "expected_return": {
+        "currency": "AUD",
+        "horizon_days": 90,
+        "net_low": null,
+        "net_high": null,
+        "confidence": "unassessed",
+        "basis": "No verified buyer demand, conversion rate or received-revenue evidence. This offline slice costs A$0 incremental cash; its own direct revenue is not established."
+      },
+      "expected_time_to_first_dollar_days": {
+        "low": null,
+        "high": null,
+        "basis": "Unknown; requires qualified demand and an approved path to delivery/collection. A prototype completion date is not time to revenue."
+      },
+      "created_at": "2026-09-10T08:19:43.688828+00:00",
+      "status": "queued",
+      "budget_tokens": null,
+      "budget_minutes": 15,
+      "budget_aud": 0,
+      "cycle_id": "20260910-portfolio-build-plan",
+      "parent_id": "20260910-portfolio-build-plan",
+      "chain_depth": 2,
+      "branch": "desk/20260910-youtube-script-evaluator",
+      "worktree": null,
+      "action_kind": "code",
+      "approval_refs": [],
+      "planning_state": "proposed_not_enqueued",
+      "readiness": "ready_offline",
+      "implementation_root": "projects/youtube-business/prototype",
+      "interfaces": {
+        "input": "Explicit local draft JSON/script plus read-only current channel config and benchmark paths; no .env or original modules are executed.",
+        "output": "evaluate.js -> JSON evidence for narration count, unresolved VERIFY occurrences, repeated-transition candidates and per-dimension requires_human_review flags; fixture tests and usage README. No aggregate quality score or publication decision."
+      },
+      "steps": [
+        "Read actual benchmark/config and current editing helpers; preserve exact narration conventions if already implemented (3 min).",
+        "Implement pure local measurements and fixture inputs with built-in Node APIs (5 min).",
+        "Run positive, malformed, visual-cue and regression examples; confirm original hashes unchanged (4 min).",
+        "Record limitations, commit and finish (3 min)."
+      ],
+      "acceptance_criteria": [
+        "Visual cues/beat headers do not inflate narration count; text fixtures exercise the actual agreed convention.",
+        "Unresolved VERIFY is surfaced even when a supplied model verdict says pass; no output clears or mutates a claim.",
+        "Malformed/missing draft/config produces a clear error, never an all-clear result.",
+        "Editorial quality, novelty, factual validity and retention remain ungraded/require review; original pipeline gates and files are unchanged."
+      ],
+      "source_questions_before_production": [
+        "Before real render: confirm current Notion claims configuration, four original human claim approvals and actual renderer setup/cost. Full quality evaluation needs human judgements and eventual retention evidence."
+      ],
+      "evidence_of_completion": [
+        "Exact commit and worktree",
+        "Commands and actual results",
+        "Source hashes/status before and after where external inputs are read",
+        "Shared handoff and Desk outbox with measured minutes, unknown tokens and actual incremental cash"
+      ]
+    },
+    {
+      "id": "20260910-ugc-sample-production-kit",
+      "project": "ugc",
+      "task": "Build a reusable UGC sample production kit and three sample ad briefs. The source concerns flat-fee brand video work and a low-cost portfolio experiment. A concrete sample production package tests ability to deliver before marketplace setup or outreach.",
+      "assignee": "codex",
+      "inputs": [
+        "/Users/sayuj/soojos/projects/ugc/CLAUDE.md",
+        "/Users/sayuj/soojos/context/desk/scope-readiness.md",
+        "/Users/sayuj/.soojos/claude-cloud/2026-09-09/ugc.md"
+      ],
+      "constraints": [
+        "Read the current project CLAUDE.md, shared workflow and latest handoff immediately before work; STOP including dangling symlinks prevents dispatch.",
+        "Zero new cash, no new dependencies or services, no credentials/account edits, no live financial activity, no dormant-service restarts, no cloud instruction edits, no push or main merge.",
+        "Use a distinct desk/<task-id> worktree; commit exact tested artifacts. Preserve all original project files and uncommitted changes. No blind copy or two-way sync.",
+        "Synthetic or explicitly supplied non-secret inputs only. Label prototypes and synthetic examples; unknown evidence remains unknown. No production or revenue claim from a passing local test.",
+        "Maximum 15 minutes including verification and Desk.finish; unknown tokens are null, not zero. Use current desk admission and truthful existing-subscription accounting.",
+        "No new account, course purchase, public posting, brand contact or generated likeness. No historical earnings claims repeated as current rates."
+      ],
+      "priority": {
+        "rank": 3,
+        "reason": "Execution order reflects clarity of the current artifact and cheapest useful evidence, not a proven economic ranking. The source concerns flat-fee brand video work and a low-cost portfolio experiment. A concrete sample production package tests ability to deliver before marketplace setup or outreach."
+      },
+      "expected_return": {
+        "currency": "AUD",
+        "horizon_days": 90,
+        "net_low": null,
+        "net_high": null,
+        "confidence": "unassessed",
+        "basis": "No verified buyer demand, conversion rate or received-revenue evidence. This offline slice costs A$0 incremental cash; its own direct revenue is not established."
+      },
+      "expected_time_to_first_dollar_days": {
+        "low": null,
+        "high": null,
+        "basis": "Unknown; requires qualified demand and an approved path to delivery/collection. A prototype completion date is not time to revenue."
+      },
+      "created_at": "2026-09-10T08:19:43.688828+00:00",
+      "status": "queued",
+      "budget_tokens": null,
+      "budget_minutes": 15,
+      "budget_aud": 0,
+      "cycle_id": "20260910-portfolio-build-plan",
+      "parent_id": "20260910-portfolio-build-plan",
+      "chain_depth": 2,
+      "branch": "desk/20260910-ugc-sample-production-kit",
+      "worktree": null,
+      "action_kind": "code",
+      "approval_refs": [],
+      "planning_state": "proposed_not_enqueued",
+      "readiness": "ready_offline",
+      "implementation_root": "projects/ugc/prototype",
+      "interfaces": {
+        "input": "A generic non-branded household item and explicitly synthetic client brief; no claims of actual clients or product performance.",
+        "output": "brief-template.json, three numbered sample scripts/shot lists, delivery-checklist.md and validate.py. Each script is labelled speculative sample and contains shot duration, spoken text, asset source/rights and review state."
+      },
+      "steps": [
+        "Choose one ordinary non-branded object as a reversible sample assumption and state intended viewer/task (2 min).",
+        "Create three materially different 20–30-second scripts and practical shot lists using original text (6 min).",
+        "Check timing arithmetic, required labels and asset/claim completeness (4 min).",
+        "Commit production kit, log what is still unfilmed and finish (3 min)."
+      ],
+      "acceptance_criteria": [
+        "Each shot list totals its declared duration; the validator catches a missing duration, missing sample label and missing asset-rights status.",
+        "No invented testimonial, client logo, paid partnership, personal experience or unsupported outcome claim.",
+        "Delivery checklist includes consent/rights, client revisions and actual file checks; no invoice or outreach is sent.",
+        "Artifacts clearly state that videos have not been recorded, edited, delivered to a client or sold."
+      ],
+      "source_questions_before_production": [
+        "Before public portfolio or client work: establish available filming assets/person consent, preferred product category and sourced current demand. Pricing and received revenue are unknown."
+      ],
+      "evidence_of_completion": [
+        "Exact commit and worktree",
+        "Commands and actual results",
+        "Source hashes/status before and after where external inputs are read",
+        "Shared handoff and Desk outbox with measured minutes, unknown tokens and actual incremental cash"
+      ]
+    },
+    {
+      "id": "20260910-sale-document-intake",
+      "project": "sale-readiness-platform",
+      "task": "Build a document-evidence intake validator for three synthetic companies. The existing brief makes uploaded document intelligence central and specifies dry runs on three synthetic companies. A transparent evidence inventory is possible before recovering full PRD decisions.",
+      "assignee": "codex",
+      "inputs": [
+        "/Users/sayuj/soojos/projects/sale-readiness-platform/CLAUDE.md",
+        "/Users/sayuj/soojos/context/desk/scope-readiness.md",
+        "/Users/sayuj/.soojos/claude-cloud/2026-09-09/sale-readiness-platform.md"
+      ],
+      "constraints": [
+        "Read the current project CLAUDE.md, shared workflow and latest handoff immediately before work; STOP including dangling symlinks prevents dispatch.",
+        "Zero new cash, no new dependencies or services, no credentials/account edits, no live financial activity, no dormant-service restarts, no cloud instruction edits, no push or main merge.",
+        "Use a distinct desk/<task-id> worktree; commit exact tested artifacts. Preserve all original project files and uncommitted changes. No blind copy or two-way sync.",
+        "Synthetic or explicitly supplied non-secret inputs only. Label prototypes and synthetic examples; unknown evidence remains unknown. No production or revenue claim from a passing local test.",
+        "Maximum 15 minutes including verification and Desk.finish; unknown tokens are null, not zero. Use current desk admission and truthful existing-subscription accounting.",
+        "Prototype metadata vocabulary is provisional and cannot supersede PRD v0.1 §§7–8, D1–D7, G0–G6 or R1–R6. No real document upload, OCR/LLM service or customer account."
+      ],
+      "priority": {
+        "rank": 4,
+        "reason": "Execution order reflects clarity of the current artifact and cheapest useful evidence, not a proven economic ranking. The existing brief makes uploaded document intelligence central and specifies dry runs on three synthetic companies. A transparent evidence inventory is possible before recovering full PRD decisions."
+      },
+      "expected_return": {
+        "currency": "AUD",
+        "horizon_days": 90,
+        "net_low": null,
+        "net_high": null,
+        "confidence": "unassessed",
+        "basis": "No verified buyer demand, conversion rate or received-revenue evidence. This offline slice costs A$0 incremental cash; its own direct revenue is not established."
+      },
+      "expected_time_to_first_dollar_days": {
+        "low": null,
+        "high": null,
+        "basis": "Unknown; requires qualified demand and an approved path to delivery/collection. A prototype completion date is not time to revenue."
+      },
+      "created_at": "2026-09-10T08:19:43.688828+00:00",
+      "status": "queued",
+      "budget_tokens": null,
+      "budget_minutes": 15,
+      "budget_aud": 0,
+      "cycle_id": "20260910-portfolio-build-plan",
+      "parent_id": "20260910-portfolio-build-plan",
+      "chain_depth": 2,
+      "branch": "desk/20260910-sale-document-intake",
+      "worktree": null,
+      "action_kind": "code",
+      "approval_refs": [],
+      "planning_state": "proposed_not_enqueued",
+      "readiness": "ready_offline",
+      "implementation_root": "projects/sale-readiness-platform/prototype",
+      "interfaces": {
+        "input": "Three synthetic JSON company manifests with company_id, document_id, document_type, reporting_period, supplied_filename, source_reference and review_state. This slice handles metadata only.",
+        "output": "intake.py -> per-company evidence inventory and missing/invalid fields; three fixtures, data dictionary and README. No valuation or readiness score."
+      },
+      "steps": [
+        "Define a minimal metadata contract and mark all product-specific thresholds undecided (3 min).",
+        "Implement structural validation and duplicate/document-period checks using the standard library (5 min).",
+        "Run three synthetic company examples plus malformed, duplicate and missing-source cases (4 min).",
+        "Record scope versus missing PRD, commit and finish (3 min)."
+      ],
+      "acceptance_criteria": [
+        "All three synthetic companies produce separate deterministic reports without cross-company mixing.",
+        "Duplicate document IDs, malformed periods and absent provenance are surfaced; missing documents cannot silently become received.",
+        "No document contents, real financial statements or personal data are processed; metadata is clearly synthetic.",
+        "Report distinguishes provided, needs_review and missing/invalid evidence without asserting legal adequacy, valuation or sale readiness."
+      ],
+      "source_questions_before_production": [
+        "Recover the actual current PRD, resolved/unresolved D1–D7 and latest AU/document-intelligence amendments before integrating product rules or real documents."
+      ],
+      "evidence_of_completion": [
+        "Exact commit and worktree",
+        "Commands and actual results",
+        "Source hashes/status before and after where external inputs are read",
+        "Shared handoff and Desk outbox with measured minutes, unknown tokens and actual incremental cash"
+      ]
+    },
+    {
+      "id": "20260910-acquisition-intake-normalizer",
+      "project": "business-search",
+      "task": "Build an offline acquisition-listing normalizer and duplicate detector. The source specifies Greater Perth home services/trades and manufacturing/industrial up to A$1.5M, with an existing Notion pipeline. Normalize evidence before any additional scan or automation.",
+      "assignee": "codex",
+      "inputs": [
+        "/Users/sayuj/soojos/projects/business-search/CLAUDE.md",
+        "/Users/sayuj/soojos/context/desk/scope-readiness.md",
+        "/Users/sayuj/.soojos/claude-cloud/2026-09-09/business-search.md"
+      ],
+      "constraints": [
+        "Read the current project CLAUDE.md, shared workflow and latest handoff immediately before work; STOP including dangling symlinks prevents dispatch.",
+        "Zero new cash, no new dependencies or services, no credentials/account edits, no live financial activity, no dormant-service restarts, no cloud instruction edits, no push or main merge.",
+        "Use a distinct desk/<task-id> worktree; commit exact tested artifacts. Preserve all original project files and uncommitted changes. No blind copy or two-way sync.",
+        "Synthetic or explicitly supplied non-secret inputs only. Label prototypes and synthetic examples; unknown evidence remains unknown. No production or revenue claim from a passing local test.",
+        "Maximum 15 minutes including verification and Desk.finish; unknown tokens are null, not zero. Use current desk admission and truthful existing-subscription accounting.",
+        "No seller contact, broker call, offer, live scrape, new schedule or Notion write. Do not duplicate the existing pipeline or assume its drafted schedule is active."
+      ],
+      "priority": {
+        "rank": 5,
+        "reason": "Execution order reflects clarity of the current artifact and cheapest useful evidence, not a proven economic ranking. The source specifies Greater Perth home services/trades and manufacturing/industrial up to A$1.5M, with an existing Notion pipeline. Normalize evidence before any additional scan or automation."
+      },
+      "expected_return": {
+        "currency": "AUD",
+        "horizon_days": 90,
+        "net_low": null,
+        "net_high": null,
+        "confidence": "unassessed",
+        "basis": "No verified buyer demand, conversion rate or received-revenue evidence. This offline slice costs A$0 incremental cash; its own direct revenue is not established."
+      },
+      "expected_time_to_first_dollar_days": {
+        "low": null,
+        "high": null,
+        "basis": "Unknown; requires qualified demand and an approved path to delivery/collection. A prototype completion date is not time to revenue."
+      },
+      "created_at": "2026-09-10T08:19:43.688828+00:00",
+      "status": "queued",
+      "budget_tokens": null,
+      "budget_minutes": 15,
+      "budget_aud": 0,
+      "cycle_id": "20260910-portfolio-build-plan",
+      "parent_id": "20260910-portfolio-build-plan",
+      "chain_depth": 2,
+      "branch": "desk/20260910-acquisition-intake-normalizer",
+      "worktree": null,
+      "action_kind": "code",
+      "approval_refs": [],
+      "planning_state": "proposed_not_enqueued",
+      "readiness": "ready_offline",
+      "implementation_root": "projects/business-search/prototype",
+      "interfaces": {
+        "input": "Explicit synthetic/manual JSON listings: source_url, observed_at, title, location_text, sector_text, asking_price_aud, vendor_finance_claim, source_quote.",
+        "output": "normalize.py -> deduplicated normalized JSON and review reasons; preserve original source text. Unknown price/location/finance stays null or unknown."
+      },
+      "steps": [
+        "Translate only explicit search criteria into a documented input contract (2 min).",
+        "Implement source-URL canonicalization, dedupe and evidence-preserving normalizer (6 min).",
+        "Test duplicate URLs, tracking parameters, unknown/over-ceiling prices and unsupported financing claims (4 min).",
+        "Commit report/fixtures and finish (3 min)."
+      ],
+      "acceptance_criteria": [
+        "Same listing with ordinary tracking parameters is flagged as duplicate while distinct listing paths remain distinct.",
+        "A missing price is unknown, not zero; over A$1.5M is flagged against the documented preference.",
+        "Perth/sector suitability requiring inference is marked needs_review; no invented fit score.",
+        "Vendor finance is a sourced seller claim or unknown, never financing approval. No 30% deposit assumption is applied automatically."
+      ],
+      "source_questions_before_production": [
+        "Before live intake/sync, inspect current Notion pipeline 2411c6fd1c734eb7bf57451b596f120d and existing schedule/schema. Financing capacity and deal terms remain unverified."
+      ],
+      "evidence_of_completion": [
+        "Exact commit and worktree",
+        "Commands and actual results",
+        "Source hashes/status before and after where external inputs are read",
+        "Shared handoff and Desk outbox with measured minutes, unknown tokens and actual incremental cash"
+      ]
+    },
+    {
+      "id": "20260910-shop-economics-prototype",
+      "project": "online-shops",
+      "task": "Build an explicit-input shop unit-economics calculator. No niche, supplier or storefront is chosen. A transparent calculator exposes the cash assumptions needed to reject poor products before account setup or inventory spend.",
+      "assignee": "codex",
+      "inputs": [
+        "/Users/sayuj/soojos/projects/online-shops/CLAUDE.md",
+        "/Users/sayuj/soojos/context/desk/scope-readiness.md",
+        "/Users/sayuj/.soojos/claude-cloud/2026-09-09/online-shops.md"
+      ],
+      "constraints": [
+        "Read the current project CLAUDE.md, shared workflow and latest handoff immediately before work; STOP including dangling symlinks prevents dispatch.",
+        "Zero new cash, no new dependencies or services, no credentials/account edits, no live financial activity, no dormant-service restarts, no cloud instruction edits, no push or main merge.",
+        "Use a distinct desk/<task-id> worktree; commit exact tested artifacts. Preserve all original project files and uncommitted changes. No blind copy or two-way sync.",
+        "Synthetic or explicitly supplied non-secret inputs only. Label prototypes and synthetic examples; unknown evidence remains unknown. No production or revenue claim from a passing local test.",
+        "Maximum 15 minutes including verification and Desk.finish; unknown tokens are null, not zero. Use current desk admission and truthful existing-subscription accounting.",
+        "No selected store/niche/supplier, account, checkout, inventory purchase, tax/legal advice or advertising campaign. No scraped rates or synthetic values labelled as market evidence."
+      ],
+      "priority": {
+        "rank": 6,
+        "reason": "Execution order reflects clarity of the current artifact and cheapest useful evidence, not a proven economic ranking. No niche, supplier or storefront is chosen. A transparent calculator exposes the cash assumptions needed to reject poor products before account setup or inventory spend."
+      },
+      "expected_return": {
+        "currency": "AUD",
+        "horizon_days": 90,
+        "net_low": null,
+        "net_high": null,
+        "confidence": "unassessed",
+        "basis": "No verified buyer demand, conversion rate or received-revenue evidence. This offline slice costs A$0 incremental cash; its own direct revenue is not established."
+      },
+      "expected_time_to_first_dollar_days": {
+        "low": null,
+        "high": null,
+        "basis": "Unknown; requires qualified demand and an approved path to delivery/collection. A prototype completion date is not time to revenue."
+      },
+      "created_at": "2026-09-10T08:19:43.688828+00:00",
+      "status": "queued",
+      "budget_tokens": null,
+      "budget_minutes": 15,
+      "budget_aud": 0,
+      "cycle_id": "20260910-portfolio-build-plan",
+      "parent_id": "20260910-portfolio-build-plan",
+      "chain_depth": 2,
+      "branch": "desk/20260910-shop-economics-prototype",
+      "worktree": null,
+      "action_kind": "code",
+      "approval_refs": [],
+      "planning_state": "proposed_not_enqueued",
+      "readiness": "ready_offline",
+      "implementation_root": "projects/online-shops/prototype",
+      "interfaces": {
+        "input": "Single-unit orders only. JSON AUD amounts supplied explicitly: selling_price, product_cost, inbound_per_unit, outbound_per_order, packaging_per_order, payment_fee_per_order, expected_return_cost_per_order, advertising_cost_per_order; no defaults for unknown fields.",
+        "output": "economics.py -> arithmetic contribution per order before overhead/tax, break-even advertising allowance and separate missing-input list; synthetic scenario fixtures. Decimal cents, not binary float."
+      },
+      "steps": [
+        "Define units and arithmetic with labelled synthetic examples; leave GST/tax treatment out of this slice (3 min).",
+        "Implement Decimal calculation and required/nonnegative input validation (5 min).",
+        "Run exact-cent, negative-margin, missing-field and zero-price examples (4 min).",
+        "Document assumptions, commit and finish (3 min)."
+      ],
+      "acceptance_criteria": [
+        "Missing supplier/returns/shipping/ad costs cause incomplete evidence rather than an assumed profitable result.",
+        "Exact-cent hand-calculated examples match; negative contribution is retained, not clamped.",
+        "Revenue and costs are consistently per order/unit as documented; invalid negative inputs are rejected.",
+        "Outputs say contribution before overhead/tax, not profit forecast or an investment recommendation."
+      ],
+      "source_questions_before_production": [
+        "Before choosing a product/store: obtain candidate niche, verifiable supplier terms, delivery/returns evidence and traffic acquisition assumptions. Seller obligations and current platform terms need scoped primary-source research."
+      ],
+      "evidence_of_completion": [
+        "Exact commit and worktree",
+        "Commands and actual results",
+        "Source hashes/status before and after where external inputs are read",
+        "Shared handoff and Desk outbox with measured minutes, unknown tokens and actual incremental cash"
+      ]
+    },
+    {
+      "id": "20260910-disclosed-persona-kit",
+      "project": "fan-accounts",
+      "task": "Build a disclosed fictional-persona content kit with a disclosure validator. The approved direction permits transparent virtual characters or creator tools, while the source has not chosen a business model. A non-sexual fictional sample is a reversible design experiment.",
+      "assignee": "codex",
+      "inputs": [
+        "/Users/sayuj/soojos/projects/fan-accounts/CLAUDE.md",
+        "/Users/sayuj/soojos/context/desk/scope-readiness.md",
+        "/Users/sayuj/.soojos/claude-cloud/2026-09-09/fan-accounts.md"
+      ],
+      "constraints": [
+        "Read the current project CLAUDE.md, shared workflow and latest handoff immediately before work; STOP including dangling symlinks prevents dispatch.",
+        "Zero new cash, no new dependencies or services, no credentials/account edits, no live financial activity, no dormant-service restarts, no cloud instruction edits, no push or main merge.",
+        "Use a distinct desk/<task-id> worktree; commit exact tested artifacts. Preserve all original project files and uncommitted changes. No blind copy or two-way sync.",
+        "Synthetic or explicitly supplied non-secret inputs only. Label prototypes and synthetic examples; unknown evidence remains unknown. No production or revenue claim from a passing local test.",
+        "Maximum 15 minutes including verification and Desk.finish; unknown tokens are null, not zero. Use current desk admission and truthful existing-subscription accounting.",
+        "No real-person likeness generation, account creation, platform posting, subscription sales or contact. Proposed fictional direction is a sample, not a claim that the historical project selected it."
+      ],
+      "priority": {
+        "rank": 7,
+        "reason": "Execution order reflects clarity of the current artifact and cheapest useful evidence, not a proven economic ranking. The approved direction permits transparent virtual characters or creator tools, while the source has not chosen a business model. A non-sexual fictional sample is a reversible design experiment."
+      },
+      "expected_return": {
+        "currency": "AUD",
+        "horizon_days": 90,
+        "net_low": null,
+        "net_high": null,
+        "confidence": "unassessed",
+        "basis": "No verified buyer demand, conversion rate or received-revenue evidence. This offline slice costs A$0 incremental cash; its own direct revenue is not established."
+      },
+      "expected_time_to_first_dollar_days": {
+        "low": null,
+        "high": null,
+        "basis": "Unknown; requires qualified demand and an approved path to delivery/collection. A prototype completion date is not time to revenue."
+      },
+      "created_at": "2026-09-10T08:19:43.688828+00:00",
+      "status": "queued",
+      "budget_tokens": null,
+      "budget_minutes": 15,
+      "budget_aud": 0,
+      "cycle_id": "20260910-portfolio-build-plan",
+      "parent_id": "20260910-portfolio-build-plan",
+      "chain_depth": 2,
+      "branch": "desk/20260910-disclosed-persona-kit",
+      "worktree": null,
+      "action_kind": "code",
+      "approval_refs": [],
+      "planning_state": "proposed_not_enqueued",
+      "readiness": "ready_offline",
+      "implementation_root": "projects/fan-accounts/prototype",
+      "interfaces": {
+        "input": "One explicitly fictional adult character profile, original generic educational/entertainment text and a per-asset provenance/rights inventory.",
+        "output": "persona.json, three clearly labelled sample-post JSON records, validate.py and README. Every item carries visible synthetic/fictional disclosure and unpublished status."
+      },
+      "steps": [
+        "Define a provisional non-sexual fictional character with no resemblance claim or real identity (2 min).",
+        "Write three original sample posts and a rights/disclosure inventory (6 min).",
+        "Validate required visible disclosures, adult fictional status and asset provenance (4 min).",
+        "Commit prototype, record unchosen platform/business model and finish (3 min)."
+      ],
+      "acceptance_criteria": [
+        "Missing or blank disclosure fails validation per post; a profile-only disclosure is insufficient for the sample contract.",
+        "No impersonation, fake verification, fabricated subscribers/earnings, real-person likeness or deceptive relationship claim.",
+        "Each asset has provenance/rights status and each sample remains unpublished.",
+        "No paid fan account, adult content or monetization eligibility is created or implied."
+      ],
+      "source_questions_before_production": [
+        "Before platform implementation: choose disclosed virtual character versus tools for real creators, obtain real platform-policy and demand evidence, and confirm rights to any production assets."
+      ],
+      "evidence_of_completion": [
+        "Exact commit and worktree",
+        "Commands and actual results",
+        "Source hashes/status before and after where external inputs are read",
+        "Shared handoff and Desk outbox with measured minutes, unknown tokens and actual incremental cash"
+      ]
+    },
+    {
+      "id": "20260910-predictos-manifest-tool",
+      "project": "prediction-betting",
+      "task": "Build a source-only PredictOS candidate manifest comparator. Two non-Git copies remain unresolved. A reusable non-executing comparator makes later Claude edits detectable without choosing a canonical copy or connecting to IBKR.",
+      "assignee": "codex",
+      "inputs": [
+        "/Users/sayuj/soojos/projects/prediction-betting/CLAUDE.md",
+        "/Users/sayuj/soojos/context/desk/scope-readiness.md",
+        "/Users/sayuj/.soojos/claude-cloud/2026-09-09/prediction-betting.md",
+        "/Users/sayuj/soojos/context/desk/scope-paths-2026-09-10.json",
+        "/Users/sayuj/Desktop/predictos",
+        "/Users/sayuj/Downloads/Projects/Predictos/predictos"
+      ],
+      "constraints": [
+        "Read the current project CLAUDE.md, shared workflow and latest handoff immediately before work; STOP including dangling symlinks prevents dispatch.",
+        "Zero new cash, no new dependencies or services, no credentials/account edits, no live financial activity, no dormant-service restarts, no cloud instruction edits, no push or main merge.",
+        "Use a distinct desk/<task-id> worktree; commit exact tested artifacts. Preserve all original project files and uncommitted changes. No blind copy or two-way sync.",
+        "Synthetic or explicitly supplied non-secret inputs only. Label prototypes and synthetic examples; unknown evidence remains unknown. No production or revenue claim from a passing local test.",
+        "Maximum 15 minutes including verification and Desk.finish; unknown tokens are null, not zero. Use current desk admission and truthful existing-subscription accounting.",
+        "Candidate ambiguity remains unresolved. This is provenance tooling, not strategy implementation, backtesting, signal scoring or a new canonical PredictOS repository."
+      ],
+      "priority": {
+        "rank": 8,
+        "reason": "Execution order reflects clarity of the current artifact and cheapest useful evidence, not a proven economic ranking. Two non-Git copies remain unresolved. A reusable non-executing comparator makes later Claude edits detectable without choosing a canonical copy or connecting to IBKR."
+      },
+      "expected_return": {
+        "currency": "AUD",
+        "horizon_days": 90,
+        "net_low": null,
+        "net_high": null,
+        "confidence": "unassessed",
+        "basis": "No verified buyer demand, conversion rate or received-revenue evidence. This offline slice costs A$0 incremental cash; its own direct revenue is not established."
+      },
+      "expected_time_to_first_dollar_days": {
+        "low": null,
+        "high": null,
+        "basis": "Unknown; requires qualified demand and an approved path to delivery/collection. A prototype completion date is not time to revenue."
+      },
+      "created_at": "2026-09-10T08:19:43.688828+00:00",
+      "status": "queued",
+      "budget_tokens": null,
+      "budget_minutes": 15,
+      "budget_aud": 0,
+      "cycle_id": "20260910-portfolio-build-plan",
+      "parent_id": "20260910-portfolio-build-plan",
+      "chain_depth": 2,
+      "branch": "desk/20260910-predictos-manifest-tool",
+      "worktree": null,
+      "action_kind": "code",
+      "approval_refs": [],
+      "planning_state": "proposed_not_enqueued",
+      "readiness": "ready_provenance_only",
+      "implementation_root": "projects/prediction-betting/prototype",
+      "interfaces": {
+        "input": "Two explicit candidate directories; fixed allowlist of .py source and requirements.txt with no symlink following.",
+        "output": "manifest.py -> relative path, file size/hash and differences; an explicit canonical_source: unresolved field. Reports written only inside the task worktree."
+      },
+      "steps": [
+        "Reuse today’s provenance evidence and inspect only the already scoped source filenames (2 min).",
+        "Implement read-only allowlisted hashing/comparison with no imports of target code (5 min).",
+        "Test equal/different/missing files and symlink exclusion using temp fixtures; compare current candidates (5 min).",
+        "Confirm original source hashes unchanged, commit and finish (3 min)."
+      ],
+      "acceptance_criteria": [
+        "Identical source files are distinguished from one-sided/mismatched files; ordering is stable.",
+        "The tool never chooses Desktop based on mtime, database size or matching run.py.",
+        "No .env, credential/config secret files, databases, archives, logs or symlink targets are read.",
+        "No target module imported or executed; run.py status and all broker/API access are absent."
+      ],
+      "source_questions_before_production": [
+        "Claude or a current authoritative handoff must identify the intended folder/version before source edits, then reconcile obsolete README/entrypoint instructions."
+      ],
+      "evidence_of_completion": [
+        "Exact commit and worktree",
+        "Commands and actual results",
+        "Source hashes/status before and after where external inputs are read",
+        "Shared handoff and Desk outbox with measured minutes, unknown tokens and actual incremental cash"
+      ]
+    },
+    {
+      "id": "20260910-equities-passive-preflight",
+      "project": "trading-bot",
+      "task": "Build a passive Equities project-readiness report generator. The latest local handoff records strategy pause, disabled execution and unanswered infrastructure choices. A non-executing evidence collector can reduce handoff drift without resuming the project.",
+      "assignee": "codex",
+      "inputs": [
+        "/Users/sayuj/soojos/projects/trading-bot/CLAUDE.md",
+        "/Users/sayuj/soojos/context/desk/scope-readiness.md",
+        "/Users/sayuj/.soojos/claude-cloud/2026-09-09/trading-bot.md",
+        "/Users/sayuj/AI/Claude/equities-desk/CLAUDE.md",
+        "/Users/sayuj/AI/Claude/equities-desk/README.md",
+        "/Users/sayuj/AI/Claude/equities-desk/artifacts/reports/context/handoff.md",
+        "/Users/sayuj/AI/Claude/equities-desk/config/settings.py"
+      ],
+      "constraints": [
+        "Read the current project CLAUDE.md, shared workflow and latest handoff immediately before work; STOP including dangling symlinks prevents dispatch.",
+        "Zero new cash, no new dependencies or services, no credentials/account edits, no live financial activity, no dormant-service restarts, no cloud instruction edits, no push or main merge.",
+        "Use a distinct desk/<task-id> worktree; commit exact tested artifacts. Preserve all original project files and uncommitted changes. No blind copy or two-way sync.",
+        "Synthetic or explicitly supplied non-secret inputs only. Label prototypes and synthetic examples; unknown evidence remains unknown. No production or revenue claim from a passing local test.",
+        "Maximum 15 minutes including verification and Desk.finish; unknown tokens are null, not zero. Use current desk admission and truthful existing-subscription accounting.",
+        "Do not resume strategy work or unattended infrastructure, spend attempt 2, toggle EXECUTION_ENABLED, remove kill files or mutate the artifact manifest.",
+        "Momentum OS remains dormant/read-only and is not an implementation target."
+      ],
+      "priority": {
+        "rank": 9,
+        "reason": "Execution order reflects clarity of the current artifact and cheapest useful evidence, not a proven economic ranking. The latest local handoff records strategy pause, disabled execution and unanswered infrastructure choices. A non-executing evidence collector can reduce handoff drift without resuming the project."
+      },
+      "expected_return": {
+        "currency": "AUD",
+        "horizon_days": 90,
+        "net_low": null,
+        "net_high": null,
+        "confidence": "unassessed",
+        "basis": "No verified buyer demand, conversion rate or received-revenue evidence. This offline slice costs A$0 incremental cash; its own direct revenue is not established."
+      },
+      "expected_time_to_first_dollar_days": {
+        "low": null,
+        "high": null,
+        "basis": "Unknown; requires qualified demand and an approved path to delivery/collection. A prototype completion date is not time to revenue."
+      },
+      "created_at": "2026-09-10T08:19:43.688828+00:00",
+      "status": "queued",
+      "budget_tokens": null,
+      "budget_minutes": 15,
+      "budget_aud": 0,
+      "cycle_id": "20260910-portfolio-build-plan",
+      "parent_id": "20260910-portfolio-build-plan",
+      "chain_depth": 2,
+      "branch": "desk/20260910-equities-passive-preflight",
+      "worktree": null,
+      "action_kind": "code",
+      "approval_refs": [],
+      "planning_state": "proposed_not_enqueued",
+      "readiness": "ready_passive_only",
+      "implementation_root": "projects/trading-bot/prototype",
+      "interfaces": {
+        "input": "Explicit original repository path and allowlisted instruction/source paths; read-only Git branch/HEAD/status commands.",
+        "output": "preflight.py -> branch/HEAD/status, instruction hashes, declared execution-default source evidence and recorded pause/open-questions references. No live account, ledger or provider status."
+      },
+      "steps": [
+        "Read current handoff and exact settings source without importing project code or reading .env (3 min).",
+        "Implement metadata/AST evidence collector; ambiguous/missing settings become unknown (5 min).",
+        "Exercise missing repository/file and nonliteral setting fixtures; run passive report on original repo (4 min).",
+        "Confirm original Git status unchanged, commit and finish (3 min)."
+      ],
+      "acceptance_criteria": [
+        "Missing/nonliteral execution setting is unknown, not false; output labels source default separately from unknown runtime configuration.",
+        "The explicit operator pause stays visible; no report says the service or broker is healthy from static evidence.",
+        "No desk command, broker connector, Qanat command, project import, database read or strategy/backtest execution occurs.",
+        "Original project and Momentum files stay untouched; project-owned artifacts are not written outside core/artifacts.py. This standalone report lives in the SoojOS task branch."
+      ],
+      "source_questions_before_production": [
+        "Before infrastructure/strategy implementation: obtain the operator’s current answer to the existing package questions and explicit pause/resumption decision; Q8 and governed-attempt authorization remain unresolved."
+      ],
+      "evidence_of_completion": [
+        "Exact commit and worktree",
+        "Commands and actual results",
+        "Source hashes/status before and after where external inputs are read",
+        "Shared handoff and Desk outbox with measured minutes, unknown tokens and actual incremental cash"
+      ]
+    }
+  ],
+  "validation": {
+    "nine_unique_approved_projects": true,
+    "all_input_paths_exist": true,
+    "budgets_minutes_each": 15,
+    "new_cash_aud_each": 0,
+    "tokens_report_only": true,
+    "json_finite": true,
+    "tasks_statically_validate_against_current_desk_core": true,
+    "original_repositories_modified": false,
+    "project_tests_run_in_this_planning_task": false,
+    "validation_note": "Desk._validate_task called read-only with a synthetic finalized parent fixture; no queue admission, policy mutation or claim was performed.",
+    "all_32_source_paths_rechecked": true,
+    "all_30_input_file_hashes_unchanged": true,
+    "both_original_git_heads_and_status_unchanged": true,
+    "verified_at": "2026-09-10T08:20:56.542271+00:00"
+  }
+}
