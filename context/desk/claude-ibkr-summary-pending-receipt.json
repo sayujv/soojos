@@ -1,0 +1,19 @@
+{
+  "id": "CLAUDE-HANDOFF-39097ded41e8cd3b",
+  "task_id": "20260910-ibkr-partnership-summary",
+  "state": "pending",
+  "destination": "https://claude.ai/chat/c3921ae7-ea92-40a4-8ff6-2a3c11b323eb",
+  "source_fingerprint": "39097ded41e8cd3b56856c832c1ab58d04552903542457e2e706e949865bb573",
+  "content_sha256": "eeb45f6c6bf0d3696fc424b5bbc9ac4f8f0a9d3f661d26fe58e72498ac5c6c8d",
+  "summary_path": "/Users/sayuj/soojos/context/desk/claude-handoffs/CLAUDE-HANDOFF-39097ded41e8cd3b.md",
+  "prepared_at": "2026-09-10T11:14:35.895945+00:00",
+  "previous_delivered_id": "CLAUDE-HANDOFF-8687df1662a3d97e",
+  "subscription_evidence": "Same signed-in Sayuj Max account; Usage credits off read-only check in IBKR settings at approximately10:56UTC, within one hour.",
+  "excludes": "Pending private IBKR source/test packet, private paths and unrelated project details.",
+  "attempted_at": "2026-09-10T11:15:00.138887+00:00",
+  "blocked_at": "2026-09-10T11:17:14.677164+00:00",
+  "reason": "Automatic approval review rejected the final browser send: private operational status including IBKR/project and fictional-persona context needs exact payload/destination approval.",
+  "verification": "Composer matches the exact retained status text after whitespace normalization; message17 of18 absent. Send rejected before submission; draft remains in browser tab500564442.",
+  "approval_request": "Specific approval requested for this exact status summary and existing SoojOS conversation; separate from IBKR code-packet approval.",
+  "draft_state": "typed_unsent"
+}

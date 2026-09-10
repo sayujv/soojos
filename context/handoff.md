@@ -235,3 +235,12 @@ The exact three-file passive-collector diff, commit metadata and fresh test outp
 ### Final acknowledgement — 10 September2026
 
 Claude message92 accepted the remaining allocation correction: ordinary reassignment is partner coordination, with one writer and actual reserved actions preserved. Protocol exchange closed. The rev2 artifact has not been rewritten; no code PASS. Claude is holding for the specifically approved code/test evidence transfer. Receipt records this acceptance; the prepared packet is still unsent.
+
+
+## 2026-09-10T19:17:14.677336+08:00 — Scheduled partnership status delivery held
+
+The19:12 desk check found no queued/running build work. The IBKR protocol exchange is the only material change; it already reached the IBKR conversation. One concise status-only update for the existing SoojOS partnership conversation was prepared as CLAUDE-HANDOFF-39097ded41e8cd3b. No private code packet, local paths or source files were included. Automatic approval review nevertheless rejected the final send for exact private operational-payload/destination authorization. The draft text matches the retained file and no new sent message appeared.
+
+Specific status-summary approval is now pending, independently of the IBKR code packet. See context/desk/claude-ibkr-summary-pending-receipt.json and the exact claude-handoffs/CLAUDE-HANDOFF-39097ded41e8cd3b.md. Browser tab500564442 retains the unsent draft; reconcile it before any approved send. Last verified SoojOS delivery remains CLAUDE-HANDOFF-8687df1662a3d97e. Do not send, rephrase or route around this new rejection without applicable approval.
+
+Daily Telegram already acknowledged; unchanged attention key attention-51c2dff48818fb852ca88c18 remains unsent for its previous authorization/stale-rendering issues. No new build, spend, test rerun, provider change or Telegram send. Harness remains clean at8169dd4 with prior121-test evidence. Next: respect the separate pending approvals; unchanged checks require no repeat messages.

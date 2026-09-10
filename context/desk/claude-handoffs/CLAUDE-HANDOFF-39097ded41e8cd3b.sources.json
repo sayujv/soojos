@@ -1,0 +1,139 @@
+{
+  "version": 3,
+  "alignment": {
+    "matching_claude_cloud_names": 25,
+    "original_local_entries_preserved": 8,
+    "cloud_context_verified": 10,
+    "cloud_context_pending": 0
+  },
+  "builds": [
+    {
+      "id": "20260910-fifo-expiry-prototype",
+      "project": "digital-marketplace-business",
+      "status": "done",
+      "commit": "749fbc32450791f706a57e157a09df92cbfcf63d"
+    },
+    {
+      "id": "20260910-youtube-script-evaluator",
+      "project": "youtube-business",
+      "status": "done",
+      "commit": "27c19280bde8cead63c8699269738960a02ca3e5"
+    },
+    {
+      "id": "20260910-ugc-sample-production-kit",
+      "project": "ugc",
+      "status": "done",
+      "commit": "dd0bc2f6c4eed8bd0b436837cb82c16db805d1d6"
+    },
+    {
+      "id": "20260910-sale-document-intake",
+      "project": "sale-readiness-platform",
+      "status": "done",
+      "commit": "acc4fcd0513b2e38d74ff80204d116425dd77d2e"
+    },
+    {
+      "id": "20260910-acquisition-intake-normalizer",
+      "project": "business-search",
+      "status": "done",
+      "commit": "0b8cd969f1d1f4a9faef800e39ae40e00751c5ac"
+    },
+    {
+      "id": "20260910-shop-economics-prototype",
+      "project": "online-shops",
+      "status": "done",
+      "commit": "67aa72dc3f157432e4eb0ee367e430d7727734aa"
+    },
+    {
+      "id": "20260910-disclosed-persona-kit",
+      "project": "fan-accounts",
+      "status": "done",
+      "commit": "055b32b0c048bf21f587debb8228fa20a50502f6"
+    },
+    {
+      "id": "20260910-predictos-manifest-tool",
+      "project": "prediction-betting",
+      "status": "done",
+      "commit": "4a45906bda93ed3cfb7237a7ff455b35f135f1f7"
+    },
+    {
+      "id": "20260910-equities-passive-preflight",
+      "project": "trading-bot",
+      "status": "done",
+      "commit": "4bd3bd5aecf4abb6af11f1d71e8a9d8f35fd86da"
+    }
+  ],
+  "full_claude_review": "Explicitly approved successor ran3.284176 minutes and exited code1 without a structured review; cause not retained; no joint sign-off.",
+  "automation_prompt_sha256": "3c41831833bb909e136a2633b580de24cbe828cf5a9bebc3ca5850fbea5b67a2",
+  "policy": {
+    "claude_turns": 8,
+    "code_root": "/Users/sayuj/soojos/.worktrees/20260910-harness",
+    "currency": "AUD",
+    "daily_new_spend_cents": 1000,
+    "held_back": [
+      "live_money",
+      "deletion",
+      "credentials",
+      "accounts",
+      "payments",
+      "subscriptions",
+      "overspend",
+      "push",
+      "merge_main",
+      "cloud_instructions",
+      "charter"
+    ],
+    "max_chain_depth": 3,
+    "max_workers": 2,
+    "per_task_new_spend_cents": 500,
+    "projects": {
+      "business-search": {
+        "drawdown_cents": 5000
+      },
+      "digital-marketplace-business": {
+        "drawdown_cents": 5000
+      },
+      "fan-accounts": {
+        "drawdown_cents": 5000
+      },
+      "online-shops": {
+        "drawdown_cents": 5000
+      },
+      "prediction-betting": {
+        "drawdown_cents": 5000
+      },
+      "sale-readiness-platform": {
+        "drawdown_cents": 5000
+      },
+      "soojos": {
+        "drawdown_cents": 2500,
+        "harness": true
+      },
+      "trading-bot": {
+        "drawdown_cents": 5000
+      },
+      "ugc": {
+        "drawdown_cents": 5000
+      },
+      "youtube-business": {
+        "drawdown_cents": 5000
+      }
+    },
+    "subscription_authority_cents": 0,
+    "task_minutes": 15,
+    "task_tokens": null,
+    "timezone": "Australia/Perth",
+    "token_mode": "report_only",
+    "version": 2
+  },
+  "ibkr_reciprocal_review": {
+    "user_requested_continuation": true,
+    "instruction_id": "IBKR-CONTINUE-20260910-MIN",
+    "claude_confirmed": true,
+    "protocol_revision": 2,
+    "corrections_accepted_in_message": 92,
+    "code_review": "awaiting_specific_packet_transfer_approval",
+    "new_implementation": false,
+    "synthetic_tests_passed": 6
+  },
+  "persona_clarification": "Existing disclosed fictional-persona samples are non-sexual writing exercises; no scope expansion."
+}
