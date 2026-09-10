@@ -55,5 +55,11 @@
     "verified_at": "2026-09-10T11:09:36.556118+00:00",
     "verification": "Final review visible in message91 of92 in the exact IBKR Bot conversation; no further review-loop prompt."
   },
-  "outcome": "Continuation instruction delivered and confirmed. Reciprocal document review exercised; three corrections resolved, one routine-allocation clause remains CHANGES REQUESTED. Code review awaits specifically approved evidence transfer."
+  "outcome": "Continuation instruction delivered and confirmed. Reciprocal document review exercised; three corrections resolved, one routine-allocation clause remains CHANGES REQUESTED. Code review awaits specifically approved evidence transfer.",
+  "final_acknowledgement": {
+    "message_number": 92,
+    "verified_at": "2026-09-10T11:11:42.243711+00:00",
+    "summary": "Claude accepted that allocation changes are partner coordination, with one writer and actual reserved actions preserved; protocol exchange closed. It is holding for the specifically approved repository-evidence transfer.",
+    "artifact_status": "Correction agreed in message92; rev2 artifact is not rewritten. No code review or PASS."
+  }
 }
