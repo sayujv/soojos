@@ -1,0 +1,25 @@
+{
+  "destination": "https://claude.ai/chat/900542f3-428c-4990-883d-202eaa7dfb69",
+  "state": "pending_specific_approval",
+  "payload_path": "/Users/sayuj/soojos/context/desk/ibkr-code-review-pending-payload-2026-09-10.md",
+  "payload_sha256": "7207054cb1e69f1e6cd99deb57a48bd2379092d6e7439551c1ca288b575f3d3f",
+  "files": [
+    "projects/trading-bot/prototype/README.md",
+    "projects/trading-bot/prototype/preflight.py",
+    "projects/trading-bot/prototype/test_preflight.py"
+  ],
+  "base": "8169dd4ac629e3b33deb8e2159d5736063a0afd3",
+  "head": "4bd3bd5aecf4abb6af11f1d71e8a9d8f35fd86da",
+  "test_command": "python3 projects/trading-bot/prototype/test_preflight.py -v",
+  "test_exit_code": 0,
+  "test_output": "test_actual_settings_shape_is_ast_only (__main__.PassivePreflightTests) ... ok\ntest_literal_default_git_and_pause_with_runtime_always_unknown (__main__.PassivePreflightTests) ... ok\ntest_missing_files_and_syntax_errors_do_not_become_false (__main__.PassivePreflightTests) ... ok\ntest_missing_nonliteral_and_reassigned_settings_are_unknown (__main__.PassivePreflightTests) ... ok\ntest_missing_repository_reports_unknown_without_parent_git_discovery (__main__.PassivePreflightTests) ... ok\ntest_true_source_literal_never_proves_runtime_or_permission (__main__.PassivePreflightTests) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 1.118s\n\nOK\n",
+  "new_cash_aud": 0,
+  "actual_tokens": null,
+  "not_included": [
+    "Credentials",
+    "Account balances or holdings",
+    "Private conversation history",
+    "Other portfolio projects",
+    "Original Equities source or database"
+  ]
+}

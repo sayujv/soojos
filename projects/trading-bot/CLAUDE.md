@@ -16,3 +16,8 @@ Read /Users/sayuj/soojos/context/shared-agent-workflow.md and /Users/sayuj/soojo
 ## Local prototype checkpoint — 2026-09-10
 
 A tested first build now exists in an isolated task worktree: [build and usage](/Users/sayuj/soojos/.worktrees/task-20260910-equities-passive-preflight/projects/trading-bot/prototype/README.md). Read [the current shared handoff](/Users/sayuj/soojos/projects/trading-bot/context/handoff.md) before resuming. This development branch is not a replacement for the original source above or a production deployment. Exact commits, verification and open issues are in the handoff.
+
+
+## Reciprocal technical review — 2026-09-10
+
+Sayuj requested direct Claude continuation and mutual review. Follow [the shared review procedure](context/peer-review.md): Claude reviews Astra commits; Astra reviews Claude commits; each verdict is tied to actual evidence and one exact commit. Read the newest shared handoff for the delivered request and next review target. Existing Equities execution/governance controls and shareholder approval boundaries remain.
