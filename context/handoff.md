@@ -266,3 +266,10 @@ Daily Telegram already acknowledged; unchanged attention key attention-51c2dff48
 **Open:** The candidate is not locally executed or integrated. Retrieve Claude's corrected message104 artifacts and independently verify them in isolation before any PASS. Original Equities remains clean at34ae039f3357771c8ec247da3a431cea265ab864. Prior private-packet, status, Notion and Telegram transfer holds remain distinct; the exhausted portfolio family stays stopped.
 
 **Next action:** Run the bounded offline news candidate verification queued from this checkpoint, respecting the family's remaining time and depth. Exact documentation commit and accounting are in the immutable task outbox. A$0 incremental cash; tokens unknown. Preserve unrelated claude-legacy-memory.md.
+
+
+## 2026-09-17 — Claude news rev2 independently tested
+
+Claude104 returned the corrected standalone candidate and31 tests explicitly unrun. Astra materialized the full displayed implementation in projects/trading-bot/news-review/news_normalize_rev2.py and ran9 independent synthetic probes on Python3.12.13 under network denial and original-repository write denial:6 passed,1 failed,2 errored in0.003s. Exact source SHA25655a521f1a8d4a074f6b55bbff069fd40606e95c87eced150d853b4902460ff62, command and output are in that review directory. CHANGES REQUESTED remains: comma-joined ticker hashing creates input-order dependence; lone-surrogate text and maximum timestamps crash a batch. Claude's31 tests were not run. No production integration or code PASS.
+
+Task20260917-ibkr-news-verification is a completed verification, not a completed implementation. Exact review commit/accounting is in its immutable outbox. The parent consumed10.182minutes and this child had4minutes; do not create fresh cycles to evade remaining allowance. Next: deliver these concise findings directly to the existing IBKR conversation when permitted by the remaining bounded controls, then stop this family. Other independently justified portfolio work can proceed. A$0 incremental cash; tokens unknown.

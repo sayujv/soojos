@@ -1,0 +1,55 @@
+test_body_tie_deterministic (test_astra_review.Review.test_body_tie_deterministic) ... ok
+test_extreme_timestamp_isolated (test_astra_review.Review.test_extreme_timestamp_isolated) ... ERROR
+test_happy_and_duplicate (test_astra_review.Review.test_happy_and_duplicate) ... ok
+test_legitimate_suffix_preserved (test_astra_review.Review.test_legitimate_suffix_preserved) ... ok
+test_malformed_class_isolated (test_astra_review.Review.test_malformed_class_isolated) ... ok
+test_malformed_unicode_isolated (test_astra_review.Review.test_malformed_unicode_isolated) ... ERROR
+test_no_early_visibility (test_astra_review.Review.test_no_early_visibility) ... ok
+test_own_publisher_only (test_astra_review.Review.test_own_publisher_only) ... ok
+test_ticker_encoding_collision (test_astra_review.Review.test_ticker_encoding_collision) ... FAIL
+
+======================================================================
+ERROR: test_extreme_timestamp_isolated (test_astra_review.Review.test_extreme_timestamp_isolated)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/sayuj/soojos/.worktrees/task-20260917-ibkr-news-verification/projects/trading-bot/news-review/test_astra_review.py", line 39, in test_extreme_timestamp_isolated
+    r = normalize([rec(published_at='9999-12-31T23:59:59Z', ingested_at='9999-12-31T23:59:59Z'), rec()])
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/sayuj/soojos/.worktrees/task-20260917-ibkr-news-verification/projects/trading-bot/news-review/news_normalize_rev2.py", line 207, in normalize
+    ok.append(_one(rec, skew))
+              ^^^^^^^^^^^^^^^
+  File "/Users/sayuj/soojos/.worktrees/task-20260917-ibkr-news-verification/projects/trading-bot/news-review/news_normalize_rev2.py", line 156, in _one
+    if pub > ing + skew:
+             ~~~~^~~~~~
+OverflowError: date value out of range
+
+======================================================================
+ERROR: test_malformed_unicode_isolated (test_astra_review.Review.test_malformed_unicode_isolated)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/sayuj/soojos/.worktrees/task-20260917-ibkr-news-verification/projects/trading-bot/news-review/test_astra_review.py", line 36, in test_malformed_unicode_isolated
+    r = normalize([rec(title='bad\ud800'), rec()])
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/sayuj/soojos/.worktrees/task-20260917-ibkr-news-verification/projects/trading-bot/news-review/news_normalize_rev2.py", line 207, in normalize
+    ok.append(_one(rec, skew))
+              ^^^^^^^^^^^^^^^
+  File "/Users/sayuj/soojos/.worktrees/task-20260917-ibkr-news-verification/projects/trading-bot/news-review/news_normalize_rev2.py", line 172, in _one
+    item_id = _sha(source_norm, source_id or "", title_norm, pub_s, url or "")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/sayuj/soojos/.worktrees/task-20260917-ibkr-news-verification/projects/trading-bot/news-review/news_normalize_rev2.py", line 104, in _sha
+    return hashlib.sha256(_SEP.join(parts).encode("utf-8")).hexdigest()
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'utf-8' codec can't encode character '\ud800' in position 12: surrogates not allowed
+
+======================================================================
+FAIL: test_ticker_encoding_collision (test_astra_review.Review.test_ticker_encoding_collision)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/sayuj/soojos/.worktrees/task-20260917-ibkr-news-verification/projects/trading-bot/news-review/test_astra_review.py", line 34, in test_ticker_encoding_collision
+    self.assertEqual(normalize([a,b]), normalize([b,a]))
+AssertionError: Norma[549 chars]s=('A,B',), source_id=None),), rejects=(), dup[143 chars]'),)) != Norma[549 chars]s=('A', 'B'), source_id=None),), rejects=(), d[145 chars]'),))
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.003s
+
+FAILED (failures=1, errors=2)
