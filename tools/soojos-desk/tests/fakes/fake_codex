@@ -1,0 +1,15 @@
+#!/bin/sh
+# Fake `codex exec ... -C dir -o file prompt` for offline tests.
+# FAKE_MODE: ok (default) | fail | hang.  FAKE_TOUCH: file name to create in the -C directory.
+out=""; dir="$PWD"; prev=""
+for a in "$@"; do
+  [ "$prev" = "-o" ] && out="$a"
+  [ "$prev" = "-C" ] && dir="$a"
+  prev="$a"
+done
+[ -n "$FAKE_TOUCH" ] && : > "$dir/$FAKE_TOUCH"
+case "${FAKE_MODE:-ok}" in
+  hang) sleep 300 & sleep 300 ;;
+  fail) echo "fake codex failure" >&2; exit 1 ;;
+  *) [ -n "$out" ] && printf 'PONG' > "$out"; echo "PONG" ;;
+esac

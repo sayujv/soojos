@@ -1,0 +1,9 @@
+#!/bin/sh
+# Fake `claude -p ... --output-format json` for offline tests.
+# FAKE_MODE: ok (default) | fail | hang.  FAKE_TOUCH: file name to create in $PWD.
+[ -n "$FAKE_TOUCH" ] && : > "$PWD/$FAKE_TOUCH"
+case "${FAKE_MODE:-ok}" in
+  hang) sleep 300 & sleep 300 ;;
+  fail) printf '{"type":"result","subtype":"error","is_error":true,"result":"boom","num_turns":1}\n'; exit 1 ;;
+  *) printf '{"type":"result","subtype":"success","is_error":false,"result":"PONG","num_turns":1,"total_cost_usd":0.01,"session_id":"fake","duration_ms":5}\n' ;;
+esac

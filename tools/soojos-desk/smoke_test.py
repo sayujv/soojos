@@ -120,10 +120,10 @@ def main():
     c = Client(env)
     c.request("initialize", {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "smoke", "version": "0"}})
     c.notify("notifications/initialized")
+    all_tools = [t["name"] for t in c.request("tools/list")["result"]["tools"]]
     refusals = {name: c.call(name, {"id": "x", "project": "soojos", "task": "x", "assignee": "claude",
-                                    "budget_minutes": 1, "cwd": tmp, "report": {}})
-                for name in ("queue_list", "queue_add", "queue_claim", "outbox_read", "outbox_write",
-                             "git_status", "run_claude", "run_codex")}
+                                    "budget_minutes": 1, "cwd": tmp, "report": {}, "status": "done"})
+                for name in all_tools}
     show("STOP refusals", {k: (v["isError"], v["body"]) for k, v in refusals.items()})
     c.close()
     os.unlink(os.path.join(home, "STOP"))
