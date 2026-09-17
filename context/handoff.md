@@ -286,3 +286,16 @@ Task20260917-ibkr-news-verification is a completed verification, not a completed
 **Next:** Sayuj approves the project MCP server on next `claude` launch in /Users/sayuj/soojos and adds the Codex block; then decide whether the heartbeat should call these tools.
 
 **Landmines:** run_* block the MCP call for up to budget_minutes; raise MCP_TOOL_TIMEOUT in the client if needed. Claude worker default acceptEdits denies Bash; set SOOJOS_CLAUDE_PERMISSION_MODE deliberately if a worker must run commands. Reported Claude cost is list-basis on subscription, A$0 cash.
+
+
+## 2026-09-17T18:20:00+08:00 — Claude (Claude Code desktop): soojos-desk MCP server v0.2.0, lifecycle + background runs
+
+**State:** Branch desk/20260917-soojos-desk-mcp on top of f04b80d; this entry's commit adds tools/soojos-desk v0.2.0 with tests/. Working tree still carries other partners' uncommitted changes; only soojos-desk files and this handoff entry are staged. Nothing pushed. Codex config block was added to ~/.codex/config.toml (backup config.toml.bak-20260917-soojos-desk).
+
+**Working:** New tools queue_finish (done/blocked with completed_at, actual_minutes, blocked_reason, outbox), queue_reap (overdue own claims without a live runner; all=true for others), desk_status, run_status, run_task (claim → .worktrees/task-<id> on desk/<id> → assignee worker with task budget → outbox → finish). run_claude/run_codex/run_task accept background=true: detached runner in its own session, records in ~/.soojos/desk/runs/, survives client exit. Read-only tools carry readOnlyHint annotations. Verification actually run: `python3 -m unittest discover -s tools/soojos-desk/tests` 26 tests OK in 4.4s with fake workers (STOP, lifecycle, max_workers, reap, outbox immutability, failure/timeout/process-group kill, background + lost runner, run_task end to end in a temp git repo, JSON-RPC over stdio). Live: desk_status over stdio against canonical desk returned blocked 16 / done 31, STOP absent; `codex exec` called desk_status headlessly without approval and returned the same counts.
+
+**Open:** Headless `codex exec` still refuses the mutating tools (approval required); the interactive Codex app or Claude Code must call those. `claude -p` needs --allowedTools mcp__soojos-desk__* to use them. Claude Code project MCP approval for soojos-desk is still pending Sayuj's first `claude` launch in /Users/sayuj/soojos. The 30-minute heartbeat has not been changed to call these tools; that is a separate decision.
+
+**Next:** Sayuj approves the server in Claude Code, then a first real run_task on a small authorized soojos task with background=true to confirm the worktree/finish flow against the live queue.
+
+**Landmines:** run_task with use_worktree (default) creates a worktree and branch in the project's repo; for the seven context-only project slugs that repo is /Users/sayuj/soojos itself. Nothing merges or pushes. Live queue/outbox were not mutated by any test. Reported Claude cost is list-basis on subscription, A$0 cash.
