@@ -255,3 +255,14 @@ Daily Telegram already acknowledged; unchanged attention key attention-51c2dff48
 **Open:** Claude's recorded contributions are attributed; this new synthesis has no fresh joint review. Token-gate wording in historical reports is superseded by policy v2. Financial opening coverage, diagnostic capture and existing exact-payload delivery holds remain unresolved.
 
 **Next:** Use the prepared Monday digest and its receipt for delivery reconciliation; propose a separate bounded diagnostics task before considering any justified review successor. Do not retry the exhausted family. A$0 incremental cash; tokens unknown. Unrelated imported memory and original production repositories remain untouched.
+
+
+## 2026-09-17 — Active direct Claude development restored
+
+**State:** Sayuj requested automated direct project development. Task 20260917-active-partnership updates the existing half-hour heartbeat and adds context/desk/active-development.md. Empty queues now trigger selection of one evidenced eligible task; notification holds do not freeze unrelated development. The saved automation prompt, cadence, target and ACTIVE status were reread and matched exactly. No protected charter/policy/approval change.
+
+**Working:** Local desk tick succeeded at 09:52 AWST, resolving the old transport recovery hold. Claude Max usage credits were visibly off. Direct IBKR assignment IBKR-ACTIVE-DEVELOPMENT-20260917 was sent as message101; Claude102 returned a specification, reference implementation and 26 explicitly unrun tests. Astra inspected actual displayed code and sent four concrete CHANGES REQUESTED findings as message103. Claude is producing a corrected candidate. Evidence is in context/desk/ibkr-active-development-receipt-2026-09-17.json and ibkr-news-review-2026-09-17.md.
+
+**Open:** The candidate is not locally executed or integrated. Retrieve Claude's corrected message104 artifacts and independently verify them in isolation before any PASS. Original Equities remains clean at34ae039f3357771c8ec247da3a431cea265ab864. Prior private-packet, status, Notion and Telegram transfer holds remain distinct; the exhausted portfolio family stays stopped.
+
+**Next action:** Run the bounded offline news candidate verification queued from this checkpoint, respecting the family's remaining time and depth. Exact documentation commit and accounting are in the immutable task outbox. A$0 incremental cash; tokens unknown. Preserve unrelated claude-legacy-memory.md.

@@ -1,5 +1,7 @@
 # Automatic Claude partnership handoffs
 
+**17 September 2026 update:** Sayuj now explicitly requests direct automated development with Claude. [Active development](active-development.md) governs bounded project assignments and reciprocal work. The acknowledgement-only rule below continues to apply to status summaries; it is not a restriction on a separately scoped development assignment under the new workflow. Existing rejected-payload holds remain separate.
+
 Authorized by Sayuj on 10 September 2026: execute the approved work, provide a summary for Claude, and automate typing/input of that summary in the Claude app. This authorizes in-scope status messages in the existing partnership conversation. It does not authorize changing Claude project instructions, account settings, credentials, financial controls or excluded projects.
 
 Destination verified in the signed-in Claude desktop app:

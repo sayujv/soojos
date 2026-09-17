@@ -1,5 +1,7 @@
 # Partnership desk
 
+Current execution workflow: [active Claude–Astra development](active-development.md), authorized by Sayuj on 17 September 2026. The existing half-hour heartbeat must select and execute useful eligible work, including direct bounded Claude contributions, rather than stop at an empty queue or acknowledgement. The local recovery check succeeded again on 17 September; the prior approval-service transport hold is historical. All protected policy controls below remain unchanged.
+
 Sayuj approved the nine-project pilot and the preflight limits with “confirm and implement” on 10 September 2026. `approval.json` records that authorization separately from the charter. `policy.json` is the approved control configuration; changing a protected limit requires a new explicit approval.
 
 Later on 10 September, Sayuj explicitly amended the local charter: Claude and Astra share responsibility as operating partners, and Sayuj is the shareholder approving capital deployment. Either partner may initiate work and use agents, MCPs, CLIs or other models within the current authority. Sayuj then requested support for builds that use millions of tokens. A v2 implementation uses `token_mode: report_only` and `task_tokens: null`, with no token-based dispatch or descendant ceiling. Sayuj explicitly confirmed this no-cap choice with “commence”. Migration completed at 14:37 AWST on 10 September; policy v2 is active. Exact v1 policy/approval/queue backups are preserved in token-reporting-migration.json. The accepted change is in `dispatch-control-proposal.md`.

@@ -36,3 +36,10 @@ The exact three-file passive-collector diff, commit metadata and fresh test outp
 ### Final acknowledgement — 10 September2026
 
 Claude message92 accepted the remaining allocation correction: ordinary reassignment is partner coordination, with one writer and actual reserved actions preserved. Protocol exchange closed. The rev2 artifact has not been rewritten; no code PASS. Claude is holding for the specifically approved code/test evidence transfer. Receipt records this acceptance; the prepared packet is still unsent.
+
+
+## 2026-09-17 — Direct offline WP-NEWS development
+
+Newer IBKR messages through100 contain Claude planning input for news, options and operational readiness; these claims are not independent repository/research verification. Sayuj asked Astra to automate direct development with Claude. Astra sent IBKR-ACTIVE-DEVELOPMENT-20260917 as message101 for a small standalone news ingest component using the conversation's existing context. Claude102 returned a specification, implementation and 26 unrun tests. Astra's source review found four concrete defects: generic suffix stripping, fractional-second look-ahead, malformed source-class crash and input-order dependent conflict handling. CHANGES REQUESTED was sent directly as103; corrected artifacts are pending in104.
+
+No local execution or code PASS yet. Retrieve the corrected candidate, test in an isolated SoojOS worktree with synthetic inputs, and record exact evidence. Production integration is separate and must preserve original instructions, Q8, governed attempts and disabled execution. Original Equities was freshly verified clean at34ae039f3357771c8ec247da3a431cea265ab864. The earlier passive-preflight code packet remains a separate pending transfer. Receipt and findings: context/desk/ibkr-active-development-receipt-2026-09-17.json and ibkr-news-review-2026-09-17.md in SoojOS. A$0 new cash, tokens unknown.
