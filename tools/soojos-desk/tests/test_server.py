@@ -218,6 +218,9 @@ class TestWorkers(DeskTestCase):
         self.assertEqual(out["exit_code"], 0)
         self.assertEqual(out["command"][0], os.path.join(FAKES, "fake_claude"))
         self.assertIn("--permission-mode", out["command"])
+        allowed = out["command"][out["command"].index("--allowedTools") + 1]
+        self.assertIn("Bash(git commit:*)", allowed)
+        self.assertNotIn("push", allowed)
         entry = self.ok("outbox_read", id=out["run_id"])["entry"]
         self.assertEqual(entry["report"]["result"], "PONG")
         self.assertEqual(self.ok("run_status", id=out["run_id"])["run"]["state"], "done")

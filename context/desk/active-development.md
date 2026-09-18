@@ -28,3 +28,16 @@ On 17 September the existing IBKR Bot conversation contained newer planning inpu
 ## Reports and user involvement
 
 Use technical PASS / CHANGES REQUESTED / BLOCKED tied to an exact commit or artifact. Technical approval does not authorize capital, live trading, credentials, protected policy, cloud project instruction edits, dormant-service restarts, pushes or main merges. Bring Sayuj concrete reserved decisions only. Keep unchanged polling quiet; notify on useful completed work, material failure or required action. Preserve daily/weekly digest duties and their existing exact-payload holds without letting a notification hold freeze unrelated development.
+
+
+## soojos-desk MCP tools — 18 September 2026
+
+Sayuj approved the `soojos-desk` MCP server (tools/soojos-desk, README there) for both assistants on 18 September. It wraps the same canonical queue, outbox, STOP and coordinator lock as `desk.py`; it does not replace the protected policy or approval records. Each heartbeat run should now:
+
+1. Call `desk_status` first. If `stop_present` is true, stop; report nothing else.
+2. Call `queue_reap` to block overdue own claims that have no live runner, then `queue_list(status="running")` and `run_status` to see work still in flight before starting more. Respect `max_workers`.
+3. For an eligible queued task, call `run_task(id, background=true)`. It claims, isolates in `.worktrees/task-<id>` on branch `desk/<id>`, runs the assignee (claude or codex) within the task's `budget_minutes`, writes the outbox entry and finishes the task done or blocked with elapsed time. Poll `run_status(run_id)` on the next heartbeat rather than waiting; read `outbox_read(id)` for the worker's result.
+4. When nothing is queued, enqueue one concrete authorized next step with `queue_add(project, task, assignee, budget_minutes, inputs, constraints)`; the task text should carry acceptance checks and the stop condition as before.
+5. Append the canonical handoff from the outbox evidence. A worker's summary is a claim; the commit on `desk/<id>` and its recorded verification are the evidence.
+
+Headless `codex exec` can call the read-only tools (`desk_status`, `queue_list`, `outbox_read`, `git_status`, `run_status`) without approval; the mutating tools need the interactive Codex app or Claude Code as the caller. Nothing in this server merges, pushes, edits credentials, cloud instructions, the charter or policy files.

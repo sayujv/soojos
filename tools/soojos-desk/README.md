@@ -71,8 +71,11 @@ push, no merge to main. Nothing is merged or promoted by the server.
 
 - Claude default `acceptEdits`; override with `SOOJOS_CLAUDE_PERMISSION_MODE`
   (`acceptEdits`, `dontAsk`, `plan`, `auto`, `bypassPermissions`). In `-p` mode any
-  unanswered permission prompt is denied, so a worker that needs Bash will fail
-  rather than hang under the default.
+  unanswered permission prompt is denied, so a worker that needs other commands will
+  fail rather than hang under the default.
+- Claude is additionally allowed local git only, so it can commit on its task branch:
+  `Bash(git status:*) Bash(git diff:*) Bash(git log:*) Bash(git add:*) Bash(git commit:*)
+  Bash(git branch:*)`. No push. Override or empty with `SOOJOS_CLAUDE_ALLOWED_TOOLS`.
 - Codex default `workspace-write`; override with `SOOJOS_CODEX_SANDBOX`
   (`read-only`, `workspace-write`, `danger-full-access`).
 - Binaries can be overridden for tests with `SOOJOS_CLAUDE_BIN` / `SOOJOS_CODEX_BIN`.
