@@ -39,7 +39,7 @@ import time
 import traceback
 
 SERVER_NAME = "soojos-desk"
-SERVER_VERSION = "0.2.0"
+SERVER_VERSION = "0.2.1"
 PROTOCOL_VERSION = "2025-06-18"
 MINUTE = float(os.environ.get("SOOJOS_MINUTE_SECONDS", "60"))  # tests shrink this to exercise timeouts quickly
 
@@ -60,6 +60,10 @@ CLAUDE_BIN = os.environ.get("SOOJOS_CLAUDE_BIN", "/Users/sayuj/.local/bin/claude
 CODEX_BIN = os.environ.get("SOOJOS_CODEX_BIN", "/Applications/ChatGPT.app/Contents/Resources/codex")
 GIT_BIN = "/usr/bin/git"
 CLAUDE_PERMISSION_MODE = os.environ.get("SOOJOS_CLAUDE_PERMISSION_MODE", "acceptEdits")
+# Local git only, so a worker can commit on its task branch; no push, no other commands.
+CLAUDE_ALLOWED_TOOLS = os.environ.get(
+    "SOOJOS_CLAUDE_ALLOWED_TOOLS",
+    "Bash(git status:*) Bash(git diff:*) Bash(git log:*) Bash(git add:*) Bash(git commit:*) Bash(git branch:*)")
 CODEX_SANDBOX = os.environ.get("SOOJOS_CODEX_SANDBOX", "workspace-write")
 
 MAX_RETURN_CHARS = 20000     # per stream in the tool result
@@ -343,8 +347,11 @@ def worker_command(kind, task, cwd, last_msg_file):
     if kind == "claude":
         if not os.path.exists(CLAUDE_BIN):
             raise ToolError("claude binary missing at %s" % CLAUDE_BIN)
-        return [CLAUDE_BIN, "-p", task, "--output-format", "json",
-                "--permission-mode", CLAUDE_PERMISSION_MODE, "--no-session-persistence"]
+        cmd = [CLAUDE_BIN, "-p", task, "--output-format", "json",
+               "--permission-mode", CLAUDE_PERMISSION_MODE, "--no-session-persistence"]
+        if CLAUDE_ALLOWED_TOOLS.strip():
+            cmd += ["--allowedTools", CLAUDE_ALLOWED_TOOLS]
+        return cmd
     if kind == "codex":
         if not os.path.exists(CODEX_BIN):
             raise ToolError("codex binary missing at %s" % CODEX_BIN)
@@ -679,7 +686,8 @@ def t_desk_status(args):
     return {"stop_present": stop_present(), "stop_path": STOP_PATH, "desk_dir": DESK_DIR, "queue_counts": counts,
             "running": running, "active_background_runs": runs,
             "policy": {k: pol.get(k) for k in ("version", "task_minutes", "max_workers", "max_chain_depth", "token_mode")},
-            "workers": {"claude": {"bin": CLAUDE_BIN, "present": os.path.exists(CLAUDE_BIN), "permission_mode": CLAUDE_PERMISSION_MODE},
+            "workers": {"claude": {"bin": CLAUDE_BIN, "present": os.path.exists(CLAUDE_BIN), "permission_mode": CLAUDE_PERMISSION_MODE,
+                                   "allowed_tools": CLAUDE_ALLOWED_TOOLS},
                         "codex": {"bin": CODEX_BIN, "present": os.path.exists(CODEX_BIN), "sandbox": CODEX_SANDBOX}},
             "server_version": SERVER_VERSION}
 
