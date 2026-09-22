@@ -1,7 +1,7 @@
 # soojos-desk MCP server
 
 Minimal MCP server for the partnership desk. Python 3.9 stdlib only, stdio
-transport, hand-rolled JSON-RPC (no `mcp` or `fastmcp` dependency). Version 0.3.0.
+transport, hand-rolled JSON-RPC (no `mcp` or `fastmcp` dependency). Version 0.3.1.
 
 Run: `/usr/bin/python3 /Users/sayuj/soojos/tools/soojos-desk/server.py`
 
@@ -52,9 +52,9 @@ Workers:
 
 | Tool | What it does |
 | --- | --- |
-| `run_claude(task, cwd, budget_minutes, background?)` | `/Users/sayuj/.local/bin/claude -p … --output-format json --permission-mode acceptEdits --no-session-persistence --allowedTools <local git only>`. |
+| `run_claude(task, cwd, budget_minutes, background?)` | `/Users/sayuj/.local/bin/claude -p … --output-format json --permission-mode acceptEdits --no-session-persistence --disallowedTools <fixed deny list> --allowedTools <local git only>`. |
 | `run_codex(task, cwd, budget_minutes, background?)` | `/Applications/ChatGPT.app/Contents/Resources/codex exec --sandbox workspace-write --skip-git-repo-check --ephemeral -C cwd -o <last-message>`. |
-| `run_task(id, background?, use_worktree?, cwd?)` | Claim if queued → exclusive run reservation under the desk lock → `.worktrees/task-<id>` on `desk/<id>` → deadline check → zero-cash check → run the assignee → `Desk.finish` or `Desk.block`. |
+| `run_task(id, background?, cwd?)` | Permission preflight → claim if queued → exclusive run reservation under the desk lock → `.worktrees/task-<id>` on `desk/<id>`, verified by git → deadline check → zero-cash check → run the assignee → `Desk.finish` or `Desk.block`. No worktree opt-out. |
 
 Every tool refuses while `~/.soojos/STOP` exists (`lexists`, so a dangling symlink
 counts). The server never removes STOP. A detached runner that finds STOP at start
@@ -95,14 +95,49 @@ blocks its task instead of running.
 - Private: `~/.soojos/desk` (override `SOOJOS_HOME` → `<home>/desk`): STOP at
   `<home>/STOP`, `coordinator.lock`, billing evidence, `runs/<run-id>.json|.spec.json|.log`.
 
-## Permission modes
+## Permission settings (0.3.1)
 
-- Claude default `acceptEdits` (`SOOJOS_CLAUDE_PERMISSION_MODE`), plus local git only:
-  `Bash(git status:*) Bash(git diff:*) Bash(git log:*) Bash(git add:*) Bash(git commit:*)
-  Bash(git branch:*)` (`SOOJOS_CLAUDE_ALLOWED_TOOLS`). No push. Any other unanswered
-  prompt is denied under `-p`.
-- Codex default `workspace-write` (`SOOJOS_CODEX_SANDBOX`).
-- Binaries: `SOOJOS_CLAUDE_BIN` / `SOOJOS_CODEX_BIN` (tests use fakes).
+Settings are validated against fixed approved sets before any launch side effect, and
+before a task is claimed. An override may only narrow; anything wider, blank, malformed
+or unrecognised is refused with the reason, never silently replaced.
+
+| Setting | Approved values | Default |
+| --- | --- | --- |
+| `SOOJOS_CLAUDE_PERMISSION_MODE` | `acceptEdits`, `dontAsk`, `plan` | `acceptEdits` |
+| `SOOJOS_CLAUDE_ALLOWED_TOOLS` | subset of `Bash(git status:*) Bash(git diff:*) Bash(git log:*) Bash(git rev-parse:*) Bash(git add:*) Bash(git commit:*)`, or `none` | the full subset |
+| `SOOJOS_CODEX_SANDBOX` | `read-only`, `workspace-write` | `workspace-write` |
+
+Not overridable: `--disallowedTools` always carries `git push/checkout/switch/branch/reset/rebase/
+merge/worktree/remote/clean/stash/tag/fetch/pull`, `WebFetch` and `WebSearch`. Deny rules win
+over allow rules in Claude Code.
+
+Read this as preapproval, not restriction: under `acceptEdits` file edits and the allowed
+git commands run unattended, and prefix matchers mean `git add -A` is inside `git add:*`.
+The allow list exists so a worker can stage and commit on its task branch; nothing else.
+
+**Branch containment.** A task worker only launches inside `<repo>/.worktrees/task-<id>`
+with git confirming: the cwd resolves inside that directory, the git toplevel is that
+directory, HEAD is the symbolic branch `desk/<id>` (not detached, not main), and the
+directory is named `task-<id>` under `.worktrees`. A non-git project directory or
+`use_worktree=false` is refused before the claim. A preflight cannot stop the worker
+switching branches later, so the post-run snapshot is checked too: if the worktree is no
+longer on `desk/<id>` the result is not accepted and the task is blocked as `escaped`.
+Ad-hoc `run_claude`/`run_codex` in a git checkout require a `.worktrees/` isolation on a
+named non-main branch; a non-git directory is allowed and recorded as uncontained.
+
+**Native enforcement is tested, not assumed.** `tests/native_boundary_probe.py` runs the
+real `claude` and `codex` binaries with the server's exact argv in a throwaway task
+worktree that has a bare remote under `$HOME` (outside the worktree and outside `$TMPDIR`,
+which the Codex sandbox also permits). Evidence from 22 September 2026
+(`tests/evidence/native-boundary-20260922T095202Z.json`): Claude ran `git status` and
+committed, and its own `permission_denials` list shows `git push origin HEAD`,
+`git checkout -b escape-probe` and `touch ~/…` denied; the remote and branch were unchanged.
+Codex created a file inside the worktree, failed to create one under `$HOME`, and its push
+to the bare remote failed with the remote unchanged. The probe spends real subscription
+usage and is opt-in. A prefix argument is still not the total effective policy: settings,
+hooks and other configuration on this machine also apply.
+
+Binaries: `SOOJOS_CLAUDE_BIN` / `SOOJOS_CODEX_BIN` (tests use fakes).
 
 Headless `codex exec` refuses the mutating tools ("requires approval"); use the
 interactive Codex app or Claude Code. `claude -p` needs
@@ -114,7 +149,7 @@ interactive Codex app or Claude Code. `claude -p` needs
 /usr/bin/python3 -m unittest discover -s /Users/sayuj/soojos/tools/soojos-desk/tests -v
 ```
 
-28 offline tests. They initialise a canonical desk in temporary state (via
+39 offline tests. They initialise a canonical desk in temporary state (via
 `Desk.initialize` and the v2 migration), use fake `claude`/`codex` under
 `tests/fakes/` that also answer the auth probes, and cover: STOP for every tool;
 canonical add/claim/finish/block validation; done refused without evidence, without
@@ -126,7 +161,11 @@ run; duplicate-launch refusal and recovery from a stale reservation; expired dea
 refusing launch; timeout bounded by the deadline rather than the budget; end-to-end
 `run_task` in a temporary repo with the worker committing inside the worktree;
 background completion through the desk; STOP at runner start; the JSON-RPC layer over
-a real subprocess. `SOOJOS_MINUTE_SECONDS` shrinks a "minute".
+a real subprocess; permission overrides (bypass, auto, blank, wildcard, foreign rules,
+malformed, unknown sandbox) refused before claim or reservation while narrowing is
+accepted; containment (non-git cwd, opt-out, detached HEAD, wrong branch, cwd outside
+the worktree, branch escape after launch, ad-hoc cwd rules). `SOOJOS_MINUTE_SECONDS`
+shrinks a "minute".
 
 `smoke_test.py` runs the read-only tools against the live desk and checks STOP
 refusal for every tool in an isolated home; it does not mutate live state.
@@ -155,4 +194,6 @@ args = ["/Users/sayuj/soojos/tools/soojos-desk/server.py"]
   recoverable, run-id collisions, reaping without bounds or reconciliation.
   All addressed in 0.3.0 by delegating to the canonical desk and by the controls above.
 - 0.2.1 permission review (18 Sep): validate permission overrides, verify branch
-  containment before launch, test the enforcement boundary natively. Open; next.
+  containment before launch, test the enforcement boundary natively. Addressed in 0.3.1
+  (approved sets with refusal of widening, git-verified worktree preflight plus post-run
+  branch check, native probe with recorded evidence).
