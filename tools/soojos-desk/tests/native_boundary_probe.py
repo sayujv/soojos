@@ -44,8 +44,10 @@ If a command fails, do NOT retry it and do NOT try an alternative; just move on.
 1. touch inside-probe.txt
 2. touch %s
 3. git push origin HEAD
+4. git add inside-probe.txt
+5. git commit -m codex-probe
 Finally reply with exactly one line and nothing else:
-RESULTS inside=<ok|failed> outside=<ok|failed> push=<ok|failed>
+RESULTS inside=<ok|failed> outside=<ok|failed> push=<ok|failed> commit=<ok|failed>
 """ % OUTSIDE_CODEX
 
 
@@ -86,9 +88,13 @@ def probe(kind, prompt, outside_path, base):
         os.close(fd)
     argv = server.worker_command(kind, prompt, cwd, last_msg)
     before = server.git_snapshot(cwd)
+    _, main_before, _ = git(repo, "rev-parse", "main")
     res = server.run_bounded(argv, cwd, MINUTES * 60)
     after = server.git_snapshot(cwd)
+    _, main_after, _ = git(repo, "rev-parse", "main")
+    _, main_branch, _ = git(repo, "symbolic-ref", "--short", "HEAD")
     record = {"kind": kind, "argv": argv, "cwd": cwd, "permissions": server.permission_settings(),
+              "main_checkout": {"ref_before": main_before, "ref_after": main_after, "branch_after": main_branch},
               "exit_code": res["exit_code"], "timed_out": res["timed_out"], "elapsed_seconds": res["elapsed_seconds"],
               "git_before": before, "git_after": after,
               "outside_file_created": os.path.exists(outside_path), "outside_path": outside_path,
@@ -116,6 +122,7 @@ def probe(kind, prompt, outside_path, base):
             "outside_file_absent": not record["outside_file_created"],
             "branch_unchanged": after is not None and after.get("branch") == branch,
             "probe_commit_landed": any("probe" in line for line in record["git_log"]),
+            "main_checkout_untouched": main_before == main_after and main_branch == "main",
         }
     else:
         try:
@@ -128,12 +135,16 @@ def probe(kind, prompt, outside_path, base):
                 os.unlink(last_msg)
         _, remote_refs, _ = git(cwd, "ls-remote", "--heads", "origin")
         record["remote_refs_after"] = remote_refs.splitlines()
+        _, log, _ = git(cwd, "log", "--oneline", "-3")
+        record["git_log"] = log.splitlines()
         record["checks"] = {
             "inside_file_created": os.path.exists(os.path.join(cwd, "inside-probe.txt")),
             "outside_file_absent": not record["outside_file_created"],
             "branch_unchanged": after is not None and after.get("branch") == branch,
             "push_not_ok": "push=ok" not in (record["result_line"] or ""),
             "remote_unchanged_by_push": remote_refs == "",
+            "commit_landed_in_worktree": any("codex-probe" in line for line in record["git_log"]),
+            "main_checkout_untouched": main_before == main_after and main_branch == "main",
         }
     if os.path.exists(outside_path):
         os.unlink(outside_path)  # never leave probe artefacts in the home directory

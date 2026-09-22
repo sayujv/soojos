@@ -42,7 +42,7 @@ import traceback
 from pathlib import Path
 
 SERVER_NAME = "soojos-desk"
-SERVER_VERSION = "0.3.1"
+SERVER_VERSION = "0.3.2"
 PROTOCOL_VERSION = "2025-06-18"
 MINUTE = float(os.environ.get("SOOJOS_MINUTE_SECONDS", "60"))  # tests shrink this to exercise timeouts quickly
 
@@ -162,11 +162,20 @@ def load_json(path, default):
 def write_json_atomic(path, payload, mode=0o600):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     fd, tmp = tempfile.mkstemp(prefix=".tmp.", dir=os.path.dirname(path))
-    with os.fdopen(fd, "w") as fh:
-        json.dump(payload, fh, indent=2, sort_keys=True, default=str)
-        fh.write("\n")
-    os.chmod(tmp, mode)
-    os.replace(tmp, path)
+    try:
+        with os.fdopen(fd, "w") as fh:
+            json.dump(payload, fh, indent=2, sort_keys=True, default=str)
+            fh.write("\n")
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.chmod(tmp, mode)
+        os.replace(tmp, path)
+    except BaseException:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
 
 
 def policy():
@@ -324,6 +333,15 @@ def ensure_task_worktree(project_dir, task_id):
         return project_dir, None, None
     worktree = os.path.join(top, ".worktrees", "task-%s" % task_id)
     branch = "desk/%s" % task_id
+    if os.path.isdir(worktree):
+        _, listing, _ = git(top, "worktree", "list", "--porcelain")
+        registered = ("worktree %s" % os.path.realpath(worktree)) in listing.replace(
+            "worktree " + top, "worktree " + os.path.realpath(top))
+        if not registered:
+            if os.listdir(worktree):
+                raise ToolError("stale directory at %s is not a registered worktree; remove it or run "
+                                "`git worktree prune` and inspect before retrying" % worktree)
+            os.rmdir(worktree)
     if not os.path.isdir(worktree):
         os.makedirs(os.path.dirname(worktree), exist_ok=True)
         code, _, _ = git(top, "rev-parse", "--verify", "--quiet", "refs/heads/" + branch)
@@ -436,33 +454,67 @@ def save_run(record):
     write_json_atomic(run_record_path(record["run_id"]), record)
 
 
-def pid_alive(pid):
+def proc_start(pid):
+    """Process start time from ps, so a reused pid is not mistaken for the recorded process."""
+    if not pid:
+        return None
+    try:
+        r = subprocess.run(["/bin/ps", "-o", "lstart=", "-p", str(int(pid))], capture_output=True, text=True, timeout=5)
+    except (OSError, subprocess.TimeoutExpired, ValueError):
+        return None
+    return r.stdout.strip() or None
+
+
+def self_identity():
+    return {"pid": os.getpid(), "pid_start": proc_start(os.getpid())}
+
+
+def pid_alive(pid, pid_start=None):
+    """True only if pid exists and, when a start time was recorded, still has that start time."""
     if not pid:
         return False
     try:
         os.kill(pid, 0)
-        return True
     except ProcessLookupError:
         return False
     except PermissionError:
-        return True
+        pass
+    if pid_start:
+        current = proc_start(pid)
+        return current is not None and current == pid_start
+    return True
+
+
+LIVE_STATES = ("reserved", "spawned", "running")
 
 
 def load_run(run_id):
     rec = load_json(run_record_path(run_id), None)
-    if rec is None:
+    if not isinstance(rec, dict) or not rec.get("run_id"):
         return None
-    if rec.get("state") == "running" and not pid_alive(rec.get("pid")):
+    state = rec.get("state")
+    if state == "running" and not pid_alive(rec.get("pid"), rec.get("pid_start")):
         rec["state"] = "lost"
         rec["note"] = "runner process is gone without a final record"
         save_run(rec)
-    elif rec.get("state") == "reserved":
-        reserved = parse_iso(rec.get("reserved_at"))
-        stale = reserved is None or (now_utc() - reserved).total_seconds() > RESERVATION_TTL_SECONDS
-        if stale or not pid_alive(rec.get("pid")):
+    elif state in ("reserved", "spawned"):
+        since = parse_iso(rec.get("spawned_at") if state == "spawned" else rec.get("reserved_at"))
+        stale = since is None or (now_utc() - since).total_seconds() > RESERVATION_TTL_SECONDS
+        owner_alive = pid_alive(rec.get("pid"), rec.get("pid_start")) if state == "reserved" else True
+        if stale or not owner_alive:
             rec["state"] = "lost"
-            rec["note"] = "reservation never started"
+            rec["note"] = "reservation never started" if state == "reserved" else "runner never reported running"
             save_run(rec)
+    return rec
+
+
+def merge_run(run_id, **fields):
+    """Runner-side update that never lets a non-terminal write follow a terminal one."""
+    rec = load_json(run_record_path(run_id), None) or {"run_id": run_id}
+    if rec.get("state") not in LIVE_STATES and rec.get("state") is not None and fields.get("state") in LIVE_STATES:
+        return rec
+    rec.update(fields)
+    save_run(rec)
     return rec
 
 
@@ -472,14 +524,17 @@ def all_runs():
     out = []
     for f in sorted(os.listdir(RUNS_DIR), reverse=True):
         if f.endswith(".json") and not f.endswith(".spec.json"):
-            rec = load_run(f[:-5])
+            try:
+                rec = load_run(f[:-5])
+            except (ValueError, OSError):
+                rec = {"run_id": f[:-5], "state": "corrupt", "note": "unreadable run record"}
             if rec:
                 out.append(rec)
     return out
 
 
 def live_run_for(task_id):
-    return next((r for r in all_runs() if r.get("task_id") == task_id and r.get("state") in ("reserved", "running")), None)
+    return next((r for r in all_runs() if r.get("task_id") == task_id and r.get("state") in LIVE_STATES), None)
 
 
 def reserve_run(kind, task_id=None, project=None):
@@ -493,7 +548,8 @@ def reserve_run(kind, task_id=None, project=None):
         except FileExistsError:
             continue
         record = {"run_id": run_id, "kind": kind, "task_id": task_id, "project": project, "state": "reserved",
-                  "reserved_at": iso(), "pid": os.getpid()}
+                  "reserved_at": iso()}
+        record.update(self_identity())
         with os.fdopen(fd, "w") as fh:
             json.dump(record, fh, indent=2, sort_keys=True)
             fh.write("\n")
@@ -521,9 +577,32 @@ def worker_command(kind, task, cwd, last_msg_file):
     if kind == "codex":
         if not os.path.exists(CODEX_BIN):
             raise ToolError("codex binary missing at %s" % CODEX_BIN)
-        return [CODEX_BIN, "exec", "--sandbox", perms["codex_sandbox"], "--skip-git-repo-check", "--ephemeral",
-                "-C", cwd, "-o", last_msg_file, task]
+        cmd = [CODEX_BIN, "exec", "--sandbox", perms["codex_sandbox"], "--skip-git-repo-check", "--ephemeral",
+               "-C", cwd]
+        for extra in codex_worktree_dirs(cwd):
+            cmd += ["--add-dir", extra]
+        return cmd + ["-o", last_msg_file, task]
     raise ToolError("unknown worker kind %r" % kind)
+
+
+def codex_worktree_dirs(cwd):
+    """A linked worktree keeps its git metadata under the main repo's .git, outside the sandbox's
+    writable workdir, so `git commit` fails there. Grant only what a commit on the task branch touches:
+    the worktree's own gitdir (index, HEAD, logs), the shared object store, and the desk/ ref and reflog
+    directories. Never the main checkout's HEAD, index or other refs."""
+    if not os.path.isdir(cwd) or git_toplevel(cwd) is None:
+        return []
+    code, gitdir, _ = git(cwd, "rev-parse", "--absolute-git-dir")
+    code2, common, _ = git(cwd, "rev-parse", "--git-common-dir")
+    if code != 0 or code2 != 0:
+        return []
+    gitdir = os.path.realpath(gitdir)
+    common = os.path.realpath(common if os.path.isabs(common) else os.path.join(cwd, common))
+    if gitdir == common:
+        return []  # primary checkout: .git is inside the workdir already
+    wanted = [gitdir, os.path.join(common, "objects"), os.path.join(common, "refs", "heads", "desk"),
+              os.path.join(common, "logs", "refs", "heads", "desk")]
+    return [d for d in wanted if os.path.isdir(d)]
 
 
 def closure_seconds(budget_minutes):
@@ -539,29 +618,76 @@ def remaining_seconds(task):
     return (deadline - now_utc()).total_seconds() - closure_seconds(budget)
 
 
+_CURRENT = {"proc": None, "signalled": None}
+
+
+def _drain(proc, timeout):
+    """Read what the child left in its pipes without waiting on a pipe held open by an escaped process."""
+    try:
+        return proc.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        for stream in (proc.stdout, proc.stderr):
+            try:
+                stream.close()
+            except OSError:
+                pass
+        return b"", b"[output unavailable: a pipe was still held open by a process outside the worker's group]"
+
+
+def kill_group(proc):
+    """SIGTERM then SIGKILL the worker's process group, waiting on the child, not on its pipes."""
+    for sig, wait in ((signal.SIGTERM, 10), (signal.SIGKILL, 10)):
+        try:
+            os.killpg(proc.pid, sig)
+        except ProcessLookupError:
+            pass
+        try:
+            proc.wait(timeout=wait)
+            return True
+        except subprocess.TimeoutExpired:
+            continue
+    return False
+
+
 def run_bounded(cmd, cwd, timeout_seconds):
-    """Run cmd in its own process group; kill the whole group on timeout."""
+    """Run cmd in its own process group; kill the whole group on timeout or on a signal to this runner.
+    Never blocks without a bound: after the kill phase the child is waited on with timeouts and the pipes
+    are drained with a timeout, so a grandchild that escaped the group cannot hang the runner."""
     started = time.monotonic()
     proc = subprocess.Popen(cmd, cwd=cwd, stdin=subprocess.DEVNULL,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
+    _CURRENT["proc"] = proc
     timed_out = False
+    note = None
     try:
-        out, err = proc.communicate(timeout=timeout_seconds)
-    except subprocess.TimeoutExpired:
-        timed_out = True
-        for sig, wait in ((signal.SIGTERM, 10), (signal.SIGKILL, None)):
-            try:
-                os.killpg(proc.pid, sig)
-            except ProcessLookupError:
-                pass
-            try:
-                out, err = proc.communicate(timeout=wait)
-                break
-            except subprocess.TimeoutExpired:
-                continue
+        try:
+            out, err = proc.communicate(timeout=timeout_seconds)
+        except subprocess.TimeoutExpired:
+            timed_out = True
+            if not kill_group(proc):
+                note = "worker process did not exit after SIGKILL"
+            out, err = _drain(proc, 5)
+    finally:
+        _CURRENT["proc"] = None
     elapsed = time.monotonic() - started
-    return {"exit_code": proc.returncode, "timed_out": timed_out, "elapsed_seconds": round(elapsed, 2),
-            "stdout": out.decode("utf-8", "replace"), "stderr": err.decode("utf-8", "replace")}
+    result = {"exit_code": proc.returncode, "timed_out": timed_out, "elapsed_seconds": round(elapsed, 2),
+              "stdout": out.decode("utf-8", "replace"), "stderr": err.decode("utf-8", "replace")}
+    if _CURRENT["signalled"]:
+        result["signalled"] = _CURRENT["signalled"]
+    if note:
+        result["note"] = note
+    return result
+
+
+def _on_runner_signal(signum, _frame):
+    """Operator/launchd signal to the runner: take the worker down with us and let completion record it."""
+    _CURRENT["signalled"] = signal.Signals(signum).name
+    proc = _CURRENT.get("proc")
+    if proc is not None:
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
 
 
 def parse_claude_output(report, stdout):
@@ -710,15 +836,37 @@ def complete_task_from_report(spec, report):
         blocked = desk_call(d.block, task_id, fields["reason"], fields["attempts"], fields["alternatives_checked"],
                             fields["next_attempt"], acc)
         return {"status": "blocked", "task": blocked}
+    except ToolError as exc:
+        return {"status": "error", "error": str(exc)}
     except Exception as exc:
-        return {"status": "error", "error": "%s: %s" % (type(exc).__name__, exc)}
+        return {"status": "error", "error": "%s: %s" % (type(exc).__name__, exc), "transient": True}
 
 
-def run_spec(spec, record):
-    """Shared by the foreground path and the detached runner. record is the reserved run record."""
-    record.update(state="running", pid=os.getpid(), started_at=iso(), cwd=spec["cwd"],
-                  budget_minutes=spec["budget_minutes"], background=spec.get("background", False))
-    save_run(record)
+def complete_with_retries(spec, report, attempts=4, backoff=1.5):
+    """Transient failures (queue mid-write, lock contention) are retried with backoff; a desk refusal is not."""
+    outcome = None
+    for i in range(attempts):
+        outcome = complete_task_from_report(spec, report)
+        if outcome.get("status") != "error" or not outcome.get("transient"):
+            return outcome
+        time.sleep(backoff * (i + 1))
+    outcome["error"] = "after %d attempts: %s" % (attempts, outcome.get("error"))
+    return outcome
+
+
+LAUNCH_FLOOR_FRACTION = 0.1
+
+
+def launch_floor_seconds(budget_minutes):
+    """Below this much remaining time a launch is pointless: refuse instead of spawning a doomed worker."""
+    return min(MINUTE, budget_minutes * MINUTE * LAUNCH_FLOOR_FRACTION)
+
+
+def run_spec(spec):
+    """Executed by the detached runner (the only writer of running/terminal states)."""
+    run_id = spec["run_id"]
+    merge_run(run_id, state="running", started_at=iso(), cwd=spec["cwd"], budget_minutes=spec["budget_minutes"],
+              background=spec.get("background", False), **self_identity())
     timeout = spec["budget_minutes"] * MINUTE
     if spec.get("task_id"):
         try:
@@ -727,41 +875,72 @@ def run_spec(spec, record):
         except ToolError as exc:
             remaining, task = -1, None
             spec["deadline_error"] = str(exc)
-        if remaining <= 0:
-            report = {"kind": spec["kind"], "run_id": spec["run_id"], "task_id": spec["task_id"], "status": "failed",
-                      "error": spec.get("deadline_error") or "task deadline reached before launch (closure reserve kept)",
-                      "started_at": iso(), "finished_at": iso(), "actual_tokens": None, "stdout": "", "stderr": ""}
-            report["outbox_file"] = write_outbox(spec["run_id"], spec.get("project"), report, task_id=spec["task_id"])
-            report["queue"] = complete_task_from_report(spec, report)
-            record.update(state="failed", finished_at=report["finished_at"], note=report["error"], queue=report["queue"])
-            save_run(record)
+        if remaining < launch_floor_seconds(spec["budget_minutes"]):
+            report = {"kind": spec["kind"], "run_id": run_id, "task_id": spec["task_id"], "status": "failed",
+                      "error": spec.get("deadline_error") or "task deadline reached before launch (closure reserve and "
+                      "launch floor kept)", "started_at": iso(), "finished_at": iso(), "actual_tokens": None,
+                      "stdout": "", "stderr": ""}
+            report["outbox_file"] = write_outbox(run_id, spec.get("project"), report, task_id=spec["task_id"])
+            report["queue"] = complete_with_retries(spec, report)
+            merge_run(run_id, state="failed", finished_at=report["finished_at"], note=report["error"],
+                      outbox_file=report["outbox_file"], queue=report["queue"])
             return report
         timeout = min(timeout, remaining)
     report = execute_worker(spec, timeout)
+    if report.get("signalled"):
+        report["status"] = "killed"
+        report["error"] = "runner received %s; worker group killed" % report["signalled"]
     if spec.get("task_id"):
-        report["queue"] = complete_task_from_report(spec, report)
-    record.update(state=report["status"], finished_at=report["finished_at"], exit_code=report.get("exit_code"),
-                  timed_out=report.get("timed_out"), outbox_file=report.get("outbox_file"),
-                  result=clip(report.get("result") or "", 4000), queue=report.get("queue"),
-                  actual_tokens=report.get("actual_tokens"))
-    save_run(record)
+        report["queue"] = complete_with_retries(spec, report)
+    merge_run(run_id, state=report["status"], finished_at=report["finished_at"], exit_code=report.get("exit_code"),
+              timed_out=report.get("timed_out"), outbox_file=report.get("outbox_file"),
+              result=clip(report.get("result") or "", 4000), queue=report.get("queue"),
+              actual_tokens=report.get("actual_tokens"), note=report.get("error") or report.get("note"))
     return report
 
 
-def spawn_background(spec, record):
+def spawn_runner(spec, record):
+    """Detach the runner in its own session. The parent writes the record only BEFORE Popen, so the
+    runner's later writes are never overwritten by a stale parent write."""
     spec_path = os.path.join(RUNS_DIR, spec["run_id"] + ".spec.json")
     fd = os.open(spec_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)  # never replace another run's spec
     with os.fdopen(fd, "w") as fh:
         json.dump(spec, fh, indent=2, sort_keys=True)
     log_path = os.path.join(RUNS_DIR, spec["run_id"] + ".log")
-    with open(log_path, "ab") as log:
-        proc = subprocess.Popen([sys.executable, os.path.abspath(__file__), "--runner", spec_path],
-                                stdin=subprocess.DEVNULL, stdout=log, stderr=log, start_new_session=True,
-                                cwd=spec["cwd"])
-    record.update(state="running", pid=proc.pid, started_at=iso(), background=True, log=log_path, cwd=spec["cwd"],
-                  budget_minutes=spec["budget_minutes"])
+    record.update(state="spawned", spawned_at=iso(), background=bool(spec.get("background")), log=log_path,
+                  cwd=spec["cwd"], budget_minutes=spec["budget_minutes"], spec=spec_path)
     save_run(record)
+    with open(log_path, "ab") as log:
+        subprocess.Popen([sys.executable, os.path.abspath(__file__), "--runner", spec_path],
+                         stdin=subprocess.DEVNULL, stdout=log, stderr=log, start_new_session=True, cwd=spec["cwd"])
     return record
+
+
+def wait_for_run(run_id, budget_minutes):
+    """Foreground path: block this call on the record, not on the worker. The runner owns the timeout."""
+    limit = budget_minutes * MINUTE + CLOSURE_MAX_SECONDS + 60
+    started = time.monotonic()
+    while time.monotonic() - started < limit:
+        rec = load_run(run_id)
+        if rec and rec.get("state") not in LIVE_STATES:
+            return rec
+        time.sleep(0.5)
+    return load_run(run_id)
+
+
+def report_from_record(rec):
+    """Rebuild the worker report the tool returns from the runner's outbox note and record."""
+    report = {}
+    if rec.get("outbox_file") and os.path.exists(rec["outbox_file"]):
+        note = load_json(rec["outbox_file"], {})
+        report = dict(note.get("report") or {})
+    report.setdefault("run_id", rec.get("run_id"))
+    report["outbox_file"] = rec.get("outbox_file")
+    report["status"] = rec.get("state")
+    report["queue"] = rec.get("queue")
+    if rec.get("note") and not report.get("error"):
+        report["error"] = rec["note"]
+    return trimmed(report)
 
 
 def launch(kind, task, cwd, budget_minutes, background=False, task_id=None, project=None, worktree=None,
@@ -784,13 +963,18 @@ def launch(kind, task, cwd, budget_minutes, background=False, task_id=None, proj
             "task_id": task_id, "project": project, "worktree": worktree, "branch": branch,
             "background": bool(background), "zero_cash": True, "cash_evidence": cash,
             "containment": containment, "permissions": permission_settings()}
+    rec = spawn_runner(spec, record)
     if background:
-        rec = spawn_background(spec, record)
-        return {"run_id": rec["run_id"], "state": "running", "pid": rec["pid"], "background": True,
+        return {"run_id": rec["run_id"], "state": rec["state"], "background": True,
                 "poll": "run_status(id=%s); outbox_read(id=%s) when finished" % (rec["run_id"], rec["run_id"])}
-    report = trimmed(run_spec(spec, record))
+    rec = wait_for_run(rec["run_id"], budget)
+    report = report_from_record(rec)
+    report["run_id"] = rec["run_id"]
     if report["status"] != "done":
         raise ToolError(json.dumps(report, indent=2, sort_keys=True, default=str))
+    if task_id and (report.get("queue") or {}).get("status") != "done":
+        # M8: the worker finished but the desk did not accept it; that is not success.
+        raise ToolError(json.dumps(dict(report, status="completion-refused"), indent=2, sort_keys=True, default=str))
     return report
 
 
@@ -808,7 +992,7 @@ def t_desk_status(args):
             running.append({"id": t["id"], "project": t.get("project"), "assignee": t.get("assignee"),
                             "deadline": t.get("deadline"), "overdue": bool(deadline and now > deadline)})
     live = [{k: r.get(k) for k in ("run_id", "kind", "task_id", "state", "pid", "started_at", "reserved_at")}
-            for r in all_runs() if r.get("state") in ("reserved", "running", "lost")]
+            for r in all_runs() if r.get("state") in LIVE_STATES + ("lost", "corrupt")]
     pol = policy()
     try:
         desk_modules()
@@ -1024,40 +1208,57 @@ def t_run_task(args):
         task = desk_call(d.claim, task_id, kind)  # canonical admission; only one caller can win this
     elif task.get("status") != "running":
         raise ToolError("task %s is %s" % (task_id, task.get("status")))
-    # Exclusive run reservation under the same lock the desk uses, so two callers that both
-    # observe a running task without a live run cannot both launch.
-    core = desk_modules()["core"]
+    record = None
+    cwd = worktree = branch = None
+
+    def block_task(reason):
+        fields = blocked_fields(reason[:400], record["run_id"] if record else "none", kind, "not launched")
+        try:
+            desk_call(d.block, task_id, fields["reason"], fields["attempts"], fields["alternatives_checked"],
+                      fields["next_attempt"], None)
+        except ToolError as block_exc:
+            return "; additionally the desk refused to block the task: %s" % block_exc
+        return ""
+
     try:
-        with d.locked():
-            live = live_run_for(task_id)
-            if live:
-                raise ToolError("task %s already has a live run: %s" % (task_id, live["run_id"]))
-            record = reserve_run(kind, task_id, task.get("project"))
-    except core.DeskError as exc:
-        raise ToolError("desk refused: %s" % exc)
-    try:
+        # Exclusive run reservation under the same lock the desk uses, so two callers that both
+        # observe a running task without a live run cannot both launch.
+        core = desk_modules()["core"]
+        try:
+            with d.locked():
+                live = live_run_for(task_id)
+                if live:
+                    raise ToolError("task %s already has a live run: %s" % (task_id, live["run_id"]))
+                record = reserve_run(kind, task_id, task.get("project"))
+        except core.DeskError as exc:
+            raise ToolError("desk refused: %s" % exc)
         remaining = remaining_seconds(task)
-        if remaining <= 0:
-            raise ToolError("task %s deadline %s reached (closure reserve %ss kept); not launching"
-                            % (task_id, task.get("deadline"), int(closure_seconds(int(task.get("budget_minutes", 15))))))
+        budget = int(task.get("budget_minutes", 15))
+        if remaining < launch_floor_seconds(budget):
+            raise ToolError("task %s deadline %s reached (closure reserve %ss and launch floor %ss kept); not launching"
+                            % (task_id, task.get("deadline"), int(closure_seconds(budget)), int(launch_floor_seconds(budget))))
         cwd, worktree, branch = ensure_task_worktree(project_dir, task_id)
         verify_task_worktree(cwd, worktree, task_id)  # containment preflight; refused launches block below
         prompt = compose_task_prompt(task, cwd, worktree, branch)
-        out = launch(kind, prompt, cwd, task.get("budget_minutes", 15), background=background, task_id=task_id,
+        out = launch(kind, prompt, cwd, budget, background=background, task_id=task_id,
                      project=task.get("project"), worktree=worktree, branch=branch, record=record)
     except ToolError as exc:
-        # Pre-launch refusal (deadline, worktree, cash) or a failed foreground worker. A failed worker
-        # has already been completed through the desk by run_spec; a pre-launch refusal has not.
-        rec = load_run(record["run_id"]) or record
-        if rec.get("state") == "reserved":
-            fail_run(rec, str(exc)[:500])
-            fields = blocked_fields("launch refused: %s" % str(exc)[:400], record["run_id"], kind, "not launched")
-            try:
-                desk_call(d.block, task_id, fields["reason"], fields["attempts"], fields["alternatives_checked"],
-                          fields["next_attempt"], None)
-            except ToolError as block_exc:
-                raise ToolError("%s; additionally the desk refused to block the task: %s" % (exc, block_exc))
+        # A live-run refusal must not block the task (another run owns it). Any other refusal before the
+        # runner took over leaves the task running with no worker: fail the record and block it now.
+        if "already has a live run" in str(exc):
+            raise
+        rec = (load_run(record["run_id"]) if record else None) or record
+        if rec is None or rec.get("state") == "reserved":
+            if rec:
+                fail_run(rec, str(exc)[:500])
+            raise ToolError("%s%s" % (exc, block_task("launch refused: %s" % exc)))
         raise
+    except Exception as exc:  # git timeouts, OSError, spec collisions: never leave an orphan reservation
+        reason = "launch failed: %s: %s" % (type(exc).__name__, str(exc)[:300])
+        rec = (load_run(record["run_id"]) if record else None) or record
+        if rec and rec.get("state") in ("reserved", "spawned"):
+            fail_run(rec, reason)
+        raise ToolError("%s%s" % (reason, block_task(reason)))
     out["task_id"] = task_id
     out["worktree"] = worktree
     out["branch"] = branch
@@ -1154,7 +1355,8 @@ TOOLS = [
                      "properties": {"id": _s("Task id"), "background": _BG,
                                     "cwd": _s("Optional absolute git repository overriding the project mapping")}}},
     {"name": "run_status", "fn": t_run_status, "annotations": RO,
-     "description": "State of one run (id) or the most recent runs; reserved/running records whose process is gone are marked lost.",
+     "description": "State of one run (id) or the most recent runs. States: reserved, spawned, running, done, failed, "
+                    "timeout, escaped, killed, lost (process gone or never started), corrupt.",
      "inputSchema": {"type": "object", "properties": {"id": _s("run id"), "limit": {"type": "integer", "default": 20}}}},
 ]
 TOOL_MAP = {t["name"]: t for t in TOOLS}
@@ -1245,23 +1447,22 @@ def serve():
 
 
 def runner(spec_path):
+    for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+        signal.signal(sig, _on_runner_signal)
     spec = load_json(spec_path, None)
     if spec is None:
         sys.stderr.write("runner: missing spec %s\n" % spec_path)
         return 2
-    record = load_json(run_record_path(spec["run_id"]), None) or {"run_id": spec["run_id"], "kind": spec["kind"],
-                                                                     "task_id": spec.get("task_id")}
     if stop_present():
         # STOP appeared between dispatch and start: record it and release the task truthfully.
-        record.update(state="failed", note="STOP present at runner start", finished_at=iso(), background=True)
-        save_run(record)
+        merge_run(spec["run_id"], state="failed", note="STOP present at runner start", finished_at=iso(),
+                  background=True, **self_identity())
         if spec.get("task_id"):
             report = {"status": "failed", "error": "STOP present at runner start", "run_id": spec["run_id"],
                       "kind": spec["kind"], "actual_tokens": None}
-            record["queue"] = complete_task_from_report(spec, report)
-            save_run(record)
+            merge_run(spec["run_id"], queue=complete_with_retries(spec, report))
         return 3
-    report = run_spec(spec, record)
+    report = run_spec(spec)
     return 0 if report["status"] == "done" else 1
 
 

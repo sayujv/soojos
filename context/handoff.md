@@ -338,3 +338,16 @@ Task20260917-ibkr-news-verification is a completed verification, not a completed
 **Next:** 0.3.2 for (a) and (c); decide (b). Evidence files expire 11:01 UTC; refresh before further launches.
 
 **Landmines:** Worker branches desk/20260922-100359-… and desk/20260922-100824-… are unmerged; the review file is on the former, the untracked CHANGELOG in the latter's worktree. Reported token counts include cache reads.
+
+
+## 2026-09-23T00:45:00+08:00 — Claude (Claude Code desktop): soojos-desk 0.3.2 — Codex add-dir and review findings 1–12
+
+**State:** Branch desk/20260917-soojos-desk-mcp; this entry's commit follows 8762207 and adds tools/soojos-desk 0.3.2 (server.py, tests/, native probe, evidence native-boundary-20260922T163134Z.json, README). Only soojos-desk files and this entry staged. Nothing pushed, merged or dispatched since the two live tasks recorded in the previous entry.
+
+**Working:** Codex worker in a linked worktree now receives `--add-dir` for the worktree's own gitdir, the shared object store and the desk/ ref and reflog directories only; the native probe with real Codex shows commit=ok inside the worktree, push still failed against a bare remote under $HOME, and the main checkout's ref and branch unchanged; real Claude still denied push/checkout/touch and committed. From REVIEW-2026-09-18.md (Claude worker, 77f03a3): every run now goes through the detached runner and the foreground call waits on the record (H2); the kill phase waits on the child with bounded SIGTERM/SIGKILL phases and drains pipes with a timeout (H3); any exception between claim and runner takeover fails the record and blocks the task (H1, M6); the runner is the only writer of running/terminal states and the parent writes before Popen (M4); records carry pid plus process start time (M5); the runner handles SIGTERM/SIGINT/SIGHUP by killing the worker group, recording killed and blocking the task (M7); a worker finished but refused by the desk is returned as completion-refused (M8); transient completion errors are retried with backoff (M9); an unregistered .worktrees/task-<id> directory is refused as stale or re-added if empty (M10); a launch floor refuses doomed launches (M11); write_json_atomic fsyncs and cleans its temp file (L12). Verification run: 49 offline tests OK in 24.7s, no leaked processes; live read-only smoke OK; native probe all checks pass for both workers.
+
+**Open:** Review lows 13–17 not yet addressed. Whether run_task should compare a task's stated acceptance (for example, a required commit) with git evidence before accepting done remains a decision for Sayuj; today the worker's exit status and the desk's validation decide. Astra reciprocal review of 2b31958, 689dff7 and this commit outstanding. Billing evidence from 10:01 UTC has expired; refresh before any further launch.
+
+**Next:** Astra review; then lows 13–17 and the acceptance question.
+
+**Landmines:** Foreground run_task now blocks the MCP call only by polling the record; the runner survives the client. Runner records live under ~/.soojos/desk/runs and are private. A$0 incremental cash; the native probe spent subscription usage for two short runs.

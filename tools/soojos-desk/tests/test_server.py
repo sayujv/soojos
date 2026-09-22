@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline tests for soojos-desk 0.3.1. Fake workers under tests/fakes; the canonical Desk from the
+"""Offline tests for soojos-desk 0.3.2. Fake workers under tests/fakes; the canonical Desk from the
 approved harness (policy code_root) runs against temporary state. No real claude/codex, no network.
 
 Run:  /usr/bin/python3 -m unittest discover -s /Users/sayuj/soojos/tools/soojos-desk/tests -v
@@ -51,7 +51,7 @@ class DeskTestCase(unittest.TestCase):
                            "SOOJOS_CLAUDE_BIN": os.path.join(FAKES, "fake_claude"),
                            "SOOJOS_CODEX_BIN": os.path.join(FAKES, "fake_codex"),
                            "SOOJOS_MINUTE_SECONDS": "1.5", "HOME": self.home})
-        for k in ("FAKE_MODE", "FAKE_TOUCH", "FAKE_AUTH", "FAKE_COMMIT", "FAKE_SWITCH",
+        for k in ("FAKE_MODE", "FAKE_TOUCH", "FAKE_AUTH", "FAKE_COMMIT", "FAKE_SWITCH", "FAKE_SLEEP",
                   "SOOJOS_CLAUDE_PERMISSION_MODE", "SOOJOS_CLAUDE_ALLOWED_TOOLS", "SOOJOS_CODEX_SANDBOX"):
             os.environ.pop(k, None)
         # canonical desk state in the temp dirs, migrated to the live v2 shape
@@ -134,7 +134,7 @@ class DeskTestCase(unittest.TestCase):
         deadline = time.time() + timeout
         while time.time() < deadline:
             rec = self.ok("run_status", id=run_id)["run"]
-            if rec["state"] not in ("running", "reserved"):
+            if rec["state"] not in self.server.LIVE_STATES:
                 return rec
             time.sleep(0.2)
         self.fail("run %s still running after %ss" % (run_id, timeout))
@@ -566,6 +566,130 @@ class TestContainment(DeskTestCase):
         subprocess.run(["/usr/bin/git", "-C", wt, "checkout", "-q", "--detach"], check=True, capture_output=True)
         self.assertIn("detached HEAD", self.refused("run_claude", task="x", cwd=wt, budget_minutes=1))
         self.assertEqual(self.ok("run_codex", task="x", cwd=self.tmp, budget_minutes=1)["status"], "done")  # non-git ok
+
+
+class TestReviewFixes032(DeskTestCase):
+    """One test per finding of REVIEW-2026-09-18 addressed in 0.3.2."""
+
+    def test_codex_add_dir_for_linked_worktree_only(self):
+        self.assertEqual(self.server.codex_worktree_dirs(self.repo), [])          # primary checkout
+        self.assertEqual(self.server.codex_worktree_dirs(self.tmp), [])           # non-git
+        cwd, wt, _ = self.server.ensure_task_worktree(self.repo, "adddir")
+        dirs = self.server.codex_worktree_dirs(cwd)
+        gitdir = os.path.join(self.repo, ".git", "worktrees", "task-adddir")
+        self.assertEqual(dirs, [gitdir, os.path.join(self.repo, ".git", "objects"),
+                                os.path.join(self.repo, ".git", "refs", "heads", "desk"),
+                                os.path.join(self.repo, ".git", "logs", "refs", "heads", "desk")])
+        argv = self.server.worker_command("codex", "x", cwd, "/dev/null")
+        self.assertEqual(argv.count("--add-dir"), 4)
+        self.assertNotIn(os.path.join(self.repo, ".git"), argv)                   # never the whole .git
+        self.assertNotIn("--add-dir", self.server.worker_command("codex", "x", self.repo, "/dev/null"))
+
+    def test_h1_exception_after_reservation_blocks_task(self):
+        tid = self.add("boom", budget=1)
+        self.server.ensure_task_worktree = lambda *a: (_ for _ in ()).throw(OSError("disk gone"))
+        body = self.refused("run_task", id=tid, cwd=self.repo)
+        self.assertIn("launch failed: OSError", body)
+        task = self.queue()[tid]
+        self.assertEqual(task["status"], "blocked")
+        self.assertIn("OSError", task["blocked_reason"])
+        self.assertEqual(self.ok("run_status")["runs"][0]["state"], "failed")
+        self.assertIsNone(self.server.live_run_for(tid))
+
+    def test_m6_reservation_failure_after_claim_blocks_task(self):
+        tid = self.add("reserve", budget=1)
+        self.server.reserve_run = lambda *a, **k: (_ for _ in ()).throw(self.server.ToolError("could not reserve"))
+        self.refused("run_task", id=tid, cwd=self.repo)
+        self.assertEqual(self.queue()[tid]["status"], "blocked")
+
+    def test_m8_completion_refused_is_not_success(self):
+        import threading
+        os.environ["FAKE_SLEEP"] = "1"
+        os.environ["SOOJOS_MINUTE_SECONDS"] = "6"
+        self.server = importlib.reload(self.server); self.server._MODULES.clear()
+        tid = self.add("refused", budget=1)
+        def block_meanwhile():
+            time.sleep(0.4)
+            self.server.call_tool("queue_finish", {"id": tid, "status": "blocked", "reason": "blocked by tick meanwhile"})
+        t = threading.Thread(target=block_meanwhile); t.start()
+        body = self.refused("run_task", id=tid, cwd=self.repo)
+        t.join()
+        report = json.loads(body.split("refused: ", 1)[1])
+        self.assertEqual(report["status"], "completion-refused")
+        self.assertEqual(report["queue"]["status"], "error")
+        self.assertEqual(self.queue()[tid]["blocked_reason"], "blocked by tick meanwhile")
+
+    def test_m7_signalled_runner_kills_worker_and_blocks_task(self):
+        os.environ["FAKE_MODE"] = "hang"
+        os.environ["SOOJOS_MINUTE_SECONDS"] = "20"
+        self.server = importlib.reload(self.server); self.server._MODULES.clear()
+        tid = self.add("signal", budget=1)
+        out = self.ok("run_task", id=tid, cwd=self.repo, background=True)
+        for _ in range(50):
+            rec = self.ok("run_status", id=out["run_id"])["run"]
+            if rec["state"] == "running" and rec.get("pid"):
+                break
+            time.sleep(0.1)
+        time.sleep(0.5)
+        os.kill(rec["pid"], 15)
+        rec = self.wait_run(out["run_id"])
+        self.assertEqual(rec["state"], "killed")
+        self.assertIn("SIGTERM", rec["note"])
+        self.assertEqual(self.queue()[tid]["status"], "blocked")
+        self.assertIn("runner received SIGTERM", self.queue()[tid]["blocked_reason"])
+        time.sleep(0.5)
+        self.assertEqual(subprocess.run(["/usr/bin/pgrep", "-f", "sleep 300"], capture_output=True, text=True).stdout, "")
+
+    def test_h3_escaped_pipe_holder_cannot_hang_the_runner(self):
+        os.environ["FAKE_MODE"] = "hang-escape"
+        try:
+            started = time.time()
+            body = self.refused("run_claude", task="x", cwd=self.tmp, budget_minutes=1)
+            self.assertLess(time.time() - started, 25)
+            report = json.loads(body.split("refused: ", 1)[1])
+            self.assertEqual(report["status"], "timeout")
+            self.assertIn("output unavailable", report["stderr"])
+        finally:
+            subprocess.run(["/usr/bin/pkill", "-f", "os.setsid\\(\\); time.sleep\\(300\\)"], capture_output=True)
+
+    def test_m10_stale_unregistered_worktree_directory(self):
+        tid = self.add("stale", budget=1)
+        wt = self.worktree_of(tid)
+        os.makedirs(wt)
+        open(os.path.join(wt, "leftover.txt"), "w").close()
+        body = self.refused("run_task", id=tid, cwd=self.repo)
+        self.assertIn("stale directory", body)
+        self.assertEqual(self.queue()[tid]["status"], "blocked")
+        shutil.rmtree(wt)
+        tid2 = self.add("empty-stale", budget=1)
+        os.makedirs(self.worktree_of(tid2))  # empty and unregistered: healed by re-adding
+        self.assertEqual(self.ok("run_task", id=tid2, cwd=self.repo)["status"], "done")
+
+    def test_m11_launch_floor_refuses_doomed_launch(self):
+        os.environ["FAKE_TOUCH"] = "ran"
+        tid = self.add("floor", budget=15)  # closure 4.5s, floor min(1.5, 2.25)=1.5s
+        self.ok("queue_claim", id=tid)
+        self.set_task(tid, deadline=(utcnow() + dt.timedelta(seconds=5.5)).isoformat())  # remaining 1.0 < floor
+        body = self.refused("run_task", id=tid, cwd=self.repo)
+        self.assertIn("launch floor", body)
+        self.assertNoWorkerRun()
+        self.assertEqual(self.queue()[tid]["status"], "blocked")
+
+    def test_m5_reused_pid_is_not_alive(self):
+        self.server.save_run({"run_id": "run-claude-reused", "kind": "claude", "task_id": "t", "state": "running",
+                              "pid": os.getpid(), "pid_start": "Mon Jan  1 00:00:00 2001", "started_at": utcnow().isoformat()})
+        self.assertEqual(self.ok("run_status", id="run-claude-reused")["run"]["state"], "lost")
+        self.assertTrue(self.server.pid_alive(os.getpid(), self.server.proc_start(os.getpid())))
+
+    def test_m4_runner_owns_record_and_parent_write_precedes_popen(self):
+        out = self.ok("run_claude", task="ping", cwd=self.tmp, budget_minutes=1, background=True)
+        self.assertEqual(out["state"], "spawned")
+        rec = self.wait_run(out["run_id"])
+        self.assertEqual(rec["state"], "done")
+        self.assertTrue(rec.get("log") and rec.get("spec") and rec.get("pid_start"))
+        # a stale non-terminal write cannot follow the terminal one
+        self.server.merge_run(out["run_id"], state="running")
+        self.assertEqual(self.ok("run_status", id=out["run_id"])["run"]["state"], "done")
 
 
 class TestRpc(DeskTestCase):

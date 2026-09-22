@@ -1,7 +1,7 @@
 # soojos-desk MCP server
 
 Minimal MCP server for the partnership desk. Python 3.9 stdlib only, stdio
-transport, hand-rolled JSON-RPC (no `mcp` or `fastmcp` dependency). Version 0.3.1.
+transport, hand-rolled JSON-RPC (no `mcp` or `fastmcp` dependency). Version 0.3.2.
 
 Run: `/usr/bin/python3 /Users/sayuj/soojos/tools/soojos-desk/server.py`
 
@@ -53,7 +53,7 @@ Workers:
 | Tool | What it does |
 | --- | --- |
 | `run_claude(task, cwd, budget_minutes, background?)` | `/Users/sayuj/.local/bin/claude -p … --output-format json --permission-mode acceptEdits --no-session-persistence --disallowedTools <fixed deny list> --allowedTools <local git only>`. |
-| `run_codex(task, cwd, budget_minutes, background?)` | `/Applications/ChatGPT.app/Contents/Resources/codex exec --sandbox workspace-write --skip-git-repo-check --ephemeral -C cwd -o <last-message>`. |
+| `run_codex(task, cwd, budget_minutes, background?)` | `/Applications/ChatGPT.app/Contents/Resources/codex exec --sandbox workspace-write --skip-git-repo-check --ephemeral -C cwd [--add-dir …] -o <last-message>`. In a linked worktree, `--add-dir` grants only the worktree's own gitdir, the shared object store and the `desk/` ref and reflog directories, so a commit on the task branch works while the main checkout's HEAD, index and other refs stay outside the sandbox. |
 | `run_task(id, background?, cwd?)` | Permission preflight → claim if queued → exclusive run reservation under the desk lock → `.worktrees/task-<id>` on `desk/<id>`, verified by git → deadline check → zero-cash check → run the assignee → `Desk.finish` or `Desk.block`. No worktree opt-out. |
 
 Every tool refuses while `~/.soojos/STOP` exists (`lexists`, so a dangling symlink
@@ -85,9 +85,26 @@ blocks its task instead of running.
   elapsed time, timeout, the worktree HEAD before and after, and dirty paths; the
   server states it ran no tests itself. `evidence` lists the run note, worktree and
   HEAD. Token counts come from the CLI usage output when present.
-- `background=true` detaches a runner (`server.py --runner <spec>`) in its own
-  session that survives the MCP client. Poll `run_status`; the task's outcome goes
-  through the desk exactly as in the foreground.
+- **Every run is supervised by a detached runner** (`server.py --runner <spec>`) in
+  its own session, foreground or background. The foreground call only waits on the
+  run record, so a client that kills the server cannot orphan an unsupervised
+  worker: the runner still enforces the timeout and completes through the desk.
+  The runner is the only writer of running and terminal states; the parent writes
+  the record before spawning it, and a non-terminal write can never follow a
+  terminal one. Records carry the runner's pid and process start time, so a reused
+  pid is not mistaken for a live runner. A runner that receives SIGTERM, SIGINT or
+  SIGHUP kills its worker group, records `killed`, and blocks the task.
+- **No unbounded wait.** After the timeout the child is waited on with bounded
+  SIGTERM and SIGKILL phases and the pipes are drained with a timeout; a grandchild
+  that escaped the process group and holds stdout cannot hang the runner.
+- **Every failure after a claim is accounted for.** Any exception between the
+  claim and the runner taking over (git timeout, OSError, spec collision,
+  reservation failure) fails the run record and blocks the task with the reason.
+  A launch is refused when less than a launch floor remains (the smaller of one
+  minute and 10% of the budget). A worker that finished but whose completion the
+  desk refused is returned as `completion-refused`, not success. Transient
+  completion errors are retried with backoff. A `.worktrees/task-<id>` directory
+  that is not a registered worktree is refused as stale, or re-added if empty.
 
 ## State
 
@@ -149,7 +166,7 @@ interactive Codex app or Claude Code. `claude -p` needs
 /usr/bin/python3 -m unittest discover -s /Users/sayuj/soojos/tools/soojos-desk/tests -v
 ```
 
-39 offline tests. They initialise a canonical desk in temporary state (via
+49 offline tests. They initialise a canonical desk in temporary state (via
 `Desk.initialize` and the v2 migration), use fake `claude`/`codex` under
 `tests/fakes/` that also answer the auth probes, and cover: STOP for every tool;
 canonical add/claim/finish/block validation; done refused without evidence, without
@@ -164,8 +181,10 @@ background completion through the desk; STOP at runner start; the JSON-RPC layer
 a real subprocess; permission overrides (bypass, auto, blank, wildcard, foreign rules,
 malformed, unknown sandbox) refused before claim or reservation while narrowing is
 accepted; containment (non-git cwd, opt-out, detached HEAD, wrong branch, cwd outside
-the worktree, branch escape after launch, ad-hoc cwd rules). `SOOJOS_MINUTE_SECONDS`
-shrinks a "minute".
+the worktree, branch escape after launch, ad-hoc cwd rules); and one test per finding
+addressed in 0.3.2 (Codex add-dir, exception after reservation, reservation failure,
+completion refused, signalled runner, escaped pipe holder, stale worktree directory,
+launch floor, reused pid, record ownership). `SOOJOS_MINUTE_SECONDS` shrinks a "minute".
 
 `smoke_test.py` runs the read-only tools against the live desk and checks STOP
 refusal for every tool in an isolated home; it does not mutate live state.
@@ -197,3 +216,11 @@ args = ["/Users/sayuj/soojos/tools/soojos-desk/server.py"]
   containment before launch, test the enforcement boundary natively. Addressed in 0.3.1
   (approved sets with refusal of widening, git-verified worktree preflight plus post-run
   branch check, native probe with recorded evidence).
+- First live dispatch (22 Sep): a Claude worker's static review of 0.3.1
+  (`REVIEW-2026-09-18.md` on its task branch, 3 high / 8 medium / 6 low) and a Codex
+  worker that could not commit in a linked worktree. 0.3.2 addresses the Codex
+  add-dir gap (proven by the native probe, evidence
+  `tests/evidence/native-boundary-20260922T163134Z.json`: commit landed in the
+  worktree, main checkout untouched, push still blocked) and review findings 1 to 12
+  (all three high, mediums 4 to 11, low 12). Still open from that review: 13 to 17
+  (low) and the question of checking a task's stated acceptance against git evidence.
