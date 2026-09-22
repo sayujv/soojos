@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline tests for soojos-desk 0.3.0. Fake workers under tests/fakes; the canonical Desk from the
+"""Offline tests for soojos-desk 0.3.1. Fake workers under tests/fakes; the canonical Desk from the
 approved harness (policy code_root) runs against temporary state. No real claude/codex, no network.
 
 Run:  /usr/bin/python3 -m unittest discover -s /Users/sayuj/soojos/tools/soojos-desk/tests -v
@@ -51,7 +51,8 @@ class DeskTestCase(unittest.TestCase):
                            "SOOJOS_CLAUDE_BIN": os.path.join(FAKES, "fake_claude"),
                            "SOOJOS_CODEX_BIN": os.path.join(FAKES, "fake_codex"),
                            "SOOJOS_MINUTE_SECONDS": "1.5", "HOME": self.home})
-        for k in ("FAKE_MODE", "FAKE_TOUCH", "FAKE_AUTH", "FAKE_COMMIT"):
+        for k in ("FAKE_MODE", "FAKE_TOUCH", "FAKE_AUTH", "FAKE_COMMIT", "FAKE_SWITCH",
+                  "SOOJOS_CLAUDE_PERMISSION_MODE", "SOOJOS_CLAUDE_ALLOWED_TOOLS", "SOOJOS_CODEX_SANDBOX"):
             os.environ.pop(k, None)
         # canonical desk state in the temp dirs, migrated to the live v2 shape
         sys.path.insert(0, os.path.join(CODE_ROOT, "scripts"))
@@ -60,6 +61,7 @@ class DeskTestCase(unittest.TestCase):
         d.initialize(utcnow().isoformat(), CODE_ROOT)
         d.migrate_reporting_policy(utcnow().isoformat(), "test fixture: report-only tokens")  # live v2 shape
         self.write_billing(fresh=True)
+        self.repo = self.make_repo()
         import server
         self.server = importlib.reload(server)
         self.server._MODULES.clear()
@@ -136,6 +138,13 @@ class DeskTestCase(unittest.TestCase):
                 return rec
             time.sleep(0.2)
         self.fail("run %s still running after %ss" % (run_id, timeout))
+
+    def assertNoWorkerRun(self, msg="worker must not have run"):
+        for root, _dirs, files in os.walk(self.tmp):
+            self.assertNotIn("ran", files, msg + " (found in %s)" % root)
+
+    def worktree_of(self, tid):
+        return os.path.join(self.repo, ".worktrees", "task-%s" % tid)
 
     def done_report(self):
         return {"verification": "checked by test", "evidence": ["fixture"], "actual_cost_aud": 0,
@@ -289,9 +298,13 @@ class TestWorkers(DeskTestCase):
         body = self.refused("run_codex", task="ping", cwd=self.tmp, budget_minutes=1)
         self.assertLess(time.time() - started, 15)
         self.assertEqual(json.loads(body.split("refused: ", 1)[1])["status"], "timeout")
-        time.sleep(0.3)
-        left = subprocess.run(["/usr/bin/pgrep", "-f", "sleep 300"], capture_output=True, text=True).stdout.strip()
-        self.assertEqual(left, "")
+        left = "unchecked"
+        for _ in range(30):  # the group was signalled; give the kernel a moment to reap the grandchildren
+            left = subprocess.run(["/usr/bin/pgrep", "-f", "sleep 300"], capture_output=True, text=True).stdout.strip()
+            if not left:
+                break
+            time.sleep(0.1)
+        self.assertEqual(left, "", "leftover sleep processes: %s" % left)
 
     def test_unknown_cash_refuses_launch_before_any_run(self):
         self.no_subscription()
@@ -322,7 +335,7 @@ class TestWorkers(DeskTestCase):
 
 class TestRunTask(DeskTestCase):
     def test_end_to_end_done_through_desk(self):
-        repo = self.make_repo()
+        repo = self.repo
         os.environ["FAKE_COMMIT"] = "1"
         tid = self.add("commit a file", assignee="claude", budget=2)
         out = self.ok("run_task", id=tid, cwd=repo)
@@ -350,7 +363,7 @@ class TestRunTask(DeskTestCase):
     def test_worker_failure_blocks_with_desk_accounting(self):
         os.environ["FAKE_MODE"] = "fail"
         tid = self.add("will fail", budget=1)
-        self.refused("run_task", id=tid, cwd=self.tmp, use_worktree=False)
+        self.refused("run_task", id=tid, cwd=self.repo)
         task = self.queue()[tid]
         self.assertEqual(task["status"], "blocked")
         self.assertIn("worker failed", task["blocked_reason"])
@@ -364,12 +377,12 @@ class TestRunTask(DeskTestCase):
         self.ok("queue_claim", id=tid)
         self.server.save_run({"run_id": "run-claude-live", "kind": "claude", "task_id": tid, "state": "reserved",
                               "pid": os.getpid(), "reserved_at": utcnow().isoformat()})
-        self.assertIn("already has a live run", self.refused("run_task", id=tid, cwd=self.tmp, use_worktree=False))
+        self.assertIn("already has a live run", self.refused("run_task", id=tid, cwd=self.repo))
         self.assertEqual(self.queue()[tid]["status"], "running")
         # a stale reservation from a crashed caller does not block recovery
         self.server.save_run({"run_id": "run-claude-live", "kind": "claude", "task_id": tid, "state": "reserved",
                               "pid": 999999, "reserved_at": utcnow().isoformat()})
-        out = self.ok("run_task", id=tid, cwd=self.tmp, use_worktree=False)
+        out = self.ok("run_task", id=tid, cwd=self.repo)
         self.assertEqual(out["status"], "done")
 
     def test_expired_deadline_refuses_launch_and_blocks(self):
@@ -377,9 +390,9 @@ class TestRunTask(DeskTestCase):
         tid = self.add("late", budget=1)
         self.ok("queue_claim", id=tid)
         self.set_task(tid, deadline=(utcnow() - dt.timedelta(seconds=1)).isoformat())
-        body = self.refused("run_task", id=tid, cwd=self.tmp, use_worktree=False)
+        body = self.refused("run_task", id=tid, cwd=self.repo)
         self.assertIn("deadline", body)
-        self.assertFalse(os.path.exists(os.path.join(self.tmp, "ran")), "worker must not run past the deadline")
+        self.assertNoWorkerRun("worker must not run past the deadline")
         task = self.queue()[tid]
         self.assertEqual(task["status"], "blocked")
         self.assertIn("launch refused", task["blocked_reason"])
@@ -391,7 +404,7 @@ class TestRunTask(DeskTestCase):
         self.ok("queue_claim", id=tid)
         self.set_task(tid, deadline=(utcnow() + dt.timedelta(seconds=7)).isoformat())
         started = time.time()
-        body = self.refused("run_task", id=tid, cwd=self.tmp, use_worktree=False)
+        body = self.refused("run_task", id=tid, cwd=self.repo)
         self.assertLess(time.time() - started, 15)
         report = json.loads(body.split("refused: ", 1)[1])
         self.assertEqual(report["status"], "timeout")
@@ -402,18 +415,18 @@ class TestRunTask(DeskTestCase):
         self.no_subscription()
         os.environ["FAKE_TOUCH"] = "ran"
         tid = self.add("cash", budget=1)
-        body = self.refused("run_task", id=tid, cwd=self.tmp, use_worktree=False)
+        body = self.refused("run_task", id=tid, cwd=self.repo)
         self.assertIn("zero incremental cash", body)
-        self.assertFalse(os.path.exists(os.path.join(self.tmp, "ran")))
+        self.assertNoWorkerRun()
         task = self.queue()[tid]
         self.assertEqual(task["status"], "blocked")
         self.assertIsNone(task.get("actual_cost_aud"))  # unknown stays unknown
 
     def test_background_task_completes_through_desk(self):
         tid = self.add("bg", budget=1)
-        out = self.ok("run_task", id=tid, cwd=self.tmp, use_worktree=False, background=True)
+        out = self.ok("run_task", id=tid, cwd=self.repo, background=True)
         self.assertEqual(self.queue()[tid]["status"], "running")
-        self.assertIn("already has a live run", self.refused("run_task", id=tid, cwd=self.tmp, use_worktree=False))
+        self.assertIn("already has a live run", self.refused("run_task", id=tid, cwd=self.repo))
         rec = self.wait_run(out["run_id"])
         self.assertEqual(rec["state"], "done")
         self.assertEqual(self.queue()[tid]["status"], "done")
@@ -423,7 +436,7 @@ class TestRunTask(DeskTestCase):
         a, b, c = self.add("a"), self.add("b"), self.add("c")
         self.ok("queue_claim", id=a)
         self.ok("queue_claim", id=b)
-        self.refused("run_task", id=c, cwd=self.tmp, use_worktree=False)
+        self.refused("run_task", id=c, cwd=self.repo)
         self.assertEqual(self.queue()[c]["status"], "queued")
 
     def test_stop_at_runner_start_blocks_task(self):
@@ -438,6 +451,121 @@ class TestRunTask(DeskTestCase):
         self.assertEqual(self.server.runner(spec_path), 3)
         self.assertEqual(self.queue()[tid]["status"], "blocked")
         self.assertIn("STOP", self.queue()[tid]["blocked_reason"])
+
+
+class TestPermissions(DeskTestCase):
+    def test_defaults_compose_allow_and_deny_lists(self):
+        perms = self.server.permission_settings()
+        self.assertEqual(perms["claude_mode"], "acceptEdits")
+        self.assertNotIn("Bash(git branch:*)", perms["claude_allowed"])
+        self.assertIn("Bash(git push:*)", perms["claude_denied"])
+        self.assertIn("Bash(git branch:*)", perms["claude_denied"])
+        argv = self.server.worker_command("claude", "x", self.tmp, None)
+        self.assertEqual(argv[argv.index("--disallowedTools") + 1], " ".join(self.server.CLAUDE_DENIED_RULES))
+        self.assertEqual(argv[argv.index("--allowedTools") + 1], " ".join(self.server.APPROVED_CLAUDE_ALLOWED_RULES))
+        self.assertTrue(self.ok("desk_status")["permissions"]["valid"])
+
+    def test_widened_blank_and_unknown_overrides_are_refused(self):
+        cases = {"SOOJOS_CLAUDE_PERMISSION_MODE": ["bypassPermissions", "auto", "manual", "nonsense", ""],
+                 "SOOJOS_CLAUDE_ALLOWED_TOOLS": ["Bash(*)", "   ", "Bash(git status:*) Bash(rm:*)", "Bash(git branch:*)",
+                                                 "Edit", "Bash(git commit:*)  Bash(git push:*)"],
+                 "SOOJOS_CODEX_SANDBOX": ["danger-full-access", "", "full"]}
+        for var, values in cases.items():
+            for value in values:
+                os.environ[var] = value
+                with self.assertRaises(self.server.ToolError, msg="%s=%r" % (var, value)):
+                    self.server.permission_settings()
+                body = self.refused("run_claude", task="x", cwd=self.tmp, budget_minutes=1)
+                self.assertIn("permission settings refused", body)
+                self.assertFalse(self.ok("desk_status")["permissions"]["valid"])
+                del os.environ[var]
+        self.assertEqual(self.ok("run_status")["runs"], [], "no reservation may exist after refused launches")
+
+    def test_narrowing_overrides_are_accepted(self):
+        os.environ["SOOJOS_CLAUDE_ALLOWED_TOOLS"] = "Bash(git status:*) Bash(git diff:*)"
+        self.assertEqual(self.server.permission_settings()["claude_allowed"], ["Bash(git status:*)", "Bash(git diff:*)"])
+        os.environ["SOOJOS_CLAUDE_ALLOWED_TOOLS"] = "none"
+        argv = self.server.worker_command("claude", "x", self.tmp, None)
+        self.assertNotIn("--allowedTools", argv)
+        self.assertIn("--disallowedTools", argv)
+        os.environ["SOOJOS_CLAUDE_PERMISSION_MODE"] = "dontAsk"
+        os.environ["SOOJOS_CODEX_SANDBOX"] = "read-only"
+        perms = self.server.permission_settings()
+        self.assertEqual((perms["claude_mode"], perms["codex_sandbox"]), ("dontAsk", "read-only"))
+
+    def test_misconfiguration_is_refused_before_claim_or_reservation(self):
+        os.environ["SOOJOS_CLAUDE_PERMISSION_MODE"] = "bypassPermissions"
+        tid = self.add("never", budget=1)
+        self.assertIn("permission settings refused", self.refused("run_task", id=tid, cwd=self.repo))
+        self.assertEqual(self.queue()[tid]["status"], "queued", "task admission must not be consumed")
+        self.assertEqual(self.ok("run_status")["runs"], [])
+        self.assertFalse(os.path.isdir(self.worktree_of(tid)))
+
+
+class TestContainment(DeskTestCase):
+    def test_non_git_cwd_refused_before_claim(self):
+        tid = self.add("nogit", budget=1)
+        body = self.refused("run_task", id=tid, cwd=self.tmp)
+        self.assertIn("not a git repository", body)
+        self.assertEqual(self.queue()[tid]["status"], "queued")
+
+    def test_worktree_opt_out_is_refused(self):
+        tid = self.add("optout", budget=1)
+        self.assertIn("use_worktree=false is not supported", self.refused("run_task", id=tid, cwd=self.repo, use_worktree=False))
+        self.assertEqual(self.queue()[tid]["status"], "queued")
+
+    def test_detached_head_in_worktree_refuses_launch(self):
+        os.environ["FAKE_TOUCH"] = "ran"
+        tid = self.add("detached", budget=1)
+        self.server.ensure_task_worktree(self.repo, tid)
+        subprocess.run(["/usr/bin/git", "-C", self.worktree_of(tid), "checkout", "-q", "--detach"], check=True, capture_output=True)
+        body = self.refused("run_task", id=tid, cwd=self.repo)
+        self.assertIn("detached HEAD", body)
+        self.assertNoWorkerRun()
+        self.assertEqual(self.queue()[tid]["status"], "blocked")
+        self.assertIn("launch refused", self.queue()[tid]["blocked_reason"])
+
+    def test_wrong_branch_in_worktree_refuses_launch(self):
+        os.environ["FAKE_TOUCH"] = "ran"
+        tid = self.add("wrongbranch", budget=1)
+        self.server.ensure_task_worktree(self.repo, tid)
+        subprocess.run(["/usr/bin/git", "-C", self.worktree_of(tid), "checkout", "-q", "-b", "other"], check=True, capture_output=True)
+        body = self.refused("run_task", id=tid, cwd=self.repo)
+        self.assertIn("expected desk/%s" % tid, body)
+        self.assertNoWorkerRun()
+        self.assertEqual(self.queue()[tid]["status"], "blocked")
+
+    def test_verify_task_worktree_rejects_paths_outside_and_wrong_names(self):
+        tid = self.add("paths", budget=1)
+        cwd, wt, branch = self.server.ensure_task_worktree(self.repo, tid)
+        snap = self.server.verify_task_worktree(cwd, wt, tid)
+        self.assertEqual(snap["branch"], "desk/%s" % tid)
+        with self.assertRaises(self.server.ToolError):
+            self.server.verify_task_worktree(self.repo, wt, tid)          # cwd outside the worktree
+        with self.assertRaises(self.server.ToolError):
+            self.server.verify_task_worktree(self.repo, self.repo, tid)   # primary checkout is not task-<id>
+        with self.assertRaises(self.server.ToolError):
+            self.server.verify_task_worktree(cwd, None, tid)              # no worktree
+
+    def test_worker_that_leaves_its_branch_is_not_accepted(self):
+        os.environ["FAKE_SWITCH"] = "1"
+        tid = self.add("escape", budget=1)
+        body = self.refused("run_task", id=tid, cwd=self.repo)
+        self.assertIn("left branch desk/%s" % tid, body)
+        task = self.queue()[tid]
+        self.assertEqual(task["status"], "blocked")
+        self.assertIn("escaped", task["blocked_reason"])
+        self.assertEqual(self.ok("run_status")["runs"][0]["state"], "escaped")
+
+    def test_adhoc_cwd_rules(self):
+        self.assertIn("main branch", self.refused("run_claude", task="x", cwd=self.repo, budget_minutes=1))
+        subprocess.run(["/usr/bin/git", "-C", self.repo, "checkout", "-q", "-b", "feature"], check=True, capture_output=True)
+        self.assertIn("primary checkout", self.refused("run_codex", task="x", cwd=self.repo, budget_minutes=1))
+        cwd, wt, branch = self.server.ensure_task_worktree(self.repo, "adhoc")
+        self.assertEqual(self.ok("run_claude", task="x", cwd=wt, budget_minutes=1)["status"], "done")
+        subprocess.run(["/usr/bin/git", "-C", wt, "checkout", "-q", "--detach"], check=True, capture_output=True)
+        self.assertIn("detached HEAD", self.refused("run_claude", task="x", cwd=wt, budget_minutes=1))
+        self.assertEqual(self.ok("run_codex", task="x", cwd=self.tmp, budget_minutes=1)["status"], "done")  # non-git ok
 
 
 class TestRpc(DeskTestCase):

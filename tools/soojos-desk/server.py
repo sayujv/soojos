@@ -42,7 +42,7 @@ import traceback
 from pathlib import Path
 
 SERVER_NAME = "soojos-desk"
-SERVER_VERSION = "0.3.0"
+SERVER_VERSION = "0.3.1"
 PROTOCOL_VERSION = "2025-06-18"
 MINUTE = float(os.environ.get("SOOJOS_MINUTE_SECONDS", "60"))  # tests shrink this to exercise timeouts quickly
 
@@ -63,12 +63,54 @@ PROJECTS_PATH = os.path.join(HERE, "projects.json")
 CLAUDE_BIN = os.environ.get("SOOJOS_CLAUDE_BIN", "/Users/sayuj/.local/bin/claude")
 CODEX_BIN = os.environ.get("SOOJOS_CODEX_BIN", "/Applications/ChatGPT.app/Contents/Resources/codex")
 GIT_BIN = "/usr/bin/git"
-CLAUDE_PERMISSION_MODE = os.environ.get("SOOJOS_CLAUDE_PERMISSION_MODE", "acceptEdits")
-# Local git only, so a worker can commit on its task branch; no push, no other commands.
-CLAUDE_ALLOWED_TOOLS = os.environ.get(
-    "SOOJOS_CLAUDE_ALLOWED_TOOLS",
-    "Bash(git status:*) Bash(git diff:*) Bash(git log:*) Bash(git add:*) Bash(git commit:*) Bash(git branch:*)")
-CODEX_SANDBOX = os.environ.get("SOOJOS_CODEX_SANDBOX", "workspace-write")
+# Approved permission settings. Environment overrides may only narrow these; anything wider,
+# blank or unrecognised is refused before any launch side effect (0.2.1 review, correction 1).
+APPROVED_CLAUDE_MODES = ("acceptEdits", "dontAsk", "plan")
+DEFAULT_CLAUDE_MODE = "acceptEdits"
+# Preapproval, not restriction: under acceptEdits these run unattended. Local git only, enough to
+# stage and commit on the task branch. Prefix matchers: `git add -A` is inside `git add:*` by design.
+APPROVED_CLAUDE_ALLOWED_RULES = ("Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)",
+                                 "Bash(git rev-parse:*)", "Bash(git add:*)", "Bash(git commit:*)")
+# Always denied, not overridable: anything that moves branches, rewrites history or leaves the machine.
+CLAUDE_DENIED_RULES = ("Bash(git push:*)", "Bash(git checkout:*)", "Bash(git switch:*)", "Bash(git branch:*)",
+                       "Bash(git reset:*)", "Bash(git rebase:*)", "Bash(git merge:*)", "Bash(git worktree:*)",
+                       "Bash(git remote:*)", "Bash(git clean:*)", "Bash(git stash:*)", "Bash(git tag:*)",
+                       "Bash(git fetch:*)", "Bash(git pull:*)", "WebFetch", "WebSearch")
+APPROVED_CODEX_SANDBOXES = ("read-only", "workspace-write")
+DEFAULT_CODEX_SANDBOX = "workspace-write"
+
+
+def permission_settings():
+    """Validated worker permission settings. Raises ToolError on any widening/malformed override.
+    A preflight on arguments is not proof of native enforcement; see tests/native_boundary_probe.py."""
+    errors = []
+    mode = os.environ.get("SOOJOS_CLAUDE_PERMISSION_MODE", DEFAULT_CLAUDE_MODE)
+    if mode not in APPROVED_CLAUDE_MODES:
+        errors.append("SOOJOS_CLAUDE_PERMISSION_MODE=%r is not in the approved set %s" % (mode, list(APPROVED_CLAUDE_MODES)))
+    raw = os.environ.get("SOOJOS_CLAUDE_ALLOWED_TOOLS")
+    if raw is None:
+        allowed = list(APPROVED_CLAUDE_ALLOWED_RULES)
+    elif raw.strip().lower() == "none":
+        allowed = []
+    else:
+        # Rules look like Name or Name(pattern) and may contain spaces; commas/whitespace separate them.
+        rules = re.findall(r"[A-Za-z_]+\([^()]*\)|[A-Za-z_]+", raw)
+        leftover = re.sub(r"[A-Za-z_]+\([^()]*\)|[A-Za-z_]+", "", raw).replace(",", "").strip()
+        bad = [r for r in rules if r not in APPROVED_CLAUDE_ALLOWED_RULES]
+        if not rules:
+            errors.append("SOOJOS_CLAUDE_ALLOWED_TOOLS is blank; unset it, or set 'none' or a subset of the approved rules")
+        elif leftover:
+            errors.append("SOOJOS_CLAUDE_ALLOWED_TOOLS is malformed near %r" % leftover[:40])
+        elif bad:
+            errors.append("SOOJOS_CLAUDE_ALLOWED_TOOLS contains rules outside the approved set: %s" % bad)
+        allowed = [r for r in rules if r in APPROVED_CLAUDE_ALLOWED_RULES]
+    sandbox = os.environ.get("SOOJOS_CODEX_SANDBOX", DEFAULT_CODEX_SANDBOX)
+    if sandbox not in APPROVED_CODEX_SANDBOXES:
+        errors.append("SOOJOS_CODEX_SANDBOX=%r is not in the approved set %s" % (sandbox, list(APPROVED_CODEX_SANDBOXES)))
+    if errors:
+        raise ToolError("permission settings refused (never widened silently): " + "; ".join(errors))
+    return {"claude_mode": mode, "claude_allowed": allowed, "claude_denied": list(CLAUDE_DENIED_RULES),
+            "codex_sandbox": sandbox}
 
 MAX_RETURN_CHARS = 20000     # per stream in the tool result
 MAX_OUTBOX_CHARS = 200000    # per stream in the outbox file
@@ -299,13 +341,59 @@ def ensure_task_worktree(project_dir, task_id):
 
 
 def git_snapshot(path):
-    """Facts a completion report can cite: HEAD, branch, dirtiness."""
-    if not path or git_toplevel(path) is None:
+    """Facts a completion report can cite: toplevel, HEAD, symbolic branch (None when detached), dirtiness."""
+    if not path:
+        return None
+    top = git_toplevel(path)
+    if top is None:
         return None
     _, head, _ = git(path, "rev-parse", "HEAD")
-    _, branch, _ = git(path, "rev-parse", "--abbrev-ref", "HEAD")
+    code, branch, _ = git(path, "symbolic-ref", "--quiet", "--short", "HEAD")
     _, status, _ = git(path, "status", "--short")
-    return {"head": head, "branch": branch, "dirty_paths": len(status.splitlines())}
+    return {"toplevel": os.path.realpath(top), "head": head, "branch": branch if code == 0 else None,
+            "dirty_paths": len(status.splitlines())}
+
+
+def verify_task_worktree(cwd, worktree, task_id):
+    """Branch containment preflight for a task worker (0.2.1 review, correction 2). Refuses no worktree,
+    a cwd that resolves outside it, a toplevel that is not the worktree, detached HEAD, or any branch
+    other than desk/<id>. A preflight cannot stop the worker changing branches later; the post-run
+    snapshot is checked again at completion."""
+    expected_branch = "desk/%s" % task_id
+    if not worktree:
+        raise ToolError("task %s: mutating workers require the isolated worktree .worktrees/task-%s" % (task_id, task_id))
+    real_wt = os.path.realpath(worktree)
+    real_cwd = os.path.realpath(cwd)
+    if not (real_cwd == real_wt or real_cwd.startswith(real_wt + os.sep)):
+        raise ToolError("task %s: cwd %s resolves outside the task worktree %s" % (task_id, real_cwd, real_wt))
+    if os.path.basename(real_wt) != "task-%s" % task_id or os.path.basename(os.path.dirname(real_wt)) != ".worktrees":
+        raise ToolError("task %s: %s is not a .worktrees/task-<id> directory" % (task_id, real_wt))
+    snap = git_snapshot(real_cwd)
+    if snap is None:
+        raise ToolError("task %s: %s is not inside a git worktree" % (task_id, real_cwd))
+    if snap["toplevel"] != real_wt:
+        raise ToolError("task %s: git toplevel %s is not the task worktree %s" % (task_id, snap["toplevel"], real_wt))
+    if snap["branch"] is None:
+        raise ToolError("task %s: worktree is at detached HEAD %s; expected branch %s" % (task_id, snap["head"], expected_branch))
+    if snap["branch"] != expected_branch:
+        raise ToolError("task %s: worktree is on branch %s; expected %s" % (task_id, snap["branch"], expected_branch))
+    return snap
+
+
+def verify_adhoc_cwd(cwd):
+    """Containment for run_claude/run_codex without a task: a git checkout must be an isolated worktree under
+    a .worktrees directory on a named non-main branch. A non-git directory is allowed and recorded as such."""
+    snap = git_snapshot(cwd)
+    if snap is None:
+        return {"git": False}
+    if snap["branch"] is None:
+        raise ToolError("cwd %s is at detached HEAD; ad-hoc workers need a named non-main branch" % cwd)
+    if snap["branch"] in ("main", "master"):
+        raise ToolError("cwd %s is on %s; ad-hoc workers may not run on the main branch" % (cwd, snap["branch"]))
+    parts = snap["toplevel"].split(os.sep)
+    if ".worktrees" not in parts:
+        raise ToolError("cwd %s is a primary checkout (%s), not a .worktrees/ isolation; refuse" % (cwd, snap["toplevel"]))
+    return {"git": True, "toplevel": snap["toplevel"], "branch": snap["branch"]}
 
 
 # --------------------------------------------------------------------------- zero-cash evidence
@@ -420,18 +508,20 @@ def fail_run(record, reason):
 
 # --------------------------------------------------------------------------- workers
 def worker_command(kind, task, cwd, last_msg_file):
+    perms = permission_settings()  # validated before any argv is composed
     if kind == "claude":
         if not os.path.exists(CLAUDE_BIN):
             raise ToolError("claude binary missing at %s" % CLAUDE_BIN)
         cmd = [CLAUDE_BIN, "-p", task, "--output-format", "json",
-               "--permission-mode", CLAUDE_PERMISSION_MODE, "--no-session-persistence"]
-        if CLAUDE_ALLOWED_TOOLS.strip():
-            cmd += ["--allowedTools", CLAUDE_ALLOWED_TOOLS]
+               "--permission-mode", perms["claude_mode"], "--no-session-persistence",
+               "--disallowedTools", " ".join(perms["claude_denied"])]
+        if perms["claude_allowed"]:
+            cmd += ["--allowedTools", " ".join(perms["claude_allowed"])]
         return cmd
     if kind == "codex":
         if not os.path.exists(CODEX_BIN):
             raise ToolError("codex binary missing at %s" % CODEX_BIN)
-        return [CODEX_BIN, "exec", "--sandbox", CODEX_SANDBOX, "--skip-git-repo-check", "--ephemeral",
+        return [CODEX_BIN, "exec", "--sandbox", perms["codex_sandbox"], "--skip-git-repo-check", "--ephemeral",
                 "-C", cwd, "-o", last_msg_file, task]
     raise ToolError("unknown worker kind %r" % kind)
 
@@ -591,6 +681,13 @@ def complete_task_from_report(spec, report):
         acc, minutes = accounting_for(task, report, spec)
         after = report.get("git_after") or {}
         before = report.get("git_before") or {}
+        expected_branch = spec.get("branch")
+        if report.get("status") == "done" and expected_branch and after.get("branch") != expected_branch:
+            # The preflight cannot stop a worker moving branches; the evidence can refuse to accept it.
+            # Mutated in place so the run record and the tool result carry the same outcome.
+            report["status"] = "escaped"
+            report["error"] = ("worker left branch %s (worktree now on %s, HEAD %s); result not accepted"
+                               % (expected_branch, after.get("branch") or "detached HEAD", after.get("head")))
         if report.get("status") == "done":
             verification = ("%s exited 0 in %ss within a %ss timeout; worktree HEAD %s on %s (was %s); %d uncommitted path(s); "
                             "no tests were run by soojos-desk itself"
@@ -675,7 +772,9 @@ def launch(kind, task, cwd, budget_minutes, background=False, task_id=None, proj
     if not isinstance(cwd, str) or not os.path.isabs(cwd) or not os.path.isdir(cwd):
         raise ToolError("cwd must be an existing absolute directory")
     budget = check_budget(budget_minutes)
+    permission_settings()  # refuse widened/malformed overrides before any side effect
     worker_command(kind, "probe", cwd, "/dev/null")  # validates kind and binary presence early
+    containment = verify_adhoc_cwd(cwd) if task_id is None else None
     cash = zero_cash_evidence(kind, cwd)
     if not cash["zero_cash"]:
         raise ToolError("zero incremental cash not established for %s; launch refused: %s" % (kind, cash["reason"]))
@@ -683,7 +782,8 @@ def launch(kind, task, cwd, budget_minutes, background=False, task_id=None, proj
         record = reserve_run(kind, task_id, project)
     spec = {"run_id": record["run_id"], "kind": kind, "task": task, "cwd": cwd, "budget_minutes": budget,
             "task_id": task_id, "project": project, "worktree": worktree, "branch": branch,
-            "background": bool(background), "zero_cash": True, "cash_evidence": cash}
+            "background": bool(background), "zero_cash": True, "cash_evidence": cash,
+            "containment": containment, "permissions": permission_settings()}
     if background:
         rec = spawn_background(spec, record)
         return {"run_id": rec["run_id"], "state": "running", "pid": rec["pid"], "background": True,
@@ -715,6 +815,10 @@ def t_desk_status(args):
         canonical = {"available": True, "scripts": _MODULES["scripts"]}
     except ToolError as exc:
         canonical = {"available": False, "reason": str(exc)}
+    try:
+        perms = dict(permission_settings(), valid=True)
+    except ToolError as exc:
+        perms = {"valid": False, "reason": str(exc)}
     billing = {}
     for kind, path in BILLING_PATHS.items():
         ev = load_json(path, {})
@@ -726,9 +830,9 @@ def t_desk_status(args):
     return {"stop_present": stop_present(), "stop_path": STOP_PATH, "desk_dir": DESK_DIR, "queue_counts": counts,
             "running": running, "runs": live, "canonical_desk": canonical, "billing_evidence": billing,
             "policy": {k: pol.get(k) for k in ("version", "task_minutes", "max_workers", "max_chain_depth", "token_mode", "code_root")},
-            "workers": {"claude": {"bin": CLAUDE_BIN, "present": os.path.exists(CLAUDE_BIN),
-                                   "permission_mode": CLAUDE_PERMISSION_MODE, "allowed_tools": CLAUDE_ALLOWED_TOOLS},
-                        "codex": {"bin": CODEX_BIN, "present": os.path.exists(CODEX_BIN), "sandbox": CODEX_SANDBOX}},
+            "workers": {"claude": {"bin": CLAUDE_BIN, "present": os.path.exists(CLAUDE_BIN)},
+                        "codex": {"bin": CODEX_BIN, "present": os.path.exists(CODEX_BIN)}},
+            "permissions": perms,
             "server_version": SERVER_VERSION}
 
 
@@ -903,12 +1007,19 @@ def t_run_task(args):
     if not isinstance(task_id, str) or not task_id:
         raise ToolError("id is required")
     background = bool(args.get("background", False))
-    use_worktree = args.get("use_worktree", True)
+    if "use_worktree" in args and not args["use_worktree"]:
+        raise ToolError("use_worktree=false is not supported: task workers always run in .worktrees/task-<id>")
     d = desk()
     task = current_task(task_id)
     kind = task.get("assignee")
     if kind not in ("claude", "codex"):
         raise ToolError("assignee %r is not a runnable worker" % kind)
+    permission_settings()  # before claim: a misconfigured server must not consume the task's admission
+    project_dir = args.get("cwd") or resolve_project_dir(task.get("project"))
+    if not os.path.isdir(project_dir):
+        raise ToolError("cwd does not exist: %s" % project_dir)
+    if git_toplevel(project_dir) is None:
+        raise ToolError("task %s: %s is not a git repository; task workers require a desk/<id> worktree" % (task_id, project_dir))
     if task.get("status") == "queued":
         task = desk_call(d.claim, task_id, kind)  # canonical admission; only one caller can win this
     elif task.get("status") != "running":
@@ -929,13 +1040,8 @@ def t_run_task(args):
         if remaining <= 0:
             raise ToolError("task %s deadline %s reached (closure reserve %ss kept); not launching"
                             % (task_id, task.get("deadline"), int(closure_seconds(int(task.get("budget_minutes", 15))))))
-        project_dir = args.get("cwd") or resolve_project_dir(task.get("project"))
-        if not os.path.isdir(project_dir):
-            raise ToolError("cwd does not exist: %s" % project_dir)
-        if use_worktree:
-            cwd, worktree, branch = ensure_task_worktree(project_dir, task_id)
-        else:
-            cwd, worktree, branch = project_dir, None, None
+        cwd, worktree, branch = ensure_task_worktree(project_dir, task_id)
+        verify_task_worktree(cwd, worktree, task_id)  # containment preflight; refused launches block below
         prompt = compose_task_prompt(task, cwd, worktree, branch)
         out = launch(kind, prompt, cwd, task.get("budget_minutes", 15), background=background, task_id=task_id,
                      project=task.get("project"), worktree=worktree, branch=branch, record=record)
@@ -1027,25 +1133,26 @@ TOOLS = [
      "inputSchema": {"type": "object", "required": ["project"],
                      "properties": {"project": _s("Project slug or absolute path")}}},
     {"name": "run_claude", "fn": t_run_claude, "annotations": EXEC,
-     "description": "Run Claude Code non-interactively (-p, permission mode %s) on a task in cwd with a hard timeout; "
-                    "requires verified zero-cash subscription evidence; writes a run outbox note." % CLAUDE_PERMISSION_MODE,
+     "description": "Run Claude Code non-interactively (-p, approved permission mode, local-git allow list, fixed deny "
+                    "list) in cwd with a hard timeout; cwd must be a .worktrees isolation on a non-main branch or a "
+                    "non-git directory; requires verified zero-cash evidence; writes a run outbox note.",
      "inputSchema": {"type": "object", "required": ["task", "cwd", "budget_minutes"],
                      "properties": {"task": _s("Prompt for the worker"), "cwd": _s("Absolute working directory"),
                                     "budget_minutes": _BUDGET, "background": _BG}}},
     {"name": "run_codex", "fn": t_run_codex, "annotations": EXEC,
-     "description": "Run Codex non-interactively (codex exec, sandbox %s) on a task in cwd with a hard timeout; "
-                    "requires verified zero-cash subscription evidence; writes a run outbox note." % CODEX_SANDBOX,
+     "description": "Run Codex non-interactively (codex exec, approved sandbox) in cwd with a hard timeout; same cwd "
+                    "containment and zero-cash requirements as run_claude; writes a run outbox note.",
      "inputSchema": {"type": "object", "required": ["task", "cwd", "budget_minutes"],
                      "properties": {"task": _s("Prompt for the worker"), "cwd": _s("Absolute working directory"),
                                     "budget_minutes": _BUDGET, "background": _BG}}},
     {"name": "run_task", "fn": t_run_task, "annotations": EXEC,
-     "description": "End to end through the canonical desk: claim, exclusive run reservation, .worktrees/task-<id> on "
-                    "desk/<id>, deadline check with closure reserve, zero-cash check, run the assignee, finish done "
-                    "or blocked with desk accounting.",
+     "description": "End to end through the canonical desk: permission preflight, claim, exclusive run reservation, "
+                    ".worktrees/task-<id> on desk/<id> verified by git (no opt-out), deadline check with closure "
+                    "reserve, zero-cash check, run the assignee, finish done or blocked with desk accounting; a "
+                    "worker that leaves its branch is not accepted.",
      "inputSchema": {"type": "object", "required": ["id"],
                      "properties": {"id": _s("Task id"), "background": _BG,
-                                    "use_worktree": {"type": "boolean", "default": True},
-                                    "cwd": _s("Optional absolute directory overriding the project mapping")}}},
+                                    "cwd": _s("Optional absolute git repository overriding the project mapping")}}},
     {"name": "run_status", "fn": t_run_status, "annotations": RO,
      "description": "State of one run (id) or the most recent runs; reserved/running records whose process is gone are marked lost.",
      "inputSchema": {"type": "object", "properties": {"id": _s("run id"), "limit": {"type": "integer", "default": 20}}}},
