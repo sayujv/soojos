@@ -1,7 +1,7 @@
 # soojos-desk MCP server
 
 Minimal MCP server for the partnership desk. Python 3.9 stdlib only, stdio
-transport, hand-rolled JSON-RPC (no `mcp` or `fastmcp` dependency). Version 0.3.2.
+transport, hand-rolled JSON-RPC (no `mcp` or `fastmcp` dependency). Version 0.3.3.
 
 Run: `/usr/bin/python3 /Users/sayuj/soojos/tools/soojos-desk/server.py`
 
@@ -110,7 +110,22 @@ blocks its task instead of running.
 
 - Queue/outbox: `/Users/sayuj/soojos/context/desk` (override `SOOJOS_DESK_DIR`).
 - Private: `~/.soojos/desk` (override `SOOJOS_HOME` → `<home>/desk`): STOP at
-  `<home>/STOP`, `coordinator.lock`, billing evidence, `runs/<run-id>.json|.spec.json|.log`.
+  `<home>/STOP`, `coordinator.lock`, billing evidence, `runs/<run-id>.json` (record),
+  `runs/<run-id>.note.json` (full prompt and output, 0600), `runs/<run-id>.log`. The
+  `.spec.json` a runner starts from is removed when it reaches a terminal state.
+- Outbox notes are created exclusively (`O_EXCL`) and never overwritten; a second note
+  for the same free id in the same second gets a time-and-random suffix. A run note in
+  the shared outbox is trimmed (prompt head, 4k output tails) and mode 0600, with a
+  `full_note` pointer to the private copy. Task completion packets are the desk's.
+- A zero-byte or partial record is reported as `corrupt` by `run_status` and
+  `desk_status` instead of taking a tool down; `load_json` never raises.
+- STOP is polled every 2 seconds while a worker runs. If it appears, the worker group is
+  killed, the run ends as `stopped` with `stop_seen_at`, and the task is blocked with
+  that reason. A signal or STOP that lands before the worker is spawned prevents the
+  spawn.
+- `live_run_for`, the check made under the desk lock, reads only the records that claim
+  to be live and never writes; lost-marking happens in `run_status`/`desk_status`
+  outside the lock.
 
 ## Permission settings (0.3.1)
 
@@ -166,7 +181,7 @@ interactive Codex app or Claude Code. `claude -p` needs
 /usr/bin/python3 -m unittest discover -s /Users/sayuj/soojos/tools/soojos-desk/tests -v
 ```
 
-49 offline tests. They initialise a canonical desk in temporary state (via
+54 offline tests. They initialise a canonical desk in temporary state (via
 `Desk.initialize` and the v2 migration), use fake `claude`/`codex` under
 `tests/fakes/` that also answer the auth probes, and cover: STOP for every tool;
 canonical add/claim/finish/block validation; done refused without evidence, without
@@ -184,7 +199,10 @@ accepted; containment (non-git cwd, opt-out, detached HEAD, wrong branch, cwd ou
 the worktree, branch escape after launch, ad-hoc cwd rules); and one test per finding
 addressed in 0.3.2 (Codex add-dir, exception after reservation, reservation failure,
 completion refused, signalled runner, escaped pipe holder, stale worktree directory,
-launch floor, reused pid, record ownership). `SOOJOS_MINUTE_SECONDS` shrinks a "minute".
+launch floor, reused pid, record ownership) and per finding in 0.3.3 (outbox notes never
+overwritten within one second, private trimmed run notes, corrupt records reported not
+fatal, STOP appearing mid-run, spec cleanup and a non-writing liveness scan under the
+lock). `SOOJOS_MINUTE_SECONDS` shrinks a "minute".
 
 `smoke_test.py` runs the read-only tools against the live desk and checks STOP
 refusal for every tool in an isolated home; it does not mutate live state.
@@ -222,5 +240,6 @@ args = ["/Users/sayuj/soojos/tools/soojos-desk/server.py"]
   add-dir gap (proven by the native probe, evidence
   `tests/evidence/native-boundary-20260922T163134Z.json`: commit landed in the
   worktree, main checkout untouched, push still blocked) and review findings 1 to 12
-  (all three high, mediums 4 to 11, low 12). Still open from that review: 13 to 17
-  (low) and the question of checking a task's stated acceptance against git evidence.
+  (all three high, mediums 4 to 11, low 12). 0.3.3 addresses lows 13 to 17. Still open
+  from that review: only the question of checking a task's stated acceptance against
+  git evidence, which is a policy decision rather than a defect.

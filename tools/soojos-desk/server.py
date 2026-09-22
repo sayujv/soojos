@@ -42,7 +42,7 @@ import traceback
 from pathlib import Path
 
 SERVER_NAME = "soojos-desk"
-SERVER_VERSION = "0.3.2"
+SERVER_VERSION = "0.3.3"
 PROTOCOL_VERSION = "2025-06-18"
 MINUTE = float(os.environ.get("SOOJOS_MINUTE_SECONDS", "60"))  # tests shrink this to exercise timeouts quickly
 
@@ -117,6 +117,7 @@ MAX_OUTBOX_CHARS = 200000    # per stream in the outbox file
 CLOSURE_FRACTION = 0.2       # share of the budget kept back for completion accounting
 CLOSURE_MAX_SECONDS = 180.0
 RESERVATION_TTL_SECONDS = 600.0   # a reservation that never started is stale after this
+STOP_POLL_SECONDS = 2.0           # how often a running worker is checked against STOP
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,79}$")
 UUID_RE = re.compile(r"^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$")
 
@@ -152,11 +153,24 @@ def stop_check():
 
 
 def load_json(path, default):
+    """Missing, empty, partial or non-JSON files all yield the default; nothing here takes a tool down."""
     try:
         with open(path) as fh:
             return json.load(fh)
-    except FileNotFoundError:
+    except (FileNotFoundError, ValueError, OSError):
         return default
+
+
+def json_file_state(path):
+    """'ok' | 'missing' | 'corrupt' for listing tools that must report bad records rather than crash."""
+    try:
+        with open(path) as fh:
+            json.load(fh)
+        return "ok"
+    except FileNotFoundError:
+        return "missing"
+    except (ValueError, OSError):
+        return "corrupt"
 
 
 def write_json_atomic(path, payload, mode=0o600):
@@ -272,10 +286,10 @@ def current_task(task_id):
 
 # --------------------------------------------------------------------------- outbox (run records only)
 def outbox_path_for(entry_id):
-    """Files are <YYYY-MM-DD>-<id>[-HHMMSS].json; return newest match or None."""
+    """Files are <YYYY-MM-DD>-<id>[-HHMMSS-xxxxxx].json; return newest match or None."""
     if not os.path.isdir(OUTBOX_DIR):
         return None
-    pat = re.compile(r"^\d{4}-\d{2}-\d{2}-%s(-\d{6})?\.json$" % re.escape(entry_id))
+    pat = re.compile(r"^\d{4}-\d{2}-\d{2}-%s(-\d{6}-[0-9a-f]{6})?\.json$" % re.escape(entry_id))
     matches = [f for f in os.listdir(OUTBOX_DIR) if pat.match(f)]
     if not matches:
         return None
@@ -283,19 +297,49 @@ def outbox_path_for(entry_id):
     return os.path.join(OUTBOX_DIR, matches[-1])
 
 
-def write_outbox(entry_id, project, report, task_id=None):
-    """Immutable note for a run id or free id. Task completion packets are written only by
-    the canonical Desk (finish/block); this never writes a packet a task would recover from."""
+def create_exclusive_json(candidates, payload, mode):
+    """Write payload to the first candidate path that does not exist yet (O_EXCL), fsynced."""
+    for path in candidates:
+        try:
+            fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, mode)
+        except FileExistsError:
+            continue
+        with os.fdopen(fd, "w") as fh:
+            json.dump(payload, fh, indent=2, sort_keys=True, default=str)
+            fh.write("\n")
+            fh.flush()
+            os.fsync(fh.fileno())
+        return path
+    raise ToolError("could not create a unique outbox note for %s" % candidates[0])
+
+
+MAX_SHARED_NOTE_CHARS = 4000
+
+
+def write_outbox(entry_id, project, report, task_id=None, run_note=False):
+    """Immutable note for a run id or free id, created exclusively so nothing is ever overwritten.
+    Task completion packets are written only by the canonical Desk (finish/block).
+    A run note goes to the shared outbox in a trimmed form (prompt head, output tails) with mode 0600;
+    the full prompt and output live in the private runs directory."""
     os.makedirs(OUTBOX_DIR, exist_ok=True)
     stamp = now_utc()
-    path = os.path.join(OUTBOX_DIR, "%s-%s.json" % (stamp.strftime("%Y-%m-%d"), entry_id))
-    if os.path.exists(path):
-        path = os.path.join(OUTBOX_DIR, "%s-%s-%s.json" % (stamp.strftime("%Y-%m-%d"), entry_id,
-                                                          stamp.strftime("%H%M%S")))
+    date = stamp.strftime("%Y-%m-%d")
     payload = {"at": iso(stamp), "id": entry_id, "task_id": task_id, "project": project, "report": report,
                "writer": SERVER_NAME + "/" + SERVER_VERSION}
-    write_json_atomic(path, payload, mode=0o644)
-    return path
+    if run_note:
+        os.makedirs(RUNS_DIR, exist_ok=True)
+        full_path = os.path.join(RUNS_DIR, entry_id + ".note.json")
+        write_json_atomic(full_path, payload, mode=0o600)
+        shared = dict(report)
+        shared["task"] = clip(report.get("task") or "", 300)
+        shared["stdout"] = clip(report.get("stdout") or "", MAX_SHARED_NOTE_CHARS)
+        shared["stderr"] = clip(report.get("stderr") or "", MAX_SHARED_NOTE_CHARS)
+        shared["full_note"] = full_path
+        payload = dict(payload, report=shared)
+    candidates = [os.path.join(OUTBOX_DIR, "%s-%s.json" % (date, entry_id))]
+    candidates += [os.path.join(OUTBOX_DIR, "%s-%s-%s-%s.json" % (date, entry_id, stamp.strftime("%H%M%S"),
+                                                                   secrets.token_hex(3))) for _ in range(5)]
+    return create_exclusive_json(candidates, payload, 0o600 if run_note else 0o644)
 
 
 # --------------------------------------------------------------------------- projects / git
@@ -488,22 +532,33 @@ def pid_alive(pid, pid_start=None):
 LIVE_STATES = ("reserved", "spawned", "running")
 
 
-def load_run(run_id):
-    rec = load_json(run_record_path(run_id), None)
-    if not isinstance(rec, dict) or not rec.get("run_id"):
-        return None
+def effective_state(rec):
+    """(state, note) after liveness checks, without writing anything."""
     state = rec.get("state")
     if state == "running" and not pid_alive(rec.get("pid"), rec.get("pid_start")):
-        rec["state"] = "lost"
-        rec["note"] = "runner process is gone without a final record"
-        save_run(rec)
-    elif state in ("reserved", "spawned"):
+        return "lost", "runner process is gone without a final record"
+    if state in ("reserved", "spawned"):
         since = parse_iso(rec.get("spawned_at") if state == "spawned" else rec.get("reserved_at"))
         stale = since is None or (now_utc() - since).total_seconds() > RESERVATION_TTL_SECONDS
         owner_alive = pid_alive(rec.get("pid"), rec.get("pid_start")) if state == "reserved" else True
         if stale or not owner_alive:
-            rec["state"] = "lost"
-            rec["note"] = "reservation never started" if state == "reserved" else "runner never reported running"
+            return "lost", ("reservation never started" if state == "reserved" else "runner never reported running")
+    return state, rec.get("note")
+
+
+def load_run(run_id, mark=True):
+    """Load a record with liveness applied. mark=True persists a lost transition; mark=False only reports it,
+    for callers that hold the desk lock and must not do disk writes there."""
+    path = run_record_path(run_id)
+    rec = load_json(path, None)
+    if not isinstance(rec, dict) or not rec.get("run_id"):
+        if json_file_state(path) == "corrupt":
+            return {"run_id": run_id, "state": "corrupt", "note": "unreadable run record"}
+        return None
+    state, note = effective_state(rec)
+    if state != rec.get("state"):
+        rec["state"], rec["note"] = state, note
+        if mark:
             save_run(rec)
     return rec
 
@@ -518,23 +573,32 @@ def merge_run(run_id, **fields):
     return rec
 
 
-def all_runs():
+def run_record_files():
     if not os.path.isdir(RUNS_DIR):
         return []
+    return [f for f in sorted(os.listdir(RUNS_DIR), reverse=True)
+            if f.endswith(".json") and not f.endswith(".spec.json") and not f.endswith(".note.json")]
+
+
+def all_runs(mark=True):
     out = []
-    for f in sorted(os.listdir(RUNS_DIR), reverse=True):
-        if f.endswith(".json") and not f.endswith(".spec.json"):
-            try:
-                rec = load_run(f[:-5])
-            except (ValueError, OSError):
-                rec = {"run_id": f[:-5], "state": "corrupt", "note": "unreadable run record"}
-            if rec:
-                out.append(rec)
+    for f in run_record_files():
+        rec = load_run(f[:-5], mark=mark)
+        if rec:
+            out.append(rec)
     return out
 
 
 def live_run_for(task_id):
-    return next((r for r in all_runs() if r.get("task_id") == task_id and r.get("state") in LIVE_STATES), None)
+    """Called under the desk lock: reads only, never writes, and only opens records that claim to be live."""
+    for f in run_record_files():
+        raw = load_json(os.path.join(RUNS_DIR, f), None)
+        if not isinstance(raw, dict) or raw.get("task_id") != task_id or raw.get("state") not in LIVE_STATES:
+            continue
+        state, _ = effective_state(raw)
+        if state in LIVE_STATES:
+            return raw
+    return None
 
 
 def reserve_run(kind, task_id=None, project=None):
@@ -654,24 +718,44 @@ def run_bounded(cmd, cwd, timeout_seconds):
     Never blocks without a bound: after the kill phase the child is waited on with timeouts and the pipes
     are drained with a timeout, so a grandchild that escaped the group cannot hang the runner."""
     started = time.monotonic()
+    if _CURRENT["signalled"] or stop_present():
+        # A signal or STOP that arrived before the spawn must prevent it, not be missed by the handler.
+        return {"exit_code": None, "timed_out": False, "elapsed_seconds": 0.0, "stdout": "", "stderr": "",
+                "signalled": _CURRENT["signalled"], "stop_seen_at": iso() if stop_present() else None,
+                "note": "worker not started"}
     proc = subprocess.Popen(cmd, cwd=cwd, stdin=subprocess.DEVNULL,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
     _CURRENT["proc"] = proc
+    if _CURRENT["signalled"]:  # the signal landed between the check and the spawn
+        _on_runner_signal(getattr(signal, _CURRENT["signalled"]), None)
     timed_out = False
+    stopped_at = None
     note = None
     try:
-        try:
-            out, err = proc.communicate(timeout=timeout_seconds)
-        except subprocess.TimeoutExpired:
-            timed_out = True
-            if not kill_group(proc):
-                note = "worker process did not exit after SIGKILL"
-            out, err = _drain(proc, 5)
+        # Wait in slices so STOP appearing mid-run ends the worker within a few seconds, not at the timeout.
+        while True:
+            left = timeout_seconds - (time.monotonic() - started)
+            try:
+                out, err = proc.communicate(timeout=max(0.05, min(STOP_POLL_SECONDS, left)))
+                break
+            except subprocess.TimeoutExpired:
+                if stop_present():
+                    stopped_at = iso()
+                elif left > STOP_POLL_SECONDS:
+                    continue
+                else:
+                    timed_out = True
+                if not kill_group(proc):
+                    note = "worker process did not exit after SIGKILL"
+                out, err = _drain(proc, 5)
+                break
     finally:
         _CURRENT["proc"] = None
     elapsed = time.monotonic() - started
     result = {"exit_code": proc.returncode, "timed_out": timed_out, "elapsed_seconds": round(elapsed, 2),
               "stdout": out.decode("utf-8", "replace"), "stderr": err.decode("utf-8", "replace")}
+    if stopped_at:
+        result["stop_seen_at"] = stopped_at
     if _CURRENT["signalled"]:
         result["signalled"] = _CURRENT["signalled"]
     if note:
@@ -747,7 +831,10 @@ def execute_worker(spec, timeout_seconds):
         else:
             parse_codex_output(report, res["stderr"], last_msg_file)
         report["git_after"] = git_snapshot(cwd)
-        if res["timed_out"]:
+        if res.get("stop_seen_at"):
+            report["status"] = "stopped"
+            report["error"] = "STOP appeared at %s while the worker was running; worker group killed" % res["stop_seen_at"]
+        elif res["timed_out"]:
             report["status"] = "timeout"
         elif res["exit_code"] == 0 and not report.get("is_error"):
             report["status"] = "done"
@@ -768,7 +855,7 @@ def execute_worker(spec, timeout_seconds):
     note = dict(report)
     note["stdout"] = clip(report.get("stdout", ""), MAX_OUTBOX_CHARS)
     note["stderr"] = clip(report.get("stderr", ""), MAX_OUTBOX_CHARS)
-    report["outbox_file"] = write_outbox(spec["run_id"], spec.get("project"), note, task_id=spec.get("task_id"))
+    report["outbox_file"] = write_outbox(spec["run_id"], spec.get("project"), note, task_id=spec.get("task_id"), run_note=True)
     return report
 
 
@@ -880,10 +967,11 @@ def run_spec(spec):
                       "error": spec.get("deadline_error") or "task deadline reached before launch (closure reserve and "
                       "launch floor kept)", "started_at": iso(), "finished_at": iso(), "actual_tokens": None,
                       "stdout": "", "stderr": ""}
-            report["outbox_file"] = write_outbox(run_id, spec.get("project"), report, task_id=spec["task_id"])
+            report["outbox_file"] = write_outbox(run_id, spec.get("project"), report, task_id=spec["task_id"], run_note=True)
             report["queue"] = complete_with_retries(spec, report)
             merge_run(run_id, state="failed", finished_at=report["finished_at"], note=report["error"],
                       outbox_file=report["outbox_file"], queue=report["queue"])
+            remove_spec(run_id)
             return report
         timeout = min(timeout, remaining)
     report = execute_worker(spec, timeout)
@@ -895,8 +983,19 @@ def run_spec(spec):
     merge_run(run_id, state=report["status"], finished_at=report["finished_at"], exit_code=report.get("exit_code"),
               timed_out=report.get("timed_out"), outbox_file=report.get("outbox_file"),
               result=clip(report.get("result") or "", 4000), queue=report.get("queue"),
-              actual_tokens=report.get("actual_tokens"), note=report.get("error") or report.get("note"))
+              actual_tokens=report.get("actual_tokens"), note=report.get("error") or report.get("note"),
+              stop_seen_at=report.get("stop_seen_at"))
+    remove_spec(run_id)
     return report
+
+
+def remove_spec(run_id):
+    """The spec (full prompt, evidence, permissions) is only needed until the runner has read it;
+    the private .note.json keeps the durable copy."""
+    try:
+        os.unlink(os.path.join(RUNS_DIR, run_id + ".spec.json"))
+    except OSError:
+        pass
 
 
 def spawn_runner(spec, record):
@@ -1356,7 +1455,7 @@ TOOLS = [
                                     "cwd": _s("Optional absolute git repository overriding the project mapping")}}},
     {"name": "run_status", "fn": t_run_status, "annotations": RO,
      "description": "State of one run (id) or the most recent runs. States: reserved, spawned, running, done, failed, "
-                    "timeout, escaped, killed, lost (process gone or never started), corrupt.",
+                    "timeout, escaped, killed, stopped (STOP appeared mid-run), lost, corrupt.",
      "inputSchema": {"type": "object", "properties": {"id": _s("run id"), "limit": {"type": "integer", "default": 20}}}},
 ]
 TOOL_MAP = {t["name"]: t for t in TOOLS}
@@ -1461,6 +1560,7 @@ def runner(spec_path):
             report = {"status": "failed", "error": "STOP present at runner start", "run_id": spec["run_id"],
                       "kind": spec["kind"], "actual_tokens": None}
             merge_run(spec["run_id"], queue=complete_with_retries(spec, report))
+        remove_spec(spec["run_id"])
         return 3
     report = run_spec(spec)
     return 0 if report["status"] == "done" else 1
