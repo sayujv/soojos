@@ -2,44 +2,47 @@
 """soojos-desk: a minimal MCP server (stdio, JSON-RPC 2.0, Python stdlib only).
 
 Tools
-  queue_list, queue_add, queue_claim, queue_finish, queue_reap, desk_status
-  outbox_read, outbox_write, git_status
-  run_claude, run_codex, run_task, run_status
+  read-only : desk_status, queue_list, outbox_read, git_status, run_status
+  queue     : queue_add, queue_claim, queue_finish, desk_tick, outbox_write
+  workers   : run_claude, run_codex, run_task
 
 Every tool refuses when ~/.soojos/STOP exists (a dangling symlink counts).
 
-State defaults to the canonical partnership desk:
-  queue/outbox : /Users/sayuj/soojos/context/desk   (override: SOOJOS_DESK_DIR)
-  private      : ~/.soojos                           (override: SOOJOS_HOME)
-                 STOP, desk/coordinator.lock, desk/runs/<run-id>.json
-Queue mutations take the same flock the existing desk coordinator uses and
-replace queue.jsonl atomically.
+Queue admission and completion are delegated to the canonical Desk class in the
+approved harness (policy.json "code_root"/scripts/desk_core.py): enqueue
+validation, claim admission (max_workers, finance, pauses), done validation
+(verification, evidence, known cash, minutes within budget, before deadline),
+blocked accounting, the immutable {task_id, project, at, report} outbox packet
+and tick recovery. This server does not keep a second lifecycle schema. If the
+canonical code is unavailable the mutating tools refuse; read-only tools work.
 
-Workers run non-interactively with full binary paths and a hard timeout:
-  claude : -p --output-format json --permission-mode acceptEdits --no-session-persistence
-           (override mode with SOOJOS_CLAUDE_PERMISSION_MODE)
-  codex  : exec --sandbox workspace-write --skip-git-repo-check --ephemeral -C cwd
-           (override sandbox with SOOJOS_CODEX_SANDBOX)
-Unanswered permission prompts in these modes are denied, never granted.
-The worker inherits this server's environment unchanged.
+Workers run non-interactively with full binary paths and a hard timeout that is
+the smaller of the budget and the persisted task deadline minus a closure
+reserve. A run identity is reserved exclusively under the desk lock before any
+launch, so one task cannot be launched twice. Zero incremental cash is only
+recorded when native subscription auth and fresh usage-credit evidence (same
+rule as the canonical worker) are verified before launch; otherwise the launch
+is refused and the task is blocked with the reason.
 
 Background runs: `server.py --runner <spec.json>` is the detached runner the
 server spawns in its own session; it survives the MCP client exiting.
 """
 import datetime as _dt
-import fcntl
+import importlib
 import json
 import os
 import re
+import secrets
 import signal
 import subprocess
 import sys
 import tempfile
 import time
 import traceback
+from pathlib import Path
 
 SERVER_NAME = "soojos-desk"
-SERVER_VERSION = "0.2.1"
+SERVER_VERSION = "0.3.0"
 PROTOCOL_VERSION = "2025-06-18"
 MINUTE = float(os.environ.get("SOOJOS_MINUTE_SECONDS", "60"))  # tests shrink this to exercise timeouts quickly
 
@@ -47,12 +50,13 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SOOJOS_ROOT = "/Users/sayuj/soojos"
 SOOJOS_HOME = os.environ.get("SOOJOS_HOME", os.path.expanduser("~/.soojos"))
 DESK_DIR = os.environ.get("SOOJOS_DESK_DIR", os.path.join(SOOJOS_ROOT, "context", "desk"))
+PRIVATE_DIR = os.path.join(SOOJOS_HOME, "desk")
 STOP_PATH = os.path.join(SOOJOS_HOME, "STOP")
-LOCK_PATH = os.path.join(SOOJOS_HOME, "desk", "coordinator.lock")
-RUNS_DIR = os.path.join(SOOJOS_HOME, "desk", "runs")
+RUNS_DIR = os.path.join(PRIVATE_DIR, "runs")
 QUEUE_PATH = os.path.join(DESK_DIR, "queue.jsonl")
-SCHEMA_PATH = os.path.join(DESK_DIR, "queue.schema.json")
 POLICY_PATH = os.path.join(DESK_DIR, "policy.json")
+BILLING_PATHS = {"claude": os.path.join(PRIVATE_DIR, "subscription-billing.json"),   # canonical private evidence
+                 "codex": os.path.join(PRIVATE_DIR, "codex-billing.json")}            # same shape, this server's addition
 OUTBOX_DIR = os.path.join(DESK_DIR, "outbox")
 PROJECTS_PATH = os.path.join(HERE, "projects.json")
 
@@ -68,8 +72,11 @@ CODEX_SANDBOX = os.environ.get("SOOJOS_CODEX_SANDBOX", "workspace-write")
 
 MAX_RETURN_CHARS = 20000     # per stream in the tool result
 MAX_OUTBOX_CHARS = 200000    # per stream in the outbox file
-REAP_GRACE_MINUTES = 2
+CLOSURE_FRACTION = 0.2       # share of the budget kept back for completion accounting
+CLOSURE_MAX_SECONDS = 180.0
+RESERVATION_TTL_SECONDS = 600.0   # a reservation that never started is stale after this
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,79}$")
+UUID_RE = re.compile(r"^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$")
 
 
 class ToolError(Exception):
@@ -87,7 +94,8 @@ def iso(ts=None):
 
 def parse_iso(text):
     try:
-        return _dt.datetime.fromisoformat(text)
+        value = _dt.datetime.fromisoformat(str(text).replace("Z", "+00:00"))
+        return value if value.tzinfo is not None else None
     except (TypeError, ValueError):
         return None
 
@@ -123,17 +131,14 @@ def policy():
     return load_json(POLICY_PATH, {})
 
 
-def schema_enum(field, fallback):
-    schema = load_json(SCHEMA_PATH, {})
-    return schema.get("properties", {}).get(field, {}).get("enum", fallback)
-
-
 def slugify(text, limit=40):
     s = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
     return s[:limit].strip("-") or "task"
 
 
 def check_budget(budget_minutes):
+    if isinstance(budget_minutes, bool):
+        raise ToolError("budget_minutes must be an integer")
     try:
         budget = int(budget_minutes)
     except (TypeError, ValueError):
@@ -145,12 +150,51 @@ def check_budget(budget_minutes):
 
 
 def clip(text, limit):
+    text = text or ""
     if len(text) <= limit:
         return text
     return text[:limit // 2] + "\n...[%d chars omitted]...\n" % (len(text) - limit) + text[-limit // 2:]
 
 
-# --------------------------------------------------------------------------- queue
+# --------------------------------------------------------------------------- canonical desk
+_MODULES = {}
+
+
+def desk_modules():
+    """Import desk_core/desk_worker from the approved harness named in policy.json. Cached."""
+    if "core" in _MODULES:
+        return _MODULES
+    code_root = policy().get("code_root")
+    if not code_root:
+        raise ToolError("policy.json has no code_root; canonical desk unavailable, mutating tools refused")
+    scripts = os.path.join(code_root, "scripts")
+    if not os.path.isfile(os.path.join(scripts, "desk_core.py")):
+        raise ToolError("canonical desk_core.py not found under %s; mutating tools refused" % scripts)
+    if scripts not in sys.path:
+        sys.path.insert(0, scripts)
+    try:
+        core = importlib.import_module("desk_core")
+        worker = importlib.import_module("desk_worker")
+    except Exception as exc:
+        raise ToolError("cannot import canonical desk modules from %s: %s" % (scripts, exc))
+    _MODULES.update(core=core, worker=worker, scripts=scripts)
+    return _MODULES
+
+
+def desk():
+    core = desk_modules()["core"]
+    return core.Desk(DESK_DIR, PRIVATE_DIR, STOP_PATH)
+
+
+def desk_call(fn, *args, **kwargs):
+    """Run a canonical Desk method, converting its refusal into a tool refusal."""
+    core = desk_modules()["core"]
+    try:
+        return fn(*args, **kwargs)
+    except core.DeskError as exc:
+        raise ToolError("desk refused: %s" % exc)
+
+
 def read_queue():
     tasks = []
     try:
@@ -164,107 +208,18 @@ def read_queue():
     return tasks
 
 
-def write_queue_atomic(tasks):
-    os.makedirs(DESK_DIR, exist_ok=True)
-    fd, tmp = tempfile.mkstemp(prefix=".queue.", suffix=".jsonl", dir=DESK_DIR)
-    try:
-        with os.fdopen(fd, "w") as fh:
-            for t in tasks:
-                fh.write(json.dumps(t, sort_keys=True) + "\n")
-            fh.flush()
-            os.fsync(fh.fileno())
-        if os.path.exists(QUEUE_PATH):
-            os.chmod(tmp, os.stat(QUEUE_PATH).st_mode & 0o777)
-        else:
-            os.chmod(tmp, 0o600)
-        os.replace(tmp, QUEUE_PATH)
-    except Exception:
-        try:
-            os.unlink(tmp)
-        except OSError:
-            pass
-        raise
-
-
-class queue_lock:
-    """Same flock the existing desk coordinator uses, so writers do not collide."""
-
-    def __enter__(self):
-        os.makedirs(os.path.dirname(LOCK_PATH), exist_ok=True)
-        self.fh = open(LOCK_PATH, "a+")
-        try:
-            os.chmod(LOCK_PATH, 0o600)
-        except OSError:
-            pass
-        fcntl.flock(self.fh, fcntl.LOCK_EX)
-        return self
-
-    def __exit__(self, *exc):
-        fcntl.flock(self.fh, fcntl.LOCK_UN)
-        self.fh.close()
-        return False
-
-
 def find_task(tasks, task_id):
     return next((t for t in tasks if t.get("id") == task_id), None)
 
 
-def claim_locked(tasks, task_id):
-    """Mutates tasks in place; caller holds the lock and writes."""
-    target = find_task(tasks, task_id)
-    if target is None:
+def current_task(task_id):
+    task = find_task(read_queue(), task_id)
+    if task is None:
         raise ToolError("no task with id %s" % task_id)
-    if target.get("status") != "queued":
-        raise ToolError("task %s is %s, not queued" % (task_id, target.get("status")))
-    running = [t["id"] for t in tasks if t.get("status") == "running"]
-    max_workers = int(policy().get("max_workers", 2))
-    if len(running) >= max_workers:
-        raise ToolError("max_workers=%d already running: %s" % (max_workers, ", ".join(running)))
-    stamp = now_utc()
-    budget = int(target.get("budget_minutes", 15))
-    target["status"] = "running"
-    target["started_at"] = iso(stamp)
-    target["deadline"] = iso(stamp + _dt.timedelta(minutes=budget))
-    target["claimed_by"] = SERVER_NAME
-    return target
+    return task
 
 
-def finish_task(task_id, status, report, reason=None):
-    """running -> done|blocked with accounting, plus an outbox entry. Returns the task."""
-    if status not in ("done", "blocked"):
-        raise ToolError("status must be done or blocked")
-    if status == "blocked" and not reason:
-        raise ToolError("blocked requires a reason")
-    with queue_lock():
-        tasks = read_queue()
-        target = find_task(tasks, task_id)
-        if target is None:
-            raise ToolError("no task with id %s" % task_id)
-        if target.get("status") not in ("running", "queued"):
-            raise ToolError("task %s is %s; only running (or queued->blocked) can finish" % (task_id, target.get("status")))
-        if target.get("status") == "queued" and status == "done":
-            raise ToolError("task %s was never claimed; claim it before marking done" % task_id)
-        stamp = now_utc()
-        started = parse_iso(target.get("started_at"))
-        target["status"] = status
-        target["completed_at"] = iso(stamp)
-        target["actual_minutes"] = round((stamp - started).total_seconds() / 60.0, 4) if started else None
-        target.setdefault("actual_cost_aud", 0.0)
-        target.setdefault("actual_tokens", None)
-        target["blocked_reason"] = reason if status == "blocked" else None
-        target["finished_by"] = SERVER_NAME
-        report = dict(report or {})
-        report.setdefault("status", status)
-        if reason:
-            report.setdefault("reason", reason)
-        report.setdefault("actual_minutes", target["actual_minutes"])
-        path = write_outbox(task_id, target.get("project"), report)
-        target["outbox_file"] = path
-        write_queue_atomic(tasks)
-    return target
-
-
-# --------------------------------------------------------------------------- outbox
+# --------------------------------------------------------------------------- outbox (run records only)
 def outbox_path_for(entry_id):
     """Files are <YYYY-MM-DD>-<id>[-HHMMSS].json; return newest match or None."""
     if not os.path.isdir(OUTBOX_DIR):
@@ -277,15 +232,16 @@ def outbox_path_for(entry_id):
     return os.path.join(OUTBOX_DIR, matches[-1])
 
 
-def write_outbox(entry_id, project, report):
-    """Outbox entries are immutable: never overwrite an existing file."""
+def write_outbox(entry_id, project, report, task_id=None):
+    """Immutable note for a run id or free id. Task completion packets are written only by
+    the canonical Desk (finish/block); this never writes a packet a task would recover from."""
     os.makedirs(OUTBOX_DIR, exist_ok=True)
     stamp = now_utc()
     path = os.path.join(OUTBOX_DIR, "%s-%s.json" % (stamp.strftime("%Y-%m-%d"), entry_id))
     if os.path.exists(path):
         path = os.path.join(OUTBOX_DIR, "%s-%s-%s.json" % (stamp.strftime("%Y-%m-%d"), entry_id,
                                                           stamp.strftime("%H%M%S")))
-    payload = {"at": iso(stamp), "id": entry_id, "project": project, "report": report,
+    payload = {"at": iso(stamp), "id": entry_id, "task_id": task_id, "project": project, "report": report,
                "writer": SERVER_NAME + "/" + SERVER_VERSION}
     write_json_atomic(path, payload, mode=0o644)
     return path
@@ -342,112 +298,48 @@ def ensure_task_worktree(project_dir, task_id):
     return cwd, worktree, branch
 
 
-# --------------------------------------------------------------------------- workers
-def worker_command(kind, task, cwd, last_msg_file):
+def git_snapshot(path):
+    """Facts a completion report can cite: HEAD, branch, dirtiness."""
+    if not path or git_toplevel(path) is None:
+        return None
+    _, head, _ = git(path, "rev-parse", "HEAD")
+    _, branch, _ = git(path, "rev-parse", "--abbrev-ref", "HEAD")
+    _, status, _ = git(path, "status", "--short")
+    return {"head": head, "branch": branch, "dirty_paths": len(status.splitlines())}
+
+
+# --------------------------------------------------------------------------- zero-cash evidence
+def zero_cash_evidence(kind, cwd):
+    """Same rule as the canonical worker: native subscription auth now, plus usage-credit-disabled
+    evidence less than an hour old in worker-capabilities.json. Anything else is unknown cash."""
+    mods = desk_modules()
+    evidence = load_json(BILLING_PATHS[kind], {})
+    checked_at = iso()
     if kind == "claude":
-        if not os.path.exists(CLAUDE_BIN):
-            raise ToolError("claude binary missing at %s" % CLAUDE_BIN)
-        cmd = [CLAUDE_BIN, "-p", task, "--output-format", "json",
-               "--permission-mode", CLAUDE_PERMISSION_MODE, "--no-session-persistence"]
-        if CLAUDE_ALLOWED_TOOLS.strip():
-            cmd += ["--allowedTools", CLAUDE_ALLOWED_TOOLS]
-        return cmd
-    if kind == "codex":
-        if not os.path.exists(CODEX_BIN):
-            raise ToolError("codex binary missing at %s" % CODEX_BIN)
-        return [CODEX_BIN, "exec", "--sandbox", CODEX_SANDBOX, "--skip-git-repo-check", "--ephemeral",
-                "-C", cwd, "-o", last_msg_file, task]
-    raise ToolError("unknown worker kind %r" % kind)
+        auth = mods["worker"].subscription_auth(CLAUDE_BIN, Path(cwd), Path(STOP_PATH))
+        reason = None if auth.get("subscription_verified") else (auth.get("reason") or "subscription not verified")
+        if reason is None:
+            reason = mods["worker"]._billing_evidence_reason({"subscription_billing": evidence})
+        if reason is None and auth.get("org_id") != evidence.get("org_id"):
+            reason = "Usage-credit evidence organization does not match the authenticated organization"
+        detail = {"metadata": auth.get("metadata"), "org_id": auth.get("org_id")}
+    else:
+        try:
+            r = subprocess.run([CODEX_BIN, "login", "status"], capture_output=True, text=True, timeout=10, cwd=cwd)
+            text = (r.stdout + r.stderr).strip()
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            r, text = None, "%s" % exc
+        logged_in = r is not None and r.returncode == 0 and "Logged in using ChatGPT" in text
+        reason = None if logged_in else "Codex is not logged in with a ChatGPT subscription (%s)" % clip(text, 200)
+        if reason is None:
+            reason = mods["worker"]._billing_evidence_reason({"subscription_billing": evidence})
+            if reason:
+                reason = "codex-billing.json: " + reason
+        detail = {"login_status": clip(text, 200)}
+    return {"zero_cash": reason is None, "reason": reason, "checked_at": checked_at, "kind": kind, "detail": detail}
 
 
-def run_bounded(cmd, cwd, budget_minutes):
-    """Run cmd in its own process group; kill the whole group on timeout."""
-    timeout = budget_minutes * MINUTE
-    started = time.monotonic()
-    proc = subprocess.Popen(cmd, cwd=cwd, stdin=subprocess.DEVNULL,
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
-    timed_out = False
-    try:
-        out, err = proc.communicate(timeout=timeout)
-    except subprocess.TimeoutExpired:
-        timed_out = True
-        for sig, wait in ((signal.SIGTERM, 10), (signal.SIGKILL, None)):
-            try:
-                os.killpg(proc.pid, sig)
-            except ProcessLookupError:
-                pass
-            try:
-                out, err = proc.communicate(timeout=wait)
-                break
-            except subprocess.TimeoutExpired:
-                continue
-    elapsed = time.monotonic() - started
-    return {"exit_code": proc.returncode, "timed_out": timed_out, "elapsed_seconds": round(elapsed, 2),
-            "stdout": out.decode("utf-8", "replace"), "stderr": err.decode("utf-8", "replace")}
-
-
-def execute_worker(kind, task, cwd, budget, run_id, extra=None):
-    """Synchronously run a worker and write its outbox entry. Returns the full report."""
-    last_msg_file = None
-    report = {"kind": kind, "task": task, "cwd": cwd, "budget_minutes": budget, "run_id": run_id,
-              "started_at": iso(), "status": "failed"}
-    report.update(extra or {})
-    try:
-        if kind == "codex":
-            fd, last_msg_file = tempfile.mkstemp(prefix="codex-last-", suffix=".txt")
-            os.close(fd)
-        cmd = worker_command(kind, task, cwd, last_msg_file)
-        report["command"] = cmd
-        res = run_bounded(cmd, cwd, budget)
-        report.update(res)
-        if kind == "claude":
-            try:
-                parsed = json.loads(res["stdout"])
-                report["result"] = parsed.get("result")
-                for key in ("total_cost_usd", "usage", "num_turns", "duration_ms", "is_error",
-                            "session_id", "subtype", "permission_denials"):
-                    if key in parsed:
-                        report[key] = parsed[key]
-            except (ValueError, AttributeError):
-                report["result"] = None
-        else:
-            try:
-                with open(last_msg_file) as fh:
-                    report["result"] = fh.read()
-            except OSError:
-                report["result"] = None
-        if res["timed_out"]:
-            report["status"] = "timeout"
-        elif res["exit_code"] == 0 and not report.get("is_error"):
-            report["status"] = "done"
-        else:
-            report["status"] = "failed"
-    except Exception as exc:
-        report["status"] = "failed"
-        report["error"] = "%s: %s" % (type(exc).__name__, exc)
-        report.setdefault("stdout", "")
-        report.setdefault("stderr", "")
-    finally:
-        if last_msg_file:
-            try:
-                os.unlink(last_msg_file)
-            except OSError:
-                pass
-        report["finished_at"] = iso()
-    outbox_report = dict(report)
-    outbox_report["stdout"] = clip(report.get("stdout", ""), MAX_OUTBOX_CHARS)
-    outbox_report["stderr"] = clip(report.get("stderr", ""), MAX_OUTBOX_CHARS)
-    report["outbox_file"] = write_outbox(run_id, report.get("project"), outbox_report)
-    return report
-
-
-def trimmed(report):
-    result = dict(report)
-    result["stdout"] = clip(report.get("stdout", ""), MAX_RETURN_CHARS)
-    result["stderr"] = clip(report.get("stderr", ""), MAX_RETURN_CHARS)
-    return result
-
-
+# --------------------------------------------------------------------------- run records
 def run_record_path(run_id):
     return os.path.join(RUNS_DIR, run_id + ".json")
 
@@ -470,198 +362,339 @@ def pid_alive(pid):
 
 def load_run(run_id):
     rec = load_json(run_record_path(run_id), None)
-    if rec and rec.get("state") == "running" and not pid_alive(rec.get("pid")):
+    if rec is None:
+        return None
+    if rec.get("state") == "running" and not pid_alive(rec.get("pid")):
         rec["state"] = "lost"
         rec["note"] = "runner process is gone without a final record"
         save_run(rec)
+    elif rec.get("state") == "reserved":
+        reserved = parse_iso(rec.get("reserved_at"))
+        stale = reserved is None or (now_utc() - reserved).total_seconds() > RESERVATION_TTL_SECONDS
+        if stale or not pid_alive(rec.get("pid")):
+            rec["state"] = "lost"
+            rec["note"] = "reservation never started"
+            save_run(rec)
     return rec
 
 
-def complete_task_from_report(task_id, report):
-    """Map a worker report onto queue accounting. Never raises on a missing task."""
-    try:
-        summary = {"run_id": report.get("run_id"), "worker": report.get("kind"), "worker_status": report.get("status"),
-                   "exit_code": report.get("exit_code"), "timed_out": report.get("timed_out"),
-                   "elapsed_seconds": report.get("elapsed_seconds"), "result": report.get("result"),
-                   "worker_outbox_file": report.get("outbox_file"), "worktree": report.get("worktree"),
-                   "branch": report.get("branch"), "total_cost_usd": report.get("total_cost_usd"),
-                   "num_turns": report.get("num_turns")}
-        if report.get("status") == "done":
-            return finish_task(task_id, "done", summary)
-        reason = "worker %s: %s" % (report.get("status"), report.get("error") or
-                                    ("exit %s" % report.get("exit_code")))
-        return finish_task(task_id, "blocked", summary, reason=reason)
-    except ToolError as exc:
-        return {"finish_error": str(exc)}
+def all_runs():
+    if not os.path.isdir(RUNS_DIR):
+        return []
+    out = []
+    for f in sorted(os.listdir(RUNS_DIR), reverse=True):
+        if f.endswith(".json") and not f.endswith(".spec.json"):
+            rec = load_run(f[:-5])
+            if rec:
+                out.append(rec)
+    return out
 
 
-def run_spec(spec):
-    """Shared by the foreground path and the detached runner."""
-    stamp = now_utc()
-    record = {"run_id": spec["run_id"], "kind": spec["kind"], "task_id": spec.get("task_id"),
-              "project": spec.get("project"), "cwd": spec["cwd"], "budget_minutes": spec["budget_minutes"],
-              "pid": os.getpid(), "state": "running", "started_at": iso(stamp), "background": spec.get("background", False)}
+def live_run_for(task_id):
+    return next((r for r in all_runs() if r.get("task_id") == task_id and r.get("state") in ("reserved", "running")), None)
+
+
+def reserve_run(kind, task_id=None, project=None):
+    """Exclusive creation of a run record; collision-resistant id; never replaces another run."""
+    os.makedirs(RUNS_DIR, exist_ok=True)
+    for _ in range(20):
+        run_id = "run-%s-%s-%s" % (kind, now_utc().strftime("%Y%m%d-%H%M%S"), secrets.token_hex(4))
+        path = run_record_path(run_id)
+        try:
+            fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        except FileExistsError:
+            continue
+        record = {"run_id": run_id, "kind": kind, "task_id": task_id, "project": project, "state": "reserved",
+                  "reserved_at": iso(), "pid": os.getpid()}
+        with os.fdopen(fd, "w") as fh:
+            json.dump(record, fh, indent=2, sort_keys=True)
+            fh.write("\n")
+        return record
+    raise ToolError("could not reserve a unique run id")
+
+
+def fail_run(record, reason):
+    record.update(state="failed", note=reason, finished_at=iso())
     save_run(record)
-    extra = {k: spec.get(k) for k in ("task_id", "project", "worktree", "branch") if spec.get(k)}
-    report = execute_worker(spec["kind"], spec["task"], spec["cwd"], spec["budget_minutes"], spec["run_id"], extra)
+
+
+# --------------------------------------------------------------------------- workers
+def worker_command(kind, task, cwd, last_msg_file):
+    if kind == "claude":
+        if not os.path.exists(CLAUDE_BIN):
+            raise ToolError("claude binary missing at %s" % CLAUDE_BIN)
+        cmd = [CLAUDE_BIN, "-p", task, "--output-format", "json",
+               "--permission-mode", CLAUDE_PERMISSION_MODE, "--no-session-persistence"]
+        if CLAUDE_ALLOWED_TOOLS.strip():
+            cmd += ["--allowedTools", CLAUDE_ALLOWED_TOOLS]
+        return cmd
+    if kind == "codex":
+        if not os.path.exists(CODEX_BIN):
+            raise ToolError("codex binary missing at %s" % CODEX_BIN)
+        return [CODEX_BIN, "exec", "--sandbox", CODEX_SANDBOX, "--skip-git-repo-check", "--ephemeral",
+                "-C", cwd, "-o", last_msg_file, task]
+    raise ToolError("unknown worker kind %r" % kind)
+
+
+def closure_seconds(budget_minutes):
+    return min(CLOSURE_MAX_SECONDS, budget_minutes * MINUTE * CLOSURE_FRACTION)
+
+
+def remaining_seconds(task):
+    """Seconds a worker may still use before the persisted deadline, keeping the closure reserve."""
+    deadline = parse_iso(task.get("deadline"))
+    if deadline is None:
+        raise ToolError("task %s has no valid timezone-aware deadline" % task.get("id"))
+    budget = int(task.get("budget_minutes", 15))
+    return (deadline - now_utc()).total_seconds() - closure_seconds(budget)
+
+
+def run_bounded(cmd, cwd, timeout_seconds):
+    """Run cmd in its own process group; kill the whole group on timeout."""
+    started = time.monotonic()
+    proc = subprocess.Popen(cmd, cwd=cwd, stdin=subprocess.DEVNULL,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
+    timed_out = False
+    try:
+        out, err = proc.communicate(timeout=timeout_seconds)
+    except subprocess.TimeoutExpired:
+        timed_out = True
+        for sig, wait in ((signal.SIGTERM, 10), (signal.SIGKILL, None)):
+            try:
+                os.killpg(proc.pid, sig)
+            except ProcessLookupError:
+                pass
+            try:
+                out, err = proc.communicate(timeout=wait)
+                break
+            except subprocess.TimeoutExpired:
+                continue
+    elapsed = time.monotonic() - started
+    return {"exit_code": proc.returncode, "timed_out": timed_out, "elapsed_seconds": round(elapsed, 2),
+            "stdout": out.decode("utf-8", "replace"), "stderr": err.decode("utf-8", "replace")}
+
+
+def parse_claude_output(report, stdout):
+    try:
+        parsed = json.loads(stdout)
+    except ValueError:
+        report["result"] = None
+        return
+    if not isinstance(parsed, dict):
+        report["result"] = None
+        return
+    report["result"] = parsed.get("result")
+    for key in ("total_cost_usd", "usage", "num_turns", "duration_ms", "is_error", "session_id", "subtype",
+                "permission_denials"):
+        if key in parsed:
+            report[key] = parsed[key]
+    usage = parsed.get("usage") or {}
+    total = 0
+    known = False
+    for key in ("input_tokens", "output_tokens", "cache_creation_input_tokens", "cache_read_input_tokens"):
+        v = usage.get(key)
+        if type(v) is int and v >= 0:
+            total += v
+            known = True
+    report["actual_tokens"] = total if known else None
+
+
+def parse_codex_output(report, stderr, last_msg_file):
+    try:
+        with open(last_msg_file) as fh:
+            report["result"] = fh.read()
+    except OSError:
+        report["result"] = None
+    m = re.search(r"tokens used\s+([\d,]+)", stderr or "")
+    report["actual_tokens"] = int(m.group(1).replace(",", "")) if m else None
+
+
+def execute_worker(spec, timeout_seconds):
+    """Synchronously run a worker and write its run outbox note. Returns the full report."""
+    kind, task, cwd = spec["kind"], spec["task"], spec["cwd"]
+    last_msg_file = None
+    report = {"kind": kind, "task": task, "cwd": cwd, "budget_minutes": spec["budget_minutes"],
+              "timeout_seconds": round(timeout_seconds, 2), "run_id": spec["run_id"], "task_id": spec.get("task_id"),
+              "project": spec.get("project"), "worktree": spec.get("worktree"), "branch": spec.get("branch"),
+              "started_at": iso(), "status": "failed", "actual_tokens": None}
+    try:
+        if kind == "codex":
+            fd, last_msg_file = tempfile.mkstemp(prefix="codex-last-", suffix=".txt")
+            os.close(fd)
+        cmd = worker_command(kind, task, cwd, last_msg_file)
+        report["command"] = cmd
+        report["git_before"] = git_snapshot(cwd)
+        res = run_bounded(cmd, cwd, timeout_seconds)
+        report.update(res)
+        if kind == "claude":
+            parse_claude_output(report, res["stdout"])
+        else:
+            parse_codex_output(report, res["stderr"], last_msg_file)
+        report["git_after"] = git_snapshot(cwd)
+        if res["timed_out"]:
+            report["status"] = "timeout"
+        elif res["exit_code"] == 0 and not report.get("is_error"):
+            report["status"] = "done"
+        else:
+            report["status"] = "failed"
+    except Exception as exc:
+        report["status"] = "failed"
+        report["error"] = "%s: %s" % (type(exc).__name__, exc)
+        report.setdefault("stdout", "")
+        report.setdefault("stderr", "")
+    finally:
+        if last_msg_file:
+            try:
+                os.unlink(last_msg_file)
+            except OSError:
+                pass
+        report["finished_at"] = iso()
+    note = dict(report)
+    note["stdout"] = clip(report.get("stdout", ""), MAX_OUTBOX_CHARS)
+    note["stderr"] = clip(report.get("stderr", ""), MAX_OUTBOX_CHARS)
+    report["outbox_file"] = write_outbox(spec["run_id"], spec.get("project"), note, task_id=spec.get("task_id"))
+    return report
+
+
+def trimmed(report):
+    result = dict(report)
+    result["stdout"] = clip(report.get("stdout", ""), MAX_RETURN_CHARS)
+    result["stderr"] = clip(report.get("stderr", ""), MAX_RETURN_CHARS)
+    return result
+
+
+def blocked_fields(reason, run_id, kind, status):
+    return {"reason": reason,
+            "attempts": ["%s worker run %s ended %s" % (kind, run_id, status)],
+            "alternatives_checked": ["No alternative within this task's allocation"],
+            "next_attempt": "Inspect outbox run %s and the task worktree; requeue explicitly only if justified" % run_id}
+
+
+def accounting_for(task, report, spec):
+    """Blocked accounting the canonical desk accepts: known zero cash only with verified subscription."""
+    started = parse_iso(task.get("started_at"))
+    minutes = round((now_utc() - started).total_seconds() / 60.0, 4) if started else None
+    acc = {"actual_minutes": minutes, "actual_tokens": report.get("actual_tokens")}
+    if spec.get("zero_cash") and not task.get("budget_aud"):
+        acc["actual_cost_aud"] = 0
+        acc["billing_mode"] = "existing_subscription"
+    return acc, minutes
+
+
+def complete_task_from_report(spec, report):
+    """Map a worker report onto the canonical completion API. Never raises."""
+    task_id, run_id, kind = spec["task_id"], spec["run_id"], spec["kind"]
+    try:
+        d = desk()
+        core = desk_modules()["core"]
+        task = current_task(task_id)
+        acc, minutes = accounting_for(task, report, spec)
+        after = report.get("git_after") or {}
+        before = report.get("git_before") or {}
+        if report.get("status") == "done":
+            verification = ("%s exited 0 in %ss within a %ss timeout; worktree HEAD %s on %s (was %s); %d uncommitted path(s); "
+                            "no tests were run by soojos-desk itself"
+                            % (kind, report.get("elapsed_seconds"), report.get("timeout_seconds"), after.get("head"),
+                               after.get("branch"), before.get("head"), after.get("dirty_paths") or 0))
+            evidence = [report.get("outbox_file"), spec.get("worktree") or spec.get("cwd"),
+                        "HEAD %s" % after.get("head") if after.get("head") else "no git snapshot"]
+            done = {"status": "done", "summary": clip(report.get("result") or "", 4000), "verification": verification,
+                    "evidence": [e for e in evidence if e], "actual_minutes": minutes,
+                    "actual_tokens": report.get("actual_tokens"), "actual_cost_aud": acc.get("actual_cost_aud"),
+                    "billing_mode": acc.get("billing_mode"), "run_id": run_id}
+            try:
+                return {"status": "done", "task": desk_call(d.finish, task_id, done)}
+            except ToolError as exc:
+                reason = "worker finished but completion was refused: %s" % exc
+                fields = blocked_fields(reason, run_id, kind, "done")
+        else:
+            reason = "worker %s: %s" % (report.get("status"), report.get("error") or "exit %s" % report.get("exit_code"))
+            fields = blocked_fields(reason, run_id, kind, report.get("status"))
+        blocked = desk_call(d.block, task_id, fields["reason"], fields["attempts"], fields["alternatives_checked"],
+                            fields["next_attempt"], acc)
+        return {"status": "blocked", "task": blocked}
+    except Exception as exc:
+        return {"status": "error", "error": "%s: %s" % (type(exc).__name__, exc)}
+
+
+def run_spec(spec, record):
+    """Shared by the foreground path and the detached runner. record is the reserved run record."""
+    record.update(state="running", pid=os.getpid(), started_at=iso(), cwd=spec["cwd"],
+                  budget_minutes=spec["budget_minutes"], background=spec.get("background", False))
+    save_run(record)
+    timeout = spec["budget_minutes"] * MINUTE
     if spec.get("task_id"):
-        report["queue"] = complete_task_from_report(spec["task_id"], report)
-    record.update({"state": report["status"], "finished_at": report["finished_at"], "exit_code": report.get("exit_code"),
-                   "timed_out": report.get("timed_out"), "outbox_file": report.get("outbox_file"),
-                   "result": clip(report.get("result") or "", 4000), "queue": report.get("queue")})
+        try:
+            task = current_task(spec["task_id"])
+            remaining = remaining_seconds(task)
+        except ToolError as exc:
+            remaining, task = -1, None
+            spec["deadline_error"] = str(exc)
+        if remaining <= 0:
+            report = {"kind": spec["kind"], "run_id": spec["run_id"], "task_id": spec["task_id"], "status": "failed",
+                      "error": spec.get("deadline_error") or "task deadline reached before launch (closure reserve kept)",
+                      "started_at": iso(), "finished_at": iso(), "actual_tokens": None, "stdout": "", "stderr": ""}
+            report["outbox_file"] = write_outbox(spec["run_id"], spec.get("project"), report, task_id=spec["task_id"])
+            report["queue"] = complete_task_from_report(spec, report)
+            record.update(state="failed", finished_at=report["finished_at"], note=report["error"], queue=report["queue"])
+            save_run(record)
+            return report
+        timeout = min(timeout, remaining)
+    report = execute_worker(spec, timeout)
+    if spec.get("task_id"):
+        report["queue"] = complete_task_from_report(spec, report)
+    record.update(state=report["status"], finished_at=report["finished_at"], exit_code=report.get("exit_code"),
+                  timed_out=report.get("timed_out"), outbox_file=report.get("outbox_file"),
+                  result=clip(report.get("result") or "", 4000), queue=report.get("queue"),
+                  actual_tokens=report.get("actual_tokens"))
     save_run(record)
     return report
 
 
-def spawn_background(spec):
-    os.makedirs(RUNS_DIR, exist_ok=True)
+def spawn_background(spec, record):
     spec_path = os.path.join(RUNS_DIR, spec["run_id"] + ".spec.json")
-    write_json_atomic(spec_path, spec)
+    fd = os.open(spec_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)  # never replace another run's spec
+    with os.fdopen(fd, "w") as fh:
+        json.dump(spec, fh, indent=2, sort_keys=True)
     log_path = os.path.join(RUNS_DIR, spec["run_id"] + ".log")
     with open(log_path, "ab") as log:
         proc = subprocess.Popen([sys.executable, os.path.abspath(__file__), "--runner", spec_path],
                                 stdin=subprocess.DEVNULL, stdout=log, stderr=log, start_new_session=True,
                                 cwd=spec["cwd"])
-    record = {"run_id": spec["run_id"], "kind": spec["kind"], "task_id": spec.get("task_id"), "project": spec.get("project"),
-              "cwd": spec["cwd"], "budget_minutes": spec["budget_minutes"], "pid": proc.pid, "state": "running",
-              "started_at": iso(), "background": True, "log": log_path}
+    record.update(state="running", pid=proc.pid, started_at=iso(), background=True, log=log_path, cwd=spec["cwd"],
+                  budget_minutes=spec["budget_minutes"])
     save_run(record)
     return record
 
 
-def launch(kind, task, cwd, budget_minutes, background=False, task_id=None, project=None, worktree=None, branch=None):
+def launch(kind, task, cwd, budget_minutes, background=False, task_id=None, project=None, worktree=None,
+           branch=None, record=None):
+    """Validate, verify zero cash, reserve (if not already reserved), and run or detach."""
     if not isinstance(task, str) or not task.strip():
         raise ToolError("task must be a non-empty string")
     if not isinstance(cwd, str) or not os.path.isabs(cwd) or not os.path.isdir(cwd):
         raise ToolError("cwd must be an existing absolute directory")
     budget = check_budget(budget_minutes)
     worker_command(kind, "probe", cwd, "/dev/null")  # validates kind and binary presence early
-    run_id = "run-%s-%s" % (kind, now_utc().strftime("%Y%m%d-%H%M%S-%f")[:-3])
-    spec = {"run_id": run_id, "kind": kind, "task": task, "cwd": cwd, "budget_minutes": budget,
+    cash = zero_cash_evidence(kind, cwd)
+    if not cash["zero_cash"]:
+        raise ToolError("zero incremental cash not established for %s; launch refused: %s" % (kind, cash["reason"]))
+    if record is None:
+        record = reserve_run(kind, task_id, project)
+    spec = {"run_id": record["run_id"], "kind": kind, "task": task, "cwd": cwd, "budget_minutes": budget,
             "task_id": task_id, "project": project, "worktree": worktree, "branch": branch,
-            "background": bool(background)}
+            "background": bool(background), "zero_cash": True, "cash_evidence": cash}
     if background:
-        rec = spawn_background(spec)
-        return {"run_id": run_id, "state": "running", "pid": rec["pid"], "background": True,
-                "poll": "run_status(id=%s); outbox_read(id=%s) when finished" % (run_id, run_id)}
-    report = trimmed(run_spec(spec))
-    report["run_id"] = run_id
+        rec = spawn_background(spec, record)
+        return {"run_id": rec["run_id"], "state": "running", "pid": rec["pid"], "background": True,
+                "poll": "run_status(id=%s); outbox_read(id=%s) when finished" % (rec["run_id"], rec["run_id"])}
+    report = trimmed(run_spec(spec, record))
     if report["status"] != "done":
         raise ToolError(json.dumps(report, indent=2, sort_keys=True, default=str))
     return report
 
 
 # --------------------------------------------------------------------------- tools
-def t_queue_list(args):
-    status = args.get("status")
-    tasks = read_queue()
-    if status:
-        tasks = [t for t in tasks if t.get("status") == status]
-    keys = ("id", "project", "assignee", "status", "budget_minutes", "created_at", "deadline", "claimed_by", "task")
-    summary = [{k: t.get(k) for k in keys if k in t} for t in tasks]
-    for s in summary:
-        if isinstance(s.get("task"), str) and len(s["task"]) > 200:
-            s["task"] = s["task"][:200] + "..."
-    return {"queue_path": QUEUE_PATH, "count": len(summary), "tasks": summary}
-
-
-def t_queue_add(args):
-    project = args.get("project")
-    task = args.get("task")
-    assignee = args.get("assignee")
-    budget = check_budget(args.get("budget_minutes", 15))
-    projects = schema_enum("project", sorted(load_json(PROJECTS_PATH, {})))
-    assignees = schema_enum("assignee", ["codex", "claude"])
-    if project not in projects:
-        raise ToolError("project must be one of: %s" % ", ".join(projects))
-    if assignee not in assignees:
-        raise ToolError("assignee must be one of: %s" % ", ".join(assignees))
-    if not isinstance(task, str) or not task.strip():
-        raise ToolError("task must be a non-empty string")
-    if len(task) > 12000:
-        raise ToolError("task exceeds 12000 characters")
-    stamp = now_utc()
-    task_id = "%s-%s-%s" % (stamp.strftime("%Y%m%d-%H%M%S"), assignee, slugify(task))
-    if not ID_RE.match(task_id):
-        raise ToolError("generated id %r does not match the queue schema" % task_id)
-    entry = {
-        "id": task_id, "project": project, "task": task, "assignee": assignee,
-        "inputs": args.get("inputs") or [], "constraints": args.get("constraints") or [],
-        "priority": {"source": SERVER_NAME},
-        "expected_return": {"basis": "Evidence required", "confidence": "unassessed", "currency": "AUD",
-                            "horizon_days": 90, "net_low": None, "net_high": None},
-        "created_at": iso(stamp), "status": "queued", "budget_tokens": None,
-        "budget_minutes": budget, "budget_aud": 0, "chain_depth": 1, "parent_id": None,
-        "attempts": [], "blocked_reason": None, "created_by": SERVER_NAME,
-    }
-    with queue_lock():
-        tasks = read_queue()
-        if find_task(tasks, task_id):
-            raise ToolError("id collision: %s" % task_id)
-        tasks.append(entry)
-        write_queue_atomic(tasks)
-    return {"added": entry, "queue_path": QUEUE_PATH}
-
-
-def t_queue_claim(args):
-    task_id = args.get("id")
-    if not isinstance(task_id, str) or not task_id:
-        raise ToolError("id is required")
-    with queue_lock():
-        tasks = read_queue()
-        target = claim_locked(tasks, task_id)
-        write_queue_atomic(tasks)
-    return {"claimed": target}
-
-
-def t_queue_finish(args):
-    task_id = args.get("id")
-    if not isinstance(task_id, str) or not task_id:
-        raise ToolError("id is required")
-    report = args.get("report") or {}
-    if isinstance(report, str):
-        try:
-            report = json.loads(report)
-        except ValueError:
-            report = {"summary": report}
-    if not isinstance(report, dict):
-        raise ToolError("report must be a JSON object (or a string)")
-    target = finish_task(task_id, args.get("status"), report, reason=args.get("reason"))
-    return {"finished": target}
-
-
-def t_queue_reap(args):
-    """Block running tasks whose deadline passed with no live runner. Only tasks this server
-    claimed unless all=true."""
-    reap_all = bool(args.get("all", False))
-    grace = _dt.timedelta(minutes=float(args.get("grace_minutes", REAP_GRACE_MINUTES)))
-    now = now_utc()
-    live_task_ids = set()
-    if os.path.isdir(RUNS_DIR):
-        for f in os.listdir(RUNS_DIR):
-            if f.endswith(".json") and not f.endswith(".spec.json"):
-                rec = load_run(f[:-5])
-                if rec and rec.get("state") == "running" and rec.get("task_id"):
-                    live_task_ids.add(rec["task_id"])
-    reaped, skipped = [], []
-    for t in read_queue():
-        if t.get("status") != "running":
-            continue
-        deadline = parse_iso(t.get("deadline"))
-        if deadline is None or now < deadline + grace:
-            continue
-        if not reap_all and t.get("claimed_by") != SERVER_NAME:
-            skipped.append({"id": t["id"], "why": "claimed_by %s; pass all=true to reap" % t.get("claimed_by")})
-            continue
-        if t["id"] in live_task_ids:
-            skipped.append({"id": t["id"], "why": "background runner still alive"})
-            continue
-        reason = "deadline %s exceeded by more than %s with no finish; reaped" % (t.get("deadline"), grace)
-        finish_task(t["id"], "blocked", {"reaped_at": iso(now)}, reason=reason)
-        reaped.append(t["id"])
-    return {"reaped": reaped, "skipped": skipped}
-
-
 def t_desk_status(args):
     tasks = read_queue()
     counts = {}
@@ -673,23 +706,121 @@ def t_desk_status(args):
         if t.get("status") == "running":
             deadline = parse_iso(t.get("deadline"))
             running.append({"id": t["id"], "project": t.get("project"), "assignee": t.get("assignee"),
-                            "claimed_by": t.get("claimed_by"), "deadline": t.get("deadline"),
-                            "overdue": bool(deadline and now > deadline)})
-    runs = []
-    if os.path.isdir(RUNS_DIR):
-        for f in sorted(os.listdir(RUNS_DIR)):
-            if f.endswith(".json") and not f.endswith(".spec.json"):
-                rec = load_run(f[:-5])
-                if rec and rec.get("state") in ("running", "lost"):
-                    runs.append({k: rec.get(k) for k in ("run_id", "kind", "task_id", "state", "pid", "started_at")})
+                            "deadline": t.get("deadline"), "overdue": bool(deadline and now > deadline)})
+    live = [{k: r.get(k) for k in ("run_id", "kind", "task_id", "state", "pid", "started_at", "reserved_at")}
+            for r in all_runs() if r.get("state") in ("reserved", "running", "lost")]
     pol = policy()
+    try:
+        desk_modules()
+        canonical = {"available": True, "scripts": _MODULES["scripts"]}
+    except ToolError as exc:
+        canonical = {"available": False, "reason": str(exc)}
+    billing = {}
+    for kind, path in BILLING_PATHS.items():
+        ev = load_json(path, {})
+        verified = parse_iso(ev.get("verified_at")) if ev else None
+        age = (now - verified).total_seconds() if verified else None
+        billing[kind] = {"path": path, "present": bool(ev), "verified_at": ev.get("verified_at"),
+                         "usage_credits_disabled": ev.get("usage_credits_disabled"),
+                         "fresh_within_hour": bool(age is not None and 0 <= age <= 3600)}
     return {"stop_present": stop_present(), "stop_path": STOP_PATH, "desk_dir": DESK_DIR, "queue_counts": counts,
-            "running": running, "active_background_runs": runs,
-            "policy": {k: pol.get(k) for k in ("version", "task_minutes", "max_workers", "max_chain_depth", "token_mode")},
-            "workers": {"claude": {"bin": CLAUDE_BIN, "present": os.path.exists(CLAUDE_BIN), "permission_mode": CLAUDE_PERMISSION_MODE,
-                                   "allowed_tools": CLAUDE_ALLOWED_TOOLS},
+            "running": running, "runs": live, "canonical_desk": canonical, "billing_evidence": billing,
+            "policy": {k: pol.get(k) for k in ("version", "task_minutes", "max_workers", "max_chain_depth", "token_mode", "code_root")},
+            "workers": {"claude": {"bin": CLAUDE_BIN, "present": os.path.exists(CLAUDE_BIN),
+                                   "permission_mode": CLAUDE_PERMISSION_MODE, "allowed_tools": CLAUDE_ALLOWED_TOOLS},
                         "codex": {"bin": CODEX_BIN, "present": os.path.exists(CODEX_BIN), "sandbox": CODEX_SANDBOX}},
             "server_version": SERVER_VERSION}
+
+
+def t_queue_list(args):
+    status = args.get("status")
+    tasks = read_queue()
+    if status:
+        tasks = [t for t in tasks if t.get("status") == status]
+    keys = ("id", "project", "assignee", "status", "budget_minutes", "created_at", "deadline", "action_kind", "task")
+    summary = [{k: t.get(k) for k in keys if k in t} for t in tasks]
+    for s in summary:
+        if isinstance(s.get("task"), str) and len(s["task"]) > 200:
+            s["task"] = s["task"][:200] + "..."
+    return {"queue_path": QUEUE_PATH, "count": len(summary), "tasks": summary}
+
+
+def t_queue_add(args):
+    core = desk_modules()["core"]
+    project, task, assignee = args.get("project"), args.get("task"), args.get("assignee")
+    budget = check_budget(args.get("budget_minutes", 15))
+    if not isinstance(task, str) or not task.strip():
+        raise ToolError("task must be a non-empty string")
+    if assignee not in ("codex", "claude"):
+        raise ToolError("assignee must be codex or claude")
+    stamp = now_utc()
+    task_id = "%s-%s-%s" % (stamp.strftime("%Y%m%d-%H%M%S"), assignee, slugify(task))
+    entry = core.make_task(task_id, project, task, assignee=assignee, budget_tokens=None)
+    entry["budget_minutes"] = budget
+    entry["inputs"] = list(args.get("inputs") or [])
+    entry["constraints"] = list(args.get("constraints") or entry["constraints"])
+    entry["action_kind"] = args.get("action_kind", "research")
+    entry["priority"] = {"rank": 1, "reason": "Queued via %s" % SERVER_NAME}
+    stored = desk_call(desk().enqueue, entry)  # canonical validation: scope, budgets, branch, ancestry
+    return {"added": stored, "queue_path": QUEUE_PATH}
+
+
+def t_queue_claim(args):
+    task_id = args.get("id")
+    if not isinstance(task_id, str) or not task_id:
+        raise ToolError("id is required")
+    task = current_task(task_id)
+    claimed = desk_call(desk().claim, task_id, task.get("assignee"))
+    return {"claimed": claimed}
+
+
+def t_queue_finish(args):
+    task_id = args.get("id")
+    if not isinstance(task_id, str) or not task_id:
+        raise ToolError("id is required")
+    status = args.get("status")
+    report = args.get("report") or {}
+    if isinstance(report, str):
+        try:
+            report = json.loads(report)
+        except ValueError:
+            report = {"summary": report}
+    if not isinstance(report, dict):
+        raise ToolError("report must be a JSON object")
+    d = desk()
+    task = current_task(task_id)
+    if status == "done":
+        done = dict(report)
+        done["status"] = "done"
+        if done.get("actual_minutes") is None:
+            started = parse_iso(task.get("started_at"))
+            done["actual_minutes"] = round((now_utc() - started).total_seconds() / 60.0, 4) if started else None
+        done.setdefault("actual_tokens", None)
+        done.setdefault("actual_cost_aud", None)  # unknown stays unknown; the desk refuses done without it
+        return {"finished": desk_call(d.finish, task_id, done)}
+    if status == "blocked":
+        reason = args.get("reason") or report.get("reason")
+        if not reason:
+            raise ToolError("blocked requires a reason")
+        attempts = report.get("attempts") or [reason]
+        alternatives = report.get("alternatives_checked") or ["None recorded"]
+        next_attempt = report.get("next_attempt") or "Explicit reconsideration required before any retry"
+        accounting = report.get("accounting")
+        return {"finished": desk_call(d.block, task_id, reason, attempts, alternatives, next_attempt, accounting)}
+    raise ToolError("status must be done or blocked")
+
+
+def t_desk_tick(args):
+    """Canonical recovery: apply persisted completions, block overdue running tasks with desk accounting."""
+    snap = desk_call(desk().tick)
+    tasks = snap.get("tasks", []) if isinstance(snap, dict) else []
+    counts = {}
+    for t in tasks:
+        counts[t.get("status", "?")] = counts.get(t.get("status", "?"), 0) + 1
+    return {"queue_counts": counts,
+            "blocked": [{"id": t["id"], "reason": t.get("blocked_reason")} for t in tasks if t.get("status") == "blocked"][-10:],
+            "pauses": snap.get("pauses") if isinstance(snap, dict) else None,
+            "lost_runs": [r["run_id"] for r in all_runs() if r.get("state") == "lost"]}
 
 
 def t_outbox_read(args):
@@ -705,10 +836,13 @@ def t_outbox_read(args):
 
 
 def t_outbox_write(args):
+    """Free-form note. Refuses ids that name a queue task: task packets belong to the canonical desk."""
     entry_id = args.get("id")
     report = args.get("report")
     if not isinstance(entry_id, str) or not ID_RE.match(entry_id):
         raise ToolError("id must match %s" % ID_RE.pattern)
+    if find_task(read_queue(), entry_id):
+        raise ToolError("%s is a queue task id; use queue_finish so the canonical desk writes its packet" % entry_id)
     if isinstance(report, str):
         try:
             report = json.loads(report)
@@ -716,9 +850,7 @@ def t_outbox_write(args):
             report = {"summary": report}
     if not isinstance(report, dict):
         raise ToolError("report must be a JSON object (or a string)")
-    task = find_task(read_queue(), entry_id)
-    path = write_outbox(entry_id, task.get("project") if task else None, report)
-    return {"written": path}
+    return {"written": write_outbox(entry_id, None, report)}
 
 
 def t_git_status(args):
@@ -765,57 +897,65 @@ def compose_task_prompt(task, cwd, worktree, branch):
 
 
 def t_run_task(args):
-    """Claim (if needed), isolate in a worktree, run the assigned worker, finish with accounting."""
+    """Claim (if queued), reserve one run identity under the desk lock, isolate in a worktree,
+    check the persisted deadline, verify zero cash, run the assignee, complete through the desk."""
     task_id = args.get("id")
     if not isinstance(task_id, str) or not task_id:
         raise ToolError("id is required")
     background = bool(args.get("background", False))
     use_worktree = args.get("use_worktree", True)
-    with queue_lock():
-        tasks = read_queue()
-        target = find_task(tasks, task_id)
-        if target is None:
-            raise ToolError("no task with id %s" % task_id)
-        if target.get("status") == "queued":
-            target = claim_locked(tasks, task_id)
-        elif target.get("status") == "running":
-            if target.get("claimed_by") != SERVER_NAME:
-                raise ToolError("task %s is running under %s" % (task_id, target.get("claimed_by")))
-            live = any((load_run(f[:-5]) or {}).get("task_id") == task_id and load_run(f[:-5]).get("state") == "running"
-                       for f in (os.listdir(RUNS_DIR) if os.path.isdir(RUNS_DIR) else [])
-                       if f.endswith(".json") and not f.endswith(".spec.json"))
+    d = desk()
+    task = current_task(task_id)
+    kind = task.get("assignee")
+    if kind not in ("claude", "codex"):
+        raise ToolError("assignee %r is not a runnable worker" % kind)
+    if task.get("status") == "queued":
+        task = desk_call(d.claim, task_id, kind)  # canonical admission; only one caller can win this
+    elif task.get("status") != "running":
+        raise ToolError("task %s is %s" % (task_id, task.get("status")))
+    # Exclusive run reservation under the same lock the desk uses, so two callers that both
+    # observe a running task without a live run cannot both launch.
+    core = desk_modules()["core"]
+    try:
+        with d.locked():
+            live = live_run_for(task_id)
             if live:
-                raise ToolError("task %s already has a live background run" % task_id)
-        else:
-            raise ToolError("task %s is %s" % (task_id, target.get("status")))
-        kind = target.get("assignee")
-        if kind not in ("claude", "codex"):
-            raise ToolError("assignee %r is not a runnable worker" % kind)
-        project_dir = args.get("cwd") or resolve_project_dir(target.get("project"))
+                raise ToolError("task %s already has a live run: %s" % (task_id, live["run_id"]))
+            record = reserve_run(kind, task_id, task.get("project"))
+    except core.DeskError as exc:
+        raise ToolError("desk refused: %s" % exc)
+    try:
+        remaining = remaining_seconds(task)
+        if remaining <= 0:
+            raise ToolError("task %s deadline %s reached (closure reserve %ss kept); not launching"
+                            % (task_id, task.get("deadline"), int(closure_seconds(int(task.get("budget_minutes", 15))))))
+        project_dir = args.get("cwd") or resolve_project_dir(task.get("project"))
         if not os.path.isdir(project_dir):
             raise ToolError("cwd does not exist: %s" % project_dir)
         if use_worktree:
             cwd, worktree, branch = ensure_task_worktree(project_dir, task_id)
         else:
             cwd, worktree, branch = project_dir, None, None
-        target["worktree"] = worktree
-        target["branch"] = branch
-        target["cwd"] = cwd
-        write_queue_atomic(tasks)
-    prompt = compose_task_prompt(target, cwd, worktree, branch)
-    try:
-        out = launch(kind, prompt, cwd, target.get("budget_minutes", 15), background=background,
-                     task_id=task_id, project=target.get("project"), worktree=worktree, branch=branch)
+        prompt = compose_task_prompt(task, cwd, worktree, branch)
+        out = launch(kind, prompt, cwd, task.get("budget_minutes", 15), background=background, task_id=task_id,
+                     project=task.get("project"), worktree=worktree, branch=branch, record=record)
     except ToolError as exc:
-        # launch() raised either a validation error (task still running: block it) or a failed worker
-        # (already finished as blocked by run_spec). Distinguish by re-reading the queue.
-        current = find_task(read_queue(), task_id)
-        if current and current.get("status") == "running":
-            finish_task(task_id, "blocked", {"error": str(exc)}, reason="launch failed: %s" % str(exc)[:300])
+        # Pre-launch refusal (deadline, worktree, cash) or a failed foreground worker. A failed worker
+        # has already been completed through the desk by run_spec; a pre-launch refusal has not.
+        rec = load_run(record["run_id"]) or record
+        if rec.get("state") == "reserved":
+            fail_run(rec, str(exc)[:500])
+            fields = blocked_fields("launch refused: %s" % str(exc)[:400], record["run_id"], kind, "not launched")
+            try:
+                desk_call(d.block, task_id, fields["reason"], fields["attempts"], fields["alternatives_checked"],
+                          fields["next_attempt"], None)
+            except ToolError as block_exc:
+                raise ToolError("%s; additionally the desk refused to block the task: %s" % (exc, block_exc))
         raise
     out["task_id"] = task_id
     out["worktree"] = worktree
     out["branch"] = branch
+    out["run_id"] = record["run_id"]
     return out
 
 
@@ -826,15 +966,9 @@ def t_run_status(args):
         if rec is None:
             raise ToolError("no run record for %s" % run_id)
         return {"run": rec}
-    recs = []
-    if os.path.isdir(RUNS_DIR):
-        for f in sorted(os.listdir(RUNS_DIR), reverse=True):
-            if f.endswith(".json") and not f.endswith(".spec.json"):
-                rec = load_run(f[:-5])
-                if rec:
-                    recs.append({k: rec.get(k) for k in ("run_id", "kind", "task_id", "state", "pid", "started_at", "finished_at")})
     limit = int(args.get("limit", 20))
-    return {"runs": recs[:limit], "runs_dir": RUNS_DIR}
+    keys = ("run_id", "kind", "task_id", "state", "pid", "reserved_at", "started_at", "finished_at")
+    return {"runs": [{k: r.get(k) for k in keys} for r in all_runs()[:limit]], "runs_dir": RUNS_DIR}
 
 
 def _s(desc):
@@ -849,66 +983,71 @@ RW = {"readOnlyHint": False, "destructiveHint": False, "openWorldHint": False}
 EXEC = {"readOnlyHint": False, "destructiveHint": False, "openWorldHint": True}
 
 TOOLS = [
+    {"name": "desk_status", "fn": t_desk_status, "annotations": RO,
+     "description": "STOP state, queue counts, running tasks with overdue flags, live/lost runs, canonical desk "
+                    "availability, billing evidence freshness, policy and worker binaries.",
+     "inputSchema": {"type": "object", "properties": {}}},
     {"name": "queue_list", "fn": t_queue_list, "annotations": RO,
      "description": "List desk queue tasks, optionally filtered by status (queued|running|done|blocked).",
      "inputSchema": {"type": "object", "properties": {"status": _s("Optional status filter")}}},
     {"name": "queue_add", "fn": t_queue_add, "annotations": RW,
-     "description": "Append a queued task to the desk queue with schema-conformant defaults.",
+     "description": "Enqueue a task through the canonical desk (scope, budget, branch and ancestry validation).",
      "inputSchema": {"type": "object", "required": ["project", "task", "assignee", "budget_minutes"],
-                     "properties": {"project": _s("Project slug from queue.schema.json"),
+                     "properties": {"project": _s("Approved project slug from policy.json"),
                                     "task": _s("Task text (<=12000 chars)"),
                                     "assignee": _s("codex or claude"),
                                     "budget_minutes": _BUDGET,
+                                    "action_kind": {"type": "string", "enum": ["research", "analysis", "code", "verify", "harness", "retro"], "default": "research"},
                                     "inputs": {"type": "array", "items": {"type": "string"}},
                                     "constraints": {"type": "array", "items": {"type": "string"}}}}},
     {"name": "queue_claim", "fn": t_queue_claim, "annotations": RW,
-     "description": "Mark a queued task running with started_at and deadline; respects policy max_workers.",
+     "description": "Canonical claim: queued -> running with started_at/deadline; refuses on max_workers, finance "
+                    "pauses, pending completion, STOP.",
      "inputSchema": {"type": "object", "required": ["id"], "properties": {"id": _s("Task id")}}},
     {"name": "queue_finish", "fn": t_queue_finish, "annotations": RW,
-     "description": "Finish a running task as done or blocked with accounting (completed_at, actual_minutes) and an outbox entry.",
+     "description": "Canonical completion. done needs report.verification, report.evidence, known actual_cost_aud "
+                    "and in-budget actual_minutes before the deadline; blocked needs reason (attempts, "
+                    "alternatives_checked, next_attempt, accounting optional).",
      "inputSchema": {"type": "object", "required": ["id", "status"],
                      "properties": {"id": _s("Task id"), "status": {"type": "string", "enum": ["done", "blocked"]},
                                     "reason": _s("Required when blocked"), "report": _REPORT}}},
-    {"name": "queue_reap", "fn": t_queue_reap, "annotations": RW,
-     "description": "Block running tasks whose deadline passed (plus grace) with no live background runner. "
-                    "Only tasks claimed by this server unless all=true.",
-     "inputSchema": {"type": "object", "properties": {"all": {"type": "boolean", "default": False},
-                                                      "grace_minutes": {"type": "number", "default": REAP_GRACE_MINUTES}}}},
-    {"name": "desk_status", "fn": t_desk_status, "annotations": RO,
-     "description": "STOP state, queue counts, running tasks with overdue flags, active background runs, policy and worker binaries.",
+    {"name": "desk_tick", "fn": t_desk_tick, "annotations": RW,
+     "description": "Canonical recovery: apply persisted completion packets and block running tasks past their "
+                    "deadline with desk accounting; also reports lost runs.",
      "inputSchema": {"type": "object", "properties": {}}},
     {"name": "outbox_read", "fn": t_outbox_read, "annotations": RO,
      "description": "Read the newest outbox entry for a task or run id (files are <date>-<id>.json).",
      "inputSchema": {"type": "object", "required": ["id"], "properties": {"id": _s("Task or run id")}}},
     {"name": "outbox_write", "fn": t_outbox_write, "annotations": RW,
-     "description": "Write an immutable outbox entry {at, id, project, report} for an id.",
+     "description": "Write an immutable free-form outbox note for a non-task id (task packets come from queue_finish).",
      "inputSchema": {"type": "object", "required": ["id", "report"],
-                     "properties": {"id": _s("Task or run id"), "report": _REPORT}}},
+                     "properties": {"id": _s("Note id (not a queue task id)"), "report": _REPORT}}},
     {"name": "git_status", "fn": t_git_status, "annotations": RO,
      "description": "Branch, HEAD, short status, last 5 commits and worktrees for a project slug (projects.json) or absolute path.",
      "inputSchema": {"type": "object", "required": ["project"],
                      "properties": {"project": _s("Project slug or absolute path")}}},
     {"name": "run_claude", "fn": t_run_claude, "annotations": EXEC,
-     "description": "Run Claude Code non-interactively (-p, permission mode %s) on a task in cwd with a hard "
-                    "timeout; captures stdout/stderr and writes an outbox entry." % CLAUDE_PERMISSION_MODE,
+     "description": "Run Claude Code non-interactively (-p, permission mode %s) on a task in cwd with a hard timeout; "
+                    "requires verified zero-cash subscription evidence; writes a run outbox note." % CLAUDE_PERMISSION_MODE,
      "inputSchema": {"type": "object", "required": ["task", "cwd", "budget_minutes"],
                      "properties": {"task": _s("Prompt for the worker"), "cwd": _s("Absolute working directory"),
                                     "budget_minutes": _BUDGET, "background": _BG}}},
     {"name": "run_codex", "fn": t_run_codex, "annotations": EXEC,
-     "description": "Run Codex non-interactively (codex exec, sandbox %s) on a task in cwd with a hard "
-                    "timeout; captures stdout/stderr and writes an outbox entry." % CODEX_SANDBOX,
+     "description": "Run Codex non-interactively (codex exec, sandbox %s) on a task in cwd with a hard timeout; "
+                    "requires verified zero-cash subscription evidence; writes a run outbox note." % CODEX_SANDBOX,
      "inputSchema": {"type": "object", "required": ["task", "cwd", "budget_minutes"],
                      "properties": {"task": _s("Prompt for the worker"), "cwd": _s("Absolute working directory"),
                                     "budget_minutes": _BUDGET, "background": _BG}}},
     {"name": "run_task", "fn": t_run_task, "annotations": EXEC,
-     "description": "End to end: claim a queued task, create/reuse .worktrees/task-<id> on branch desk/<id>, run the "
-                    "assigned worker with the task budget, write the outbox entry and finish it done or blocked.",
+     "description": "End to end through the canonical desk: claim, exclusive run reservation, .worktrees/task-<id> on "
+                    "desk/<id>, deadline check with closure reserve, zero-cash check, run the assignee, finish done "
+                    "or blocked with desk accounting.",
      "inputSchema": {"type": "object", "required": ["id"],
                      "properties": {"id": _s("Task id"), "background": _BG,
                                     "use_worktree": {"type": "boolean", "default": True},
                                     "cwd": _s("Optional absolute directory overriding the project mapping")}}},
     {"name": "run_status", "fn": t_run_status, "annotations": RO,
-     "description": "State of one background run (id) or the most recent runs; detects runners that died.",
+     "description": "State of one run (id) or the most recent runs; reserved/running records whose process is gone are marked lost.",
      "inputSchema": {"type": "object", "properties": {"id": _s("run id"), "limit": {"type": "integer", "default": 20}}}},
 ]
 TOOL_MAP = {t["name"]: t for t in TOOLS}
@@ -955,9 +1094,9 @@ def handle(msg):
         reply(req_id, {"protocolVersion": params.get("protocolVersion") or PROTOCOL_VERSION,
                        "capabilities": {"tools": {"listChanged": False}},
                        "serverInfo": {"name": SERVER_NAME, "version": SERVER_VERSION},
-                       "instructions": "Partnership desk tools. All tools refuse while %s exists. "
-                                       "Use run_task(id, background=true) for worker runs longer than a minute "
-                                       "and poll run_status; results land in the outbox." % STOP_PATH})
+                       "instructions": "Partnership desk tools. All tools refuse while %s exists. Call desk_status "
+                                       "first, desk_tick to recover, then run_task(id, background=true) and poll "
+                                       "run_status; completion goes through the canonical desk." % STOP_PATH})
     elif method.startswith("notifications/"):
         return
     elif method == "ping":
@@ -1003,20 +1142,26 @@ def runner(spec_path):
     if spec is None:
         sys.stderr.write("runner: missing spec %s\n" % spec_path)
         return 2
+    record = load_json(run_record_path(spec["run_id"]), None) or {"run_id": spec["run_id"], "kind": spec["kind"],
+                                                                     "task_id": spec.get("task_id")}
     if stop_present():
         # STOP appeared between dispatch and start: record it and release the task truthfully.
-        rec = {"run_id": spec["run_id"], "kind": spec["kind"], "task_id": spec.get("task_id"), "state": "failed",
-               "note": "STOP present at runner start", "started_at": iso(), "finished_at": iso(), "background": True}
-        save_run(rec)
+        record.update(state="failed", note="STOP present at runner start", finished_at=iso(), background=True)
+        save_run(record)
         if spec.get("task_id"):
-            complete_task_from_report(spec["task_id"], {"status": "failed", "error": "STOP present at runner start",
-                                                        "run_id": spec["run_id"], "kind": spec["kind"]})
+            report = {"status": "failed", "error": "STOP present at runner start", "run_id": spec["run_id"],
+                      "kind": spec["kind"], "actual_tokens": None}
+            record["queue"] = complete_task_from_report(spec, report)
+            save_run(record)
         return 3
-    report = run_spec(spec)
+    report = run_spec(spec, record)
     return 0 if report["status"] == "done" else 1
 
 
 if __name__ == "__main__":
     if len(sys.argv) >= 3 and sys.argv[1] == "--runner":
         sys.exit(runner(sys.argv[2]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "--version":
+        print(SERVER_VERSION)
+        sys.exit(0)
     serve()
