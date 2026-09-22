@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline tests for soojos-desk 0.3.2. Fake workers under tests/fakes; the canonical Desk from the
+"""Offline tests for soojos-desk 0.3.3. Fake workers under tests/fakes; the canonical Desk from the
 approved harness (policy code_root) runs against temporary state. No real claude/codex, no network.
 
 Run:  /usr/bin/python3 -m unittest discover -s /Users/sayuj/soojos/tools/soojos-desk/tests -v
@@ -300,7 +300,7 @@ class TestWorkers(DeskTestCase):
         self.assertEqual(json.loads(body.split("refused: ", 1)[1])["status"], "timeout")
         left = "unchecked"
         for _ in range(30):  # the group was signalled; give the kernel a moment to reap the grandchildren
-            left = subprocess.run(["/usr/bin/pgrep", "-f", "sleep 300"], capture_output=True, text=True).stdout.strip()
+            left = subprocess.run(["/usr/bin/pgrep", "-f", "^sleep 300$"], capture_output=True, text=True).stdout.strip()
             if not left:
                 break
             time.sleep(0.1)
@@ -638,7 +638,7 @@ class TestReviewFixes032(DeskTestCase):
         self.assertEqual(self.queue()[tid]["status"], "blocked")
         self.assertIn("runner received SIGTERM", self.queue()[tid]["blocked_reason"])
         time.sleep(0.5)
-        self.assertEqual(subprocess.run(["/usr/bin/pgrep", "-f", "sleep 300"], capture_output=True, text=True).stdout, "")
+        self.assertEqual(subprocess.run(["/usr/bin/pgrep", "-f", "^sleep 300$"], capture_output=True, text=True).stdout, "")
 
     def test_h3_escaped_pipe_holder_cannot_hang_the_runner(self):
         os.environ["FAKE_MODE"] = "hang-escape"
@@ -690,6 +690,90 @@ class TestReviewFixes032(DeskTestCase):
         # a stale non-terminal write cannot follow the terminal one
         self.server.merge_run(out["run_id"], state="running")
         self.assertEqual(self.ok("run_status", id=out["run_id"])["run"]["state"], "done")
+
+
+class TestReviewLows033(DeskTestCase):
+    """Findings 13-17 of REVIEW-2026-09-18."""
+
+    def test_13_outbox_notes_never_overwritten_even_within_one_second(self):
+        frozen = utcnow()
+        self.server.now_utc = lambda: frozen
+        paths = {self.ok("outbox_write", id="same", report={"n": i})["written"] for i in range(4)}
+        self.assertEqual(len(paths), 4)
+        contents = sorted(json.load(open(p))["report"]["n"] for p in paths)
+        self.assertEqual(contents, [0, 1, 2, 3])
+        self.assertEqual(self.ok("outbox_read", id="same")["path"], max(paths, key=os.path.getmtime))
+
+    def test_14_run_notes_are_private_and_trimmed_in_the_shared_outbox(self):
+        out = self.ok("run_claude", task="p" * 1000, cwd=self.tmp, budget_minutes=1)
+        shared = out["outbox_file"]
+        self.assertEqual(os.stat(shared).st_mode & 0o777, 0o600)
+        note = json.load(open(shared))["report"]
+        self.assertLess(len(note["task"]), 400)
+        self.assertTrue(note["full_note"].startswith(os.path.join(self.private, "runs")))
+        full = json.load(open(note["full_note"]))["report"]
+        self.assertEqual(len(full["task"]), 1000)
+        self.assertEqual(os.stat(note["full_note"]).st_mode & 0o777, 0o600)
+        free = self.ok("outbox_write", id="free-note", report={"x": 1})["written"]
+        self.assertEqual(os.stat(free).st_mode & 0o777, 0o644)
+
+    def test_15_corrupt_records_are_reported_not_fatal(self):
+        runs = os.path.join(self.private, "runs")
+        os.makedirs(runs, exist_ok=True)
+        open(os.path.join(runs, "run-claude-empty.json"), "w").close()
+        with open(os.path.join(runs, "run-claude-partial.json"), "w") as fh:
+            fh.write('{"run_id": "run-claude-partial", "state": "runn')
+        self.assertEqual(self.ok("run_claude", task="x", cwd=self.tmp, budget_minutes=1)["status"], "done")
+        states = {r["run_id"]: r["state"] for r in self.ok("run_status")["runs"]}
+        self.assertEqual(states["run-claude-empty"], "corrupt")
+        self.assertEqual(states["run-claude-partial"], "corrupt")
+        st = self.ok("desk_status")
+        self.assertEqual({r["run_id"] for r in st["runs"] if r["state"] == "corrupt"}, {"run-claude-empty", "run-claude-partial"})
+        self.assertIsNone(self.server.live_run_for("t"))
+        self.assertEqual(self.server.load_json(os.path.join(runs, "run-claude-partial.json"), "dflt"), "dflt")
+        tid = self.add("still-works", budget=1)
+        self.assertEqual(self.ok("run_task", id=tid, cwd=self.repo)["status"], "done")
+
+    def test_16_stop_appearing_mid_run_kills_worker_and_blocks_task(self):
+        os.environ["FAKE_MODE"] = "hang"
+        os.environ["SOOJOS_MINUTE_SECONDS"] = "30"
+        self.server = importlib.reload(self.server); self.server._MODULES.clear()
+        tid = self.add("stopme", budget=1)
+        out = self.ok("run_task", id=tid, cwd=self.repo, background=True)
+        for _ in range(50):
+            if self.ok("run_status", id=out["run_id"])["run"]["state"] == "running":
+                break
+            time.sleep(0.1)
+        time.sleep(0.5)
+        os.symlink("/nonexistent", os.path.join(self.home, "STOP"))
+        started = time.time()
+        deadline = time.time() + 20
+        while time.time() < deadline:  # tools refuse under STOP; read the record directly
+            rec = self.server.load_json(self.server.run_record_path(out["run_id"]), {})
+            if rec.get("state") not in self.server.LIVE_STATES:
+                break
+            time.sleep(0.2)
+        self.assertLess(time.time() - started, 15)
+        self.assertEqual(rec["state"], "stopped")
+        self.assertTrue(rec.get("stop_seen_at"))
+        self.assertEqual(self.queue()[tid]["status"], "blocked")
+        self.assertIn("STOP appeared", self.queue()[tid]["blocked_reason"])
+        time.sleep(0.5)
+        self.assertEqual(subprocess.run(["/usr/bin/pgrep", "-f", "^sleep 300$"], capture_output=True, text=True).stdout, "")
+
+    def test_17_spec_removed_at_terminal_and_lock_scan_never_writes(self):
+        out = self.ok("run_claude", task="ping", cwd=self.tmp, budget_minutes=1)
+        self.assertFalse(os.path.exists(os.path.join(self.private, "runs", out["run_id"] + ".spec.json")))
+        self.assertTrue(os.path.exists(os.path.join(self.private, "runs", out["run_id"] + ".note.json")))
+        path = self.server.run_record_path("run-claude-dead")
+        self.server.save_run({"run_id": "run-claude-dead", "kind": "claude", "task_id": "t1", "state": "running",
+                              "pid": 999999, "started_at": utcnow().isoformat()})
+        before = os.stat(path).st_mtime_ns
+        self.assertIsNone(self.server.live_run_for("t1"))       # sees it as not live...
+        self.assertEqual(os.stat(path).st_mtime_ns, before)      # ...without touching the file
+        self.assertEqual(json.load(open(path))["state"], "running")
+        self.assertEqual(self.ok("run_status", id="run-claude-dead")["run"]["state"], "lost")  # marked outside the lock
+        self.assertEqual(json.load(open(path))["state"], "lost")
 
 
 class TestRpc(DeskTestCase):

@@ -351,3 +351,16 @@ Task20260917-ibkr-news-verification is a completed verification, not a completed
 **Next:** Astra review; then lows 13–17 and the acceptance question.
 
 **Landmines:** Foreground run_task now blocks the MCP call only by polling the record; the runner survives the client. Runner records live under ~/.soojos/desk/runs and are private. A$0 incremental cash; the native probe spent subscription usage for two short runs.
+
+
+## 2026-09-23T01:30:00+08:00 — Claude (Claude Code desktop): soojos-desk 0.3.3 — review lows 13–17
+
+**State:** Branch desk/20260917-soojos-desk-mcp; this entry's commit follows 4bb5a63 (0.3.2) and adds 0.3.3 in tools/soojos-desk (server.py, tests/, README). Only soojos-desk files and this entry staged. Nothing pushed, merged or dispatched.
+
+**Working:** From REVIEW-2026-09-18.md (Claude worker, 77f03a3): outbox notes are created with O_EXCL and never overwritten, with a time-and-random suffix for a repeated free id (13); run notes in the shared outbox are trimmed (prompt head, 4k output tails) and mode 0600, with the full prompt and output in a private ~/.soojos/desk/runs/<run-id>.note.json (14); load_json never raises and zero-byte or partial records are reported as `corrupt` by run_status/desk_status rather than failing the tool (15); STOP is polled every 2 s during a run, a worker running when STOP appears is killed, the run ends `stopped` with stop_seen_at and the task is blocked with that reason (16); the runner removes its .spec.json at terminal state and the live-run check made under the desk lock reads only records that claim to be live and never writes, with lost-marking done outside the lock (17). Additionally: a signal or STOP arriving before the worker is spawned now prevents the spawn instead of being missed by the handler. Verification run: 54 offline tests OK twice (30 s), no leaked processes; live read-only smoke OK. A false "leaked process" during testing was traced to the test's pgrep pattern matching the invoking shell's own command line; the pattern is now anchored.
+
+**Open:** All 17 findings of the live Claude review are now addressed in 0.3.2 and 0.3.3. Astra reciprocal review of 2b31958, 689dff7, 4bb5a63 and this commit outstanding. The acceptance-vs-git-evidence question remains a decision for Sayuj. Billing evidence has expired; refresh before any launch.
+
+**Next:** Astra review of the four commits; decide the acceptance question.
+
+**Landmines:** Shared outbox run notes no longer contain full output; read the private .note.json for that. A$0 incremental cash this session.
