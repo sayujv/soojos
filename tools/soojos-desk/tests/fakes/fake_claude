@@ -21,8 +21,10 @@ done
 if [ -n "$FAKE_COMMIT" ]; then
   : > "$PWD/worker-output.txt"; /usr/bin/git add -A >/dev/null 2>&1; /usr/bin/git -c user.email=w@t -c user.name=w commit -q -m "worker commit" >/dev/null 2>&1
 fi
+[ -n "$FAKE_SLEEP" ] && sleep "$FAKE_SLEEP"
 case "${FAKE_MODE:-ok}" in
   hang) sleep 300 & sleep 300 ;;
+  hang-escape) /usr/bin/python3 -c 'import os,time; os.setsid(); time.sleep(300)' & sleep 300 ;;
   fail) printf '{"type":"result","subtype":"error","is_error":true,"result":"boom","num_turns":1}\n'; exit 1 ;;
   *) printf '{"type":"result","subtype":"success","is_error":false,"result":"PONG","num_turns":1,"total_cost_usd":0.01,"session_id":"fake","duration_ms":5,"usage":{"input_tokens":10,"output_tokens":5,"cache_creation_input_tokens":100,"cache_read_input_tokens":0}}\n' ;;
 esac

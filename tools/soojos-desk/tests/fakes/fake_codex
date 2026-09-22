@@ -14,6 +14,7 @@ for a in "$@"; do
   prev="$a"
 done
 [ -n "$FAKE_TOUCH" ] && : > "$dir/$FAKE_TOUCH"
+[ -n "$FAKE_SLEEP" ] && sleep "$FAKE_SLEEP"
 case "${FAKE_MODE:-ok}" in
   hang) sleep 300 & sleep 300 ;;
   fail) echo "fake codex failure" >&2; exit 1 ;;

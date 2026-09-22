@@ -111,7 +111,7 @@ def main():
         print("queued:", tid)
         out = d.call("run_task", {"id": tid, "background": True}, tolerate=True)
         if out:
-            print("dispatched", tid, "->", out["run_id"], "pid", out["pid"], "worktree", out["worktree"])
+            print("dispatched", tid, "->", out["run_id"], out["state"], "worktree", out["worktree"])
         else:
             print("left queued (dispatch later with run_task):", tid)
     print("poll with: --status ; results: outbox_read(<task id>) or the files under context/desk/outbox/")
