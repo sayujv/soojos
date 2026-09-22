@@ -44,10 +44,13 @@ class Desk:
         self.p.stdin.flush()
         return json.loads(self.p.stdout.readline())
 
-    def call(self, name, args):
+    def call(self, name, args, tolerate=False):
         r = self.req("tools/call", {"name": name, "arguments": args})["result"]
         text = r["content"][0]["text"]
         if r["isError"]:
+            if tolerate:
+                print("REFUSED:", text[:600])
+                return None
             raise SystemExit("TOOL ERROR: " + text)
         return json.loads(text)
 
@@ -99,12 +102,18 @@ def main():
         return
     if st["stop_present"]:
         raise SystemExit("STOP present; not dispatching")
-    a = d.call("queue_add", TASK_A)["added"]["id"]
-    b = d.call("queue_add", TASK_B)["added"]["id"]
-    print("queued:", a, "|", b)
-    for tid in (a, b):
-        out = d.call("run_task", {"id": tid, "background": True})
-        print("dispatched", tid, "->", out["run_id"], "pid", out["pid"], "worktree", out["worktree"])
+    which = sys.argv[sys.argv.index("--only") + 1] if "--only" in sys.argv else "both"
+    tasks = {"claude": TASK_B, "codex": TASK_A}
+    for kind in ("claude", "codex"):
+        if which not in ("both", kind):
+            continue
+        tid = d.call("queue_add", tasks[kind])["added"]["id"]
+        print("queued:", tid)
+        out = d.call("run_task", {"id": tid, "background": True}, tolerate=True)
+        if out:
+            print("dispatched", tid, "->", out["run_id"], "pid", out["pid"], "worktree", out["worktree"])
+        else:
+            print("left queued (dispatch later with run_task):", tid)
     print("poll with: --status ; results: outbox_read(<task id>) or the files under context/desk/outbox/")
     d.close()
 
