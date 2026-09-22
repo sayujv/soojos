@@ -1,6 +1,12 @@
 #!/bin/sh
-# Fake `codex exec ... -C dir -o file prompt` for offline tests.
+# Fake codex for offline tests.
+#   `login status` -> "Logged in using ChatGPT" ($HOME/FAKE_AUTH_NONE present -> API key)
+#   `exec ... -C dir -o file prompt` -> writes PONG to file, prints token usage on stderr
 # FAKE_MODE: ok (default) | fail | hang.  FAKE_TOUCH: file name to create in the -C directory.
+if [ "$1" = "login" ]; then
+  if [ -f "$HOME/FAKE_AUTH_NONE" ]; then echo "Logged in using an API key"; else echo "Logged in using ChatGPT"; fi
+  exit 0
+fi
 out=""; dir="$PWD"; prev=""
 for a in "$@"; do
   [ "$prev" = "-o" ] && out="$a"
@@ -11,5 +17,5 @@ done
 case "${FAKE_MODE:-ok}" in
   hang) sleep 300 & sleep 300 ;;
   fail) echo "fake codex failure" >&2; exit 1 ;;
-  *) [ -n "$out" ] && printf 'PONG' > "$out"; echo "PONG" ;;
+  *) [ -n "$out" ] && printf 'PONG' > "$out"; echo "PONG"; printf 'tokens used\n1,234\n' >&2 ;;
 esac

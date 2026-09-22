@@ -1,9 +1,26 @@
 #!/bin/sh
-# Fake `claude -p ... --output-format json` for offline tests.
+# Fake claude for offline tests.
+#   `... auth status --json`  -> subscription metadata ($HOME/FAKE_AUTH_NONE present -> API-key login;
+#   the canonical probe scrubs the environment, so the toggle is a file under HOME)
+#   `-p ... --output-format json` -> result JSON
 # FAKE_MODE: ok (default) | fail | hang.  FAKE_TOUCH: file name to create in $PWD.
+# FAKE_COMMIT=1: commit a file in $PWD so completion evidence shows a new HEAD.
+for a in "$@"; do
+  if [ "$a" = "auth" ]; then
+    if [ -f "$HOME/FAKE_AUTH_NONE" ]; then
+      printf '{"loggedIn":true,"authMethod":"api_key","apiProvider":"firstParty","subscriptionType":null}\n'
+    else
+      printf '{"loggedIn":true,"authMethod":"claude.ai","apiProvider":"firstParty","subscriptionType":"max","orgId":"aedb04e3-c14d-4487-9917-3197efd00e95"}\n'
+    fi
+    exit 0
+  fi
+done
 [ -n "$FAKE_TOUCH" ] && : > "$PWD/$FAKE_TOUCH"
+if [ -n "$FAKE_COMMIT" ]; then
+  : > "$PWD/worker-output.txt"; /usr/bin/git add -A >/dev/null 2>&1; /usr/bin/git -c user.email=w@t -c user.name=w commit -q -m "worker commit" >/dev/null 2>&1
+fi
 case "${FAKE_MODE:-ok}" in
   hang) sleep 300 & sleep 300 ;;
   fail) printf '{"type":"result","subtype":"error","is_error":true,"result":"boom","num_turns":1}\n'; exit 1 ;;
-  *) printf '{"type":"result","subtype":"success","is_error":false,"result":"PONG","num_turns":1,"total_cost_usd":0.01,"session_id":"fake","duration_ms":5}\n' ;;
+  *) printf '{"type":"result","subtype":"success","is_error":false,"result":"PONG","num_turns":1,"total_cost_usd":0.01,"session_id":"fake","duration_ms":5,"usage":{"input_tokens":10,"output_tokens":5,"cache_creation_input_tokens":100,"cache_read_input_tokens":0}}\n' ;;
 esac
