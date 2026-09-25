@@ -43,7 +43,7 @@ import traceback
 from pathlib import Path
 
 SERVER_NAME = "soojos-desk"
-SERVER_VERSION = "0.3.9"
+SERVER_VERSION = "0.4.0"
 PROTOCOL_VERSION = "2025-06-18"
 MINUTE = float(os.environ.get("SOOJOS_MINUTE_SECONDS", "60"))  # tests shrink this to exercise timeouts quickly
 
@@ -81,8 +81,7 @@ APPROVED_CODEX_SANDBOXES = ("read-only", "workspace-write")
 DEFAULT_CODEX_SANDBOX = "workspace-write"
 # Worker model per task, from an approved set. Routine desk work runs on Sonnet by default; the larger
 # models only when the task names them. Codex inherits its configured model (no override).
-APPROVED_CLAUDE_MODELS = {"sonnet": "claude-sonnet-5", "haiku": "claude-haiku-4-5-20251001",
-                          "opus": "claude-opus-5", "fable": "claude-fable-5-1"}
+APPROVED_CLAUDE_MODELS = {"sonnet": "sonnet", "haiku": "haiku", "opus": "opus", "fable": "fable"}  # CLI aliases = latest of each tier
 DEFAULT_CLAUDE_MODEL = "sonnet"
 # Route by where a mistake costs the most: verdict-bearing work (reviews, verification, retrospectives)
 # defaults to the strongest model; production and research default to Sonnet. An explicit model wins.
@@ -932,6 +931,26 @@ def parse_codex_output(report, stderr, last_msg_file):
     report["actual_tokens"] = int(m.group(1).replace(",", "")) if m else None
 
 
+def scope_violations(cwd, worktree, base_head):
+    """Paths the worker changed (committed since base_head, or left dirty) outside its project folder.
+    Empty when the project folder is the whole worktree."""
+    if not worktree:
+        return []
+    rel = os.path.relpath(os.path.realpath(cwd), os.path.realpath(worktree))
+    if rel == ".":
+        return []
+    changed = set()
+    if base_head:
+        code, out, _ = git(worktree, "diff", "--name-only", "%s..HEAD" % base_head)
+        if code == 0:
+            changed.update(out.splitlines())
+    code, out, _ = git(worktree, "status", "--porcelain")
+    if code == 0:
+        changed.update(line[3:].split(" -> ")[-1] for line in out.splitlines() if line.strip())
+    prefix = rel.rstrip("/") + "/"
+    return sorted(p for p in changed if p and not p.startswith(prefix))[:20]
+
+
 def execute_worker(spec, timeout_seconds):
     """Synchronously run a worker and write its run outbox note. Returns the full report."""
     kind, task, cwd = spec["kind"], spec["task"], spec["cwd"]
@@ -956,6 +975,7 @@ def execute_worker(spec, timeout_seconds):
             parse_codex_output(report, res["stderr"], last_msg_file)
         report["token_split"] = token_split(report)
         report["git_after"] = git_snapshot(cwd)
+        report["scope_violations"] = scope_violations(cwd, spec.get("worktree"), (report.get("git_before") or {}).get("head"))
         if res.get("stop_seen_at"):
             report["status"] = "stopped"
             report["error"] = "STOP appeared at %s while the worker was running; worker group killed" % res["stop_seen_at"]
@@ -1024,6 +1044,10 @@ def complete_task_from_report(spec, report):
         after = report.get("git_after") or {}
         before = report.get("git_before") or {}
         expected_branch = spec.get("branch")
+        if report.get("status") == "done" and report.get("scope_violations"):
+            report["status"] = "escaped"
+            report["error"] = ("worker changed files outside its project folder: %s; result not accepted"
+                               % ", ".join(report["scope_violations"]))
         if report.get("status") == "done" and expected_branch and after.get("branch") != expected_branch:
             # The preflight cannot stop a worker moving branches; the evidence can refuse to accept it.
             # Mutated in place so the run record and the tool result carry the same outcome.
@@ -1311,6 +1335,7 @@ def t_queue_add(args):
     entry["constraints"] = list(args.get("constraints") or entry["constraints"])
     entry["action_kind"] = args.get("action_kind", "research")
     entry["worker_model"] = resolve_model(assignee, args.get("model"), entry["action_kind"])  # None for codex (inherits)
+    entry["auto_dispatch"] = bool(args.get("auto", False))  # the 5-minute beat only launches tasks that carry this
     entry["priority"] = {"rank": 1, "reason": "Queued via %s" % SERVER_NAME}
     stored = desk_call(desk().enqueue, entry)  # canonical validation: scope, budgets, branch, ancestry
     return {"added": stored, "queue_path": QUEUE_PATH}
@@ -1431,10 +1456,15 @@ def t_run_codex(args):
 
 def compose_task_prompt(task, cwd, worktree, branch):
     lines = ["Partnership desk task %s for project %s." % (task["id"], task.get("project")),
-             "Budget: %s minutes. Work only inside %s." % (task.get("budget_minutes"), cwd)]
+             "Budget: %s minutes. Work only inside %s; files outside this project's folder are out of scope and a "
+             "change to them will be refused." % (task.get("budget_minutes"), cwd)]
     if worktree:
         lines.append("You are in an isolated git worktree (%s) on branch %s. Commit your work on that branch; "
                      "do not push, do not merge to main, do not touch other worktrees." % (worktree, branch))
+    notes = recent_notes(task.get("project"))
+    if notes:
+        lines.append("Sayuj's standing notes for this work (most recent last; they outrank defaults but not the constraints):")
+        lines.append(notes)
     if task.get("constraints"):
         lines.append("Constraints:")
         lines.extend("- %s" % c for c in task["constraints"])
@@ -1660,7 +1690,37 @@ def execute_review(spec, timeout_seconds):
 
 INBOX_PATH = os.path.join(DESK_DIR, "INBOX.md")
 BOARD_PATH = os.path.join(DESK_DIR, "BOARD.md")
-INBOX_FIELDS = {"project", "assignee", "budget", "budget_minutes", "model", "action", "action_kind", "inputs", "constraints"}
+INBOX_FIELDS = {"project", "assignee", "budget", "budget_minutes", "model", "action", "action_kind", "inputs", "constraints",
+                "type", "kind", "scope", "auto", "route"}
+NOTES_DIR = os.path.join(DESK_DIR, "notes")
+NOTES_IN_PROMPT = 6
+NOTES_MAX_CHARS = 2500
+
+
+def note_file(project):
+    return os.path.join(NOTES_DIR, "%s.md" % (project or "all"))
+
+
+def append_note(project, title, body, source):
+    """Sayuj's thoughts and opinions, scoped to a project or to all, appended with a timestamp."""
+    os.makedirs(NOTES_DIR, exist_ok=True)
+    path = note_file(project)
+    entry = "\n## %s — %s (%s)\n%s\n" % (iso(), title.strip() or "note", source, body.strip())
+    with open(path, "a") as fh:
+        fh.write(entry)
+    return path
+
+
+def recent_notes(project):
+    """Latest notes for the project plus the all-projects notes, bounded, for a worker prompt."""
+    chunks = []
+    for path in (note_file("all"), note_file(project)) if project else (note_file("all"),):
+        if not os.path.exists(path):
+            continue
+        parts = [p.strip() for p in open(path).read().split("\n## ") if p.strip()]
+        chunks += ["## " + p for p in parts[-NOTES_IN_PROMPT:]]
+    text = "\n".join(chunks)
+    return clip(text, NOTES_MAX_CHARS) if text else ""
 
 
 def parse_inbox(text):
@@ -1686,18 +1746,91 @@ def parse_inbox(text):
     return sections
 
 
-def inbox_task_args(section):
+def section_is_note(section):
+    kind = (section["fields"].get("type") or section["fields"].get("kind") or "").lower()
+    return kind == "note" or section["title"].lower().startswith("note:")
+
+
+ROUTING_PROMPT = ("You route a task request for a small operations desk. Reply with ONLY a JSON object with keys "
+                  "project (one of %s), assignee (claude or codex), action (one of research, analysis, code, verify, "
+                  "harness, retro), model (one of sonnet, haiku, opus, fable), budget (integer minutes 1-15). Rules: "
+                  "verify/retro use fable; production code uses sonnet unless the request asks for the strongest model; "
+                  "codex only if the request names Astra or Codex. If the project cannot be inferred, set project to null.\n\n"
+                  "Request:\n%s")
+
+
+def route_with_haiku(section, cwd):
+    """One Haiku turn, no tools, to propose the fields an inbox section left out. Validated afterwards;
+    only fills gaps. Refused (returns None with a reason) when zero cash cannot be established."""
+    permission_settings()
+    cash = zero_cash_evidence("claude", cwd)
+    if not cash["zero_cash"]:
+        return None, "routing skipped: %s" % cash["reason"]
+    projects = sorted(load_json(PROJECTS_PATH, {}).keys())
+    text = ("%s\n%s" % (section["title"], "\n".join(section["body"]))).strip()
+    cmd = [CLAUDE_BIN, "-p", ROUTING_PROMPT % (", ".join(projects), text), "--output-format", "json", "--model", "haiku",
+           "--max-turns", "1", "--tools", "", "--permission-mode", "dontAsk", "--no-session-persistence",
+           "--strict-mcp-config", "--mcp-config", WORKER_MCP_CONFIG]
+    res = run_bounded(cmd, cwd, 90)
+    try:
+        result = json.loads(res["stdout"]).get("result") or ""
+        start, end = result.find("{"), result.rfind("}")
+        proposal = json.loads(result[start:end + 1])
+    except (ValueError, AttributeError):
+        return None, "routing produced no usable JSON (exit %s)" % res.get("exit_code")
+    return proposal if isinstance(proposal, dict) else None, None
+
+
+def inbox_task_args(section, cwd=None):
     f = section["fields"]
     text = ("%s\n%s" % (section["title"], "\n".join(section["body"]))).strip()
+    routed = None
+    missing = [k for k in ("project", "assignee", "action", "model", "budget") if not (f.get(k) or f.get({"action": "action_kind", "budget": "budget_minutes"}.get(k, k)))]
+    if "project" in missing or (f.get("route") or "").lower() in ("auto", "haiku"):
+        proposal, why = route_with_haiku(section, cwd or SOOJOS_ROOT)
+        if proposal is None:
+            raise ToolError("project: is required and automatic routing was not possible (%s)" % why)
+        routed = {k: proposal.get(k) for k in ("project", "assignee", "action", "model", "budget") if k in missing and proposal.get(k) is not None}
+        f = dict(f, **{k: str(v) for k, v in routed.items()})
     args = {"project": f.get("project"), "assignee": f.get("assignee", "claude"), "task": text,
             "budget_minutes": int(f.get("budget_minutes") or f.get("budget") or 10),
-            "action_kind": f.get("action_kind") or f.get("action") or "research"}
+            "action_kind": f.get("action_kind") or f.get("action") or "research",
+            "auto": (f.get("auto") or "yes").lower() not in ("no", "false", "0", "off")}
     if f.get("model"):
         args["model"] = f["model"]
+    if routed:
+        args["_routed"] = routed
     for key in ("inputs", "constraints"):
         if f.get(key):
             args[key] = [x.strip() for x in f[key].split(";") if x.strip()]
     return args
+
+
+def t_inbox_add(args):
+    """Append a task or note section to INBOX.md verbatim, from either assistant, so a thought typed into
+    Claude Code or Codex lands in the same file Sayuj writes by hand."""
+    text = args.get("text")
+    if not isinstance(text, str) or not text.strip():
+        raise ToolError("text is required")
+    kind = (args.get("kind") or "task").lower()
+    if kind not in ("task", "note"):
+        raise ToolError("kind must be task or note")
+    title = (args.get("title") or text.strip().splitlines()[0])[:120]
+    lines = ["", "## %s%s" % ("Note: " if kind == "note" and not title.lower().startswith("note:") else "", title)]
+    for key in ("project", "assignee", "budget", "action", "model", "scope"):
+        if args.get(key) not in (None, ""):
+            lines.append("%s: %s" % (key, args[key]))
+    if kind == "task" and args.get("auto") is False:
+        lines.append("auto: no")
+    body = text.strip()
+    if body.splitlines()[0][:120] == title and kind == "task":
+        body = "\n".join(body.splitlines()[1:]).strip() or title
+    lines.append(body)
+    lines.append("")
+    os.makedirs(os.path.dirname(INBOX_PATH), exist_ok=True)
+    with open(INBOX_PATH, "a") as fh:
+        fh.write("\n".join(lines))
+    return {"inbox": INBOX_PATH, "appended": title, "kind": kind}
 
 
 def t_inbox_sync(args):
@@ -1714,15 +1847,28 @@ def t_inbox_sync(args):
         if sec["queued"] is not None:
             continue
         try:
-            task_args = inbox_task_args(sec)
+            if section_is_note(sec):
+                project = sec["fields"].get("project") or sec["fields"].get("scope") or "all"
+                if project != "all" and project not in load_json(PROJECTS_PATH, {}):
+                    raise ToolError("note project %r is not a known project (or 'all')" % project)
+                if dry:
+                    results.append({"title": sec["title"], "would_note": project})
+                    continue
+                path = append_note(None if project == "all" else project, sec["title"].replace("Note:", "").replace("note:", ""),
+                                   "\n".join(sec["body"]), "INBOX.md")
+                sec["queued"] = "noted in %s at %s" % (os.path.relpath(path, DESK_DIR), iso())
+                results.append({"title": sec["title"], "noted": path})
+                continue
+            task_args = inbox_task_args(sec, args.get("cwd"))
+            routed = task_args.pop("_routed", None)
             if not task_args["project"]:
                 raise ToolError("project: is required (one of the approved projects)")
             if dry:
-                results.append({"title": sec["title"], "would_queue": task_args})
+                results.append({"title": sec["title"], "would_queue": task_args, "routed_by_haiku": routed})
                 continue
             added = t_queue_add(task_args)["added"]
-            sec["queued"] = "%s at %s" % (added["id"], iso())
-            results.append({"title": sec["title"], "queued": added["id"]})
+            sec["queued"] = "%s at %s%s" % (added["id"], iso(), (" (routed by haiku: %s)" % json.dumps(routed)) if routed else "")
+            results.append({"title": sec["title"], "queued": added["id"], "routed_by_haiku": routed})
         except (ToolError, ValueError) as exc:
             reason = str(exc).replace("\n", " ")[:300]
             if not dry:
@@ -1842,6 +1988,7 @@ TOOLS = [
                                     "action_kind": {"type": "string", "enum": ["research", "analysis", "code", "verify", "harness", "retro"], "default": "research"},
                                     "model": {"type": "string", "enum": ["sonnet", "haiku", "opus", "fable"],
                                               "description": "Claude worker model (approved set). Default: fable for verify/retro, sonnet otherwise; codex assignees inherit their configured model"},
+                                    "auto": {"type": "boolean", "default": False, "description": "Let the 5-minute beat launch this task automatically"},
                                     "inputs": {"type": "array", "items": {"type": "string"}},
                                     "constraints": {"type": "array", "items": {"type": "string"}}}}},
     {"name": "queue_claim", "fn": t_queue_claim, "annotations": RW,
@@ -1901,11 +2048,21 @@ TOOLS = [
                                     "files": {"type": "array", "items": {"type": "string"}, "description": "Repository-relative files to review"},
                                     "focus": _s("What to look for (default: correctness bugs, race conditions and failure modes)"),
                                     "cwd": _s("Optional absolute git repository overriding the project mapping")}}},
+    {"name": "inbox_add", "fn": t_inbox_add, "annotations": RW,
+     "description": "Append a task or a note to context/desk/INBOX.md verbatim (from Claude Code or Codex). Notes are "
+                    "Sayuj's standing thoughts, scoped by project: or scope: all, and reach every later worker prompt.",
+     "inputSchema": {"type": "object", "required": ["text"],
+                     "properties": {"text": _s("The task or note, in plain words"), "kind": {"type": "string", "enum": ["task", "note"], "default": "task"},
+                                    "title": _s("Optional heading"), "project": _s("Project slug"), "assignee": _s("claude|codex"),
+                                    "budget": {"type": "integer"}, "action": _s("research|analysis|code|verify|harness|retro"),
+                                    "model": _s("sonnet|haiku|opus|fable"), "scope": _s("for notes: project slug or all"),
+                                    "auto": {"type": "boolean", "default": True}}}},
     {"name": "inbox_sync", "fn": t_inbox_sync, "annotations": RW,
      "description": "Turn new sections of context/desk/INBOX.md (plain-language tasks with project:, assignee:, budget:, "
                     "model:, action: lines) into validated queue entries through the canonical desk, writing 'queued: <id>' "
                     "or 'queued: REFUSED <reason>' back under each heading.",
-     "inputSchema": {"type": "object", "properties": {"dry_run": {"type": "boolean", "default": False}}}},
+     "inputSchema": {"type": "object", "properties": {"dry_run": {"type": "boolean", "default": False},
+                                                      "cwd": _s("Directory for the Haiku routing call (default soojos root)")}}},
     {"name": "desk_board", "fn": t_desk_board, "annotations": RW,
      "description": "Render context/desk/BOARD.md: running, queued, blocked (with reasons) and done tasks plus live runs, "
                     "from the queue and run records. A read-only view; the queue stays the truth.",

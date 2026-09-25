@@ -1,7 +1,7 @@
 # soojos-desk MCP server
 
 Minimal MCP server for the partnership desk. Python 3.9 stdlib only, stdio
-transport, hand-rolled JSON-RPC (no `mcp` or `fastmcp` dependency). Version 0.3.9.
+transport, hand-rolled JSON-RPC (no `mcp` or `fastmcp` dependency). Version 0.4.0.
 
 Run: `/usr/bin/python3 /Users/sayuj/soojos/tools/soojos-desk/server.py`
 
@@ -240,6 +240,35 @@ so a quiet beat costs zero model tokens and cannot be "confidently wrong". `--dr
 compares without saving; `--json` for machines. It reads desk state and writes only its own
 fingerprint file.
 
+## Five-minute beat, notes, routing and project scope (0.4.0)
+
+- **`desk_beat.py` every 5 minutes** (launch agent `com.soojos.desk-beat`, installed by
+  `launchd/install.sh`, removed with `--remove`). Order: gate; on ATTENTION `desk_tick`,
+  `inbox_sync`, dispatch, `desk_board`; one JSON line per beat in `~/.soojos/desk/beat.log`.
+  An unchanged beat costs zero model tokens. Under STOP it only logs.
+- **Dispatch** launches queued tasks that carry `auto_dispatch` (set by `queue_add … auto=true`,
+  and by default for tasks written in INBOX.md unless `auto: no`), oldest first, while worker
+  slots are free and the assignee's zero-cash evidence is fresh. Tasks without the flag, for
+  example one addressed to Astra, are left for the coordinator. Every launch goes through
+  `run_task`, so every desk control applies.
+- **Routing by a small model.** A task section that leaves `project:` out (or says
+  `route: auto`) is read once by Haiku, no tools, which proposes project, assignee, action,
+  model and budget; the proposal only fills gaps, is validated like any other input, and the
+  heading records `routed by haiku: {...}`. When zero cash cannot be established the section
+  is refused with the reason instead. Execution then uses the routed model: verify and retro
+  on Fable, code on Sonnet, Opus or Fable when named. Model names are CLI aliases, so `opus`
+  is the latest Opus.
+- **Your notes.** An inbox section with `type: note` (or a heading starting `Note:`), scoped by
+  `project:` or `scope: all`, is appended to `context/desk/notes/<project>.md` with a timestamp,
+  and every later worker prompt for that project carries the most recent notes for it and for
+  all projects. `inbox_add(kind="note", …)` does the same from Claude Code or Codex, so a
+  thought typed in either app lands in the same place as one typed into the file.
+- **Project scope.** Each task already runs in its own worktree of its own repository. When a
+  project is a folder inside a shared repository, the worker is told the folder is its scope,
+  and after the run any committed or dirty path outside that folder refuses the result
+  (`escaped`, "changed files outside its project folder") and blocks the task. Projects are
+  mapped in `projects.json`; a Claude chat is context, not a place a worker can reach.
+
 ## The human way in and out (0.3.9)
 
 The queue is dense JSON and stays the single source of truth. People write and read
@@ -274,7 +303,7 @@ unavailable, run records carry `pid_start_note` and liveness falls back to pid o
 /usr/bin/python3 -m unittest discover -s /Users/sayuj/soojos/tools/soojos-desk/tests -v
 ```
 
-80 offline tests (`tests/test_server.py`, `tests/test_gate.py`). They initialise a canonical desk in temporary state (via
+88 offline tests (`tests/test_server.py`, `tests/test_gate.py`). They initialise a canonical desk in temporary state (via
 `Desk.initialize` and the v2 migration), use fake `claude`/`codex` under
 `tests/fakes/` that also answer the auth probes, and cover: STOP for every tool;
 canonical add/claim/finish/block validation; done refused without evidence, without
