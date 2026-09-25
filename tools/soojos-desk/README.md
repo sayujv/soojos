@@ -1,7 +1,7 @@
 # soojos-desk MCP server
 
 Minimal MCP server for the partnership desk. Python 3.9 stdlib only, stdio
-transport, hand-rolled JSON-RPC (no `mcp` or `fastmcp` dependency). Version 0.3.6.
+transport, hand-rolled JSON-RPC (no `mcp` or `fastmcp` dependency). Version 0.3.7.
 
 Run: `/usr/bin/python3 /Users/sayuj/soojos/tools/soojos-desk/server.py`
 
@@ -211,6 +211,20 @@ Jev and similar hosted decision models were considered and not adopted: they are
 provider needing Sayuj's explicit approval, and they address tool-call gating rather than the
 standing-context cost the numbers point at. Revisit with data if wanted.
 
+## Quiet heartbeat (0.3.7, decision 0007)
+
+Of Astra's 158 heartbeat entries from 19 to 24 September, 128 were "unchanged" checkpoints,
+each paid for with a model turn. `heartbeat_gate.py` answers "did anything change?" in code:
+it fingerprints STOP, every queue row's status and deadline, the outbox file set, run states,
+billing-evidence presence, the handoff size and the soojos HEAD, and compares with the last
+beat (private `~/.soojos/desk/heartbeat-gate.json`). It prints `UNCHANGED` (exit 0) or
+`ATTENTION: <reasons>` (exit 10). A queued task, an overdue running task, STOP, a lost,
+corrupt or quota run, the 07:00 Perth daily-duty window, or a missing previous fingerprint
+always mean attention. The coordinator's automation calls it first and stops on UNCHANGED,
+so a quiet beat costs zero model tokens and cannot be "confidently wrong". `--dry-run`
+compares without saving; `--json` for machines. It reads desk state and writes only its own
+fingerprint file.
+
 ## Operating helpers
 
 - `preflight.py [--tests] [--json]`: read-only readiness checklist (interpreter, server and
@@ -233,7 +247,7 @@ unavailable, run records carry `pid_start_note` and liveness falls back to pid o
 /usr/bin/python3 -m unittest discover -s /Users/sayuj/soojos/tools/soojos-desk/tests -v
 ```
 
-62 offline tests. They initialise a canonical desk in temporary state (via
+68 offline tests (`tests/test_server.py`, `tests/test_gate.py`). They initialise a canonical desk in temporary state (via
 `Desk.initialize` and the v2 migration), use fake `claude`/`codex` under
 `tests/fakes/` that also answer the auth probes, and cover: STOP for every tool;
 canonical add/claim/finish/block validation; done refused without evidence, without

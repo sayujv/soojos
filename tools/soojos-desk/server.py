@@ -42,7 +42,7 @@ import traceback
 from pathlib import Path
 
 SERVER_NAME = "soojos-desk"
-SERVER_VERSION = "0.3.6"
+SERVER_VERSION = "0.3.7"
 PROTOCOL_VERSION = "2025-06-18"
 MINUTE = float(os.environ.get("SOOJOS_MINUTE_SECONDS", "60"))  # tests shrink this to exercise timeouts quickly
 
