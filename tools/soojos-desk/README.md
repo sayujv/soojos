@@ -1,7 +1,7 @@
 # soojos-desk MCP server
 
 Minimal MCP server for the partnership desk. Python 3.9 stdlib only, stdio
-transport, hand-rolled JSON-RPC (no `mcp` or `fastmcp` dependency). Version 0.3.5.
+transport, hand-rolled JSON-RPC (no `mcp` or `fastmcp` dependency). Version 0.3.6.
 
 Run: `/usr/bin/python3 /Users/sayuj/soojos/tools/soojos-desk/server.py`
 
@@ -185,9 +185,12 @@ the subscription, but all of it counted against the plan's usage limit. 0.3.5 th
 - **Strips the worker session.** `--strict-mcp-config --mcp-config worker-mcp.json` (an
   empty `{"mcpServers": {}}`), so a worker loads no connectors, plugin servers or user MCP
   servers. It still reads the repository's CLAUDE.md router.
-- **Picks the model per task** from an approved set: `sonnet` by default, `haiku`, `opus`
-  or `fable` only when the task names it (`queue_add … model=`, `run_claude … model=`).
-  Codex workers inherit their configured model; an override is refused.
+- **Routes the model by where a mistake costs the most.** Verdict-bearing tasks
+  (`action_kind` `verify` or `retro`: reviews, verification, retrospectives) default to
+  `fable`; production and research tasks default to `sonnet`, whose mistakes the same desk
+  controls and a later review catch at a third of the draw-down. An explicit `model`
+  (`sonnet`, `haiku`, `opus`, `fable`) on the task always wins. Codex workers inherit their
+  configured model; an override is refused.
 - **Caps turns** at policy `claude_turns` (8), the already-approved control.
 - **Reports the split** in every run note and record as `token_split`: input, output,
   cache creation, cache reads, turns, and `standing_context_per_turn`, so a saving is visible
@@ -230,7 +233,7 @@ unavailable, run records carry `pid_start_note` and liveness falls back to pid o
 /usr/bin/python3 -m unittest discover -s /Users/sayuj/soojos/tools/soojos-desk/tests -v
 ```
 
-61 offline tests. They initialise a canonical desk in temporary state (via
+62 offline tests. They initialise a canonical desk in temporary state (via
 `Desk.initialize` and the v2 migration), use fake `claude`/`codex` under
 `tests/fakes/` that also answer the auth probes, and cover: STOP for every tool;
 canonical add/claim/finish/block validation; done refused without evidence, without
