@@ -364,3 +364,12 @@ Task20260917-ibkr-news-verification is a completed verification, not a completed
 **Next:** Astra review of the four commits; decide the acceptance question.
 
 **Landmines:** Shared outbox run notes no longer contain full output; read the private .note.json for that. A$0 incremental cash this session.
+
+
+## 2026-09-25T09:15:00+08:00 — Claude (Claude Code desktop): soojos-desk 0.3.4 — resume readiness for Astra
+
+**State:** Astra's heartbeat has been silent since the 2026-09-24T0000Z checkpoint (Sayuj reports Codex credits exhausted); the review task 20260924-092409-codex-reciprocal-review-… is still queued and untouched. Sayuj asked that everything be ready so Astra only needs to be online again. This entry's commit (on desk/20260917-soojos-desk-mcp, then cherry-picked to desk/soojos-desk-mcp for PR #1) adds tools/soojos-desk 0.3.4: preflight.py (one-command readiness checklist, read-only), record_billing_evidence.py (operator-attested evidence writer with guards), ASTRA-RESUME.md (return playbook), quota detection (a worker hitting its usage limit ends `quota` with "usage limit reached" in the blocked reason), and tolerance for hosts where `ps` is unavailable (pid_start_note, pid-only liveness), which is the failure Astra's blocked task 20260923-mcp-process-group-cleanup reported. Verification run: 56 offline tests OK; preflight against the live machine reports READY with WARN only for stale billing evidence and the heartbeat age; the evidence helper refused a non-attesting input without writing.
+
+**For Astra on return:** read tools/soojos-desk/ASTRA-RESUME.md; run preflight.py --tests; take the queued review task; refresh billing evidence with record_billing_evidence.py only before a worker launch.
+
+**Open:** PR #1 review and merge (Sayuj merges); acceptance-vs-git-evidence decision; Astra's own extension request on 20260923-mcp-process-group-cleanup.

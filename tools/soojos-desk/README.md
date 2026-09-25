@@ -1,7 +1,7 @@
 # soojos-desk MCP server
 
 Minimal MCP server for the partnership desk. Python 3.9 stdlib only, stdio
-transport, hand-rolled JSON-RPC (no `mcp` or `fastmcp` dependency). Version 0.3.3.
+transport, hand-rolled JSON-RPC (no `mcp` or `fastmcp` dependency). Version 0.3.4.
 
 Run: `/usr/bin/python3 /Users/sayuj/soojos/tools/soojos-desk/server.py`
 
@@ -175,13 +175,29 @@ Headless `codex exec` refuses the mutating tools ("requires approval"); use the
 interactive Codex app or Claude Code. `claude -p` needs
 `--allowedTools "mcp__soojos-desk__*"` (or narrower) to call them.
 
+## Operating helpers
+
+- `preflight.py [--tests] [--json]`: read-only readiness checklist (interpreter, server and
+  canonical desk import, registration in both clients, binaries and logins, STOP, billing
+  evidence freshness, queue state, Astra's last heartbeat age, optional unit suite). Ends with
+  `READY` or `NOT READY` and exits non-zero on any FAIL.
+- `record_billing_evidence.py claude|codex|both --observed …`: writes the operator-attested
+  zero-cash evidence files (mode 0600, org id from `claude auth status`), keeping a `.bak`.
+  It records only what you say you observed; it observes nothing itself.
+- `ASTRA-RESUME.md`: the playbook for Astra returning after an outage.
+- `dispatch_first_tasks.py`: the two-task first live dispatch used on 22 September.
+
+A worker that hits its subscription usage limit ends as `quota` and the task is blocked
+with "usage limit reached" rather than a bare non-zero exit. On a host where `ps` is
+unavailable, run records carry `pid_start_note` and liveness falls back to pid only.
+
 ## Testing
 
 ```sh
 /usr/bin/python3 -m unittest discover -s /Users/sayuj/soojos/tools/soojos-desk/tests -v
 ```
 
-54 offline tests. They initialise a canonical desk in temporary state (via
+56 offline tests. They initialise a canonical desk in temporary state (via
 `Desk.initialize` and the v2 migration), use fake `claude`/`codex` under
 `tests/fakes/` that also answer the auth probes, and cover: STOP for every tool;
 canonical add/claim/finish/block validation; done refused without evidence, without

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline tests for soojos-desk 0.3.3. Fake workers under tests/fakes; the canonical Desk from the
+"""Offline tests for soojos-desk 0.3.4. Fake workers under tests/fakes; the canonical Desk from the
 approved harness (policy code_root) runs against temporary state. No real claude/codex, no network.
 
 Run:  /usr/bin/python3 -m unittest discover -s /Users/sayuj/soojos/tools/soojos-desk/tests -v
@@ -686,7 +686,11 @@ class TestReviewFixes032(DeskTestCase):
         self.assertEqual(out["state"], "spawned")
         rec = self.wait_run(out["run_id"])
         self.assertEqual(rec["state"], "done")
-        self.assertTrue(rec.get("log") and rec.get("spec") and rec.get("pid_start"))
+        self.assertTrue(rec.get("log") and rec.get("spec"))
+        if self.server.proc_start(os.getpid()) is not None:   # hosts without ps fall back to pid-only liveness
+            self.assertTrue(rec.get("pid_start"))
+        else:
+            self.assertIn("pid_start_note", rec)
         # a stale non-terminal write cannot follow the terminal one
         self.server.merge_run(out["run_id"], state="running")
         self.assertEqual(self.ok("run_status", id=out["run_id"])["run"]["state"], "done")
@@ -774,6 +778,26 @@ class TestReviewLows033(DeskTestCase):
         self.assertEqual(json.load(open(path))["state"], "running")
         self.assertEqual(self.ok("run_status", id="run-claude-dead")["run"]["state"], "lost")  # marked outside the lock
         self.assertEqual(json.load(open(path))["state"], "lost")
+
+
+class TestQuotaAndHostTolerance(DeskTestCase):
+    def test_usage_limit_is_reported_as_quota(self):
+        os.environ["FAKE_MODE"] = "quota"
+        body = self.refused("run_codex", task="x", cwd=self.tmp, budget_minutes=1)
+        report = json.loads(body.split("refused: ", 1)[1])
+        self.assertEqual(report["status"], "quota")
+        self.assertIn("usage limit reached", report["error"])
+        tid = self.add("quota-task", assignee="codex", budget=1)
+        self.refused("run_task", id=tid, cwd=self.repo)
+        self.assertIn("worker quota", self.queue()[tid]["blocked_reason"])
+
+    def test_missing_ps_falls_back_to_pid_only(self):
+        self.server.proc_start = lambda pid: None
+        ident = self.server.self_identity()
+        self.assertIsNone(ident["pid_start"])
+        self.assertIn("pid_start_note", ident)
+        self.assertTrue(self.server.pid_alive(os.getpid(), None))
+        self.assertFalse(self.server.pid_alive(999999, None))
 
 
 class TestRpc(DeskTestCase):
