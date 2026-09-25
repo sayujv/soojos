@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline tests for soojos-desk 0.3.6. Fake workers under tests/fakes; the canonical Desk from the
+"""Offline tests for soojos-desk 0.3.8. Fake workers under tests/fakes; the canonical Desk from the
 approved harness (policy code_root) runs against temporary state. No real claude/codex, no network.
 
 Run:  /usr/bin/python3 -m unittest discover -s /Users/sayuj/soojos/tools/soojos-desk/tests -v
@@ -51,7 +51,7 @@ class DeskTestCase(unittest.TestCase):
                            "SOOJOS_CLAUDE_BIN": os.path.join(FAKES, "fake_claude"),
                            "SOOJOS_CODEX_BIN": os.path.join(FAKES, "fake_codex"),
                            "SOOJOS_MINUTE_SECONDS": "1.5", "HOME": self.home})
-        for k in ("FAKE_MODE", "FAKE_TOUCH", "FAKE_AUTH", "FAKE_COMMIT", "FAKE_SWITCH", "FAKE_SLEEP",
+        for k in ("FAKE_MODE", "FAKE_TOUCH", "FAKE_AUTH", "FAKE_COMMIT", "FAKE_SWITCH", "FAKE_SLEEP", "FAKE_HOTSPOT_FILE",
                   "SOOJOS_CLAUDE_PERMISSION_MODE", "SOOJOS_CLAUDE_ALLOWED_TOOLS", "SOOJOS_CODEX_SANDBOX"):
             os.environ.pop(k, None)
         # canonical desk state in the temp dirs, migrated to the live v2 shape
@@ -65,6 +65,11 @@ class DeskTestCase(unittest.TestCase):
         import server
         self.server = importlib.reload(server)
         self.server._MODULES.clear()
+        # Every project slug resolves to the temp repo, so no test can ever touch the real soojos checkout.
+        self.projects_path = os.path.join(self.tmp, "projects.json")
+        with open(self.projects_path, "w") as fh:
+            json.dump({"soojos": self.repo, "trading-bot": self.repo}, fh)
+        self.server.PROJECTS_PATH = self.projects_path
 
     def tearDown(self):
         os.environ.clear()
@@ -863,6 +868,137 @@ class TestTokenDiscipline035(DeskTestCase):
         self.assertEqual(split["cache_creation_input_tokens"], 100)
         self.assertEqual(split["standing_context_per_turn"], 100)   # 1 turn, 100 created + 0 read
         self.assertEqual(out["model"], "sonnet")
+
+
+class TestTwoStageReview038(DeskTestCase):
+    def make_probe_file(self):
+        path = os.path.join(self.repo, "probe.py")
+        with open(path, "w") as fh:
+            fh.write("".join("line %02d marker_%02d\n" % (i, i) for i in range(1, 61)))
+        subprocess.run(["/usr/bin/git", "-C", self.repo, "add", "probe.py"], check=True, capture_output=True)
+        subprocess.run(["/usr/bin/git", "-C", self.repo, "commit", "-q", "-m", "probe"], check=True, capture_output=True)
+
+    def test_review_reads_only_hotspot_excerpts_and_sums_tokens(self):
+        self.make_probe_file()
+        tid = self.ok("queue_add", project="soojos", task="Review probe.py", assignee="claude", budget_minutes=2,
+                      action_kind="verify")["added"]["id"]
+        self.assertEqual(self.queue()[tid]["worker_model"], "fable")
+        out = self.ok("run_review", id=tid, cwd=self.repo, files=["probe.py"], focus="lock ordering")
+        self.assertEqual(out["status"], "done")
+        rv = out["review"]
+        self.assertEqual([h["start"] for h in rv["hotspots"]], [20])
+        self.assertIsNone(rv["fallback"])
+        self.assertEqual(rv["excerpt_lines"], 22)            # 20-25 padded by 8 each side: 12..33
+        stages = out["stages"]
+        self.assertEqual([st["model"] for st in stages], ["sonnet", "fable"])
+        self.assertEqual(out["actual_tokens"], 645 + 115)     # triage 5+40+300+300, verdict fake 115
+        full = json.load(open(os.path.join(self.private, "runs", out["run_id"] + ".note.json")))["report"]
+        # the full private note carries the combined report; the stage-2 prompt lives in its own stage note
+        s2 = json.load(open(os.path.join(self.private, "runs", out["run_id"] + "-s2.note.json")))["report"]["task"]
+        self.assertIn("marker_22", s2)
+        self.assertIn("marker_12", s2)
+        self.assertNotIn("marker_50", s2)
+        self.assertNotIn("marker_05", s2)
+        self.assertEqual(full["review"]["review_model"], "fable")
+        task = self.queue()[tid]
+        self.assertEqual(task["status"], "done")
+        self.assertEqual(task["actual_tokens"], 760)
+        packet = json.load(open(task["result_path"]))["report"]
+        self.assertIn("two-stage review: triage sonnet -> 1 hotspot(s), 22 excerpt line(s); verdict fable", packet["verification"])
+        self.assertEqual(packet["token_split"]["actual_tokens"], 760)
+
+    def test_review_falls_back_to_whole_files_when_triage_fails(self):
+        self.make_probe_file()
+        os.environ["FAKE_HOTSPOT_FILE"] = "not-a-requested-file.py"   # triage names a file outside the request
+        tid = self.add("Review probe.py", budget=2)
+        out = self.ok("run_review", id=tid, cwd=self.repo, files=["probe.py"])
+        self.assertEqual(out["status"], "done")
+        self.assertIn("no usable hotspots", out["review"]["fallback"])
+        s2 = json.load(open(os.path.join(self.private, "runs", out["run_id"] + "-s2.note.json")))["report"]["task"]
+        self.assertIn("Files to review: probe.py", s2)
+        self.assertIn("fallback", json.load(open(self.queue()[tid]["result_path"]))["report"]["verification"])
+
+    def test_review_validation(self):
+        tid = self.add("x", budget=1)
+        self.refused("run_review", id=tid, files=[])
+        self.refused("run_review", id=tid, files=["/abs/path.py"])
+        self.assertEqual(self.queue()[tid]["status"], "queued")   # refused before the claim
+        body = self.refused("run_review", id=tid, cwd=self.repo, files=["missing.py"])
+        self.assertIn("not found in the task worktree", body)
+        self.assertEqual(self.queue()[tid]["status"], "blocked")   # refused after the claim: blocked with reason
+        codex = self.add("x", assignee="codex", budget=1)
+        self.assertIn("claude assignee", self.refused("run_review", id=codex, cwd=self.repo, files=["README.md"]))
+
+    def test_acceptance_warning_when_commit_requested_but_head_unchanged(self):
+        tid = self.add("Write the file and commit it with message x", budget=1)
+        out = self.ok("run_task", id=tid, cwd=self.repo)          # fake does not commit
+        packet = json.load(open(self.queue()[tid]["result_path"]))["report"]
+        self.assertIn("ACCEPTANCE WARNING", packet["verification"])
+        self.assertIn("HEAD did not change", packet["acceptance_warning"])
+        os.environ["FAKE_COMMIT"] = "1"
+        tid2 = self.add("Write the file and commit it", budget=1)
+        self.ok("run_task", id=tid2, cwd=self.repo)
+        self.assertNotIn("acceptance_warning", json.load(open(self.queue()[tid2]["result_path"]))["report"])
+
+    def test_slug_resolution_stays_inside_the_fixture(self):
+        tid = self.add("no cwd given", budget=1)
+        out = self.ok("run_task", id=tid)
+        self.assertTrue(out["worktree"].startswith(self.repo), out["worktree"])
+
+    def test_heartbeat_gate_tool(self):
+        import heartbeat_gate
+        importlib.reload(heartbeat_gate).STATE_PATH  # module importable
+        heartbeat_gate.STATE_PATH = os.path.join(self.private, "heartbeat-gate.json")
+        heartbeat_gate.server = self.server
+        first = self.ok("heartbeat_gate")
+        self.assertEqual(first["verdict"], "ATTENTION")
+        second = self.ok("heartbeat_gate", dry_run=True)
+        self.assertIn(second["verdict"], ("UNCHANGED", "ATTENTION"))  # duty window may apply; must not error
+        self.assertTrue(os.path.exists(heartbeat_gate.STATE_PATH))
+
+
+class TestTwoStageReviewFindings(DeskTestCase):
+    """High findings 1 and 2 of REVIEW-2026-09-25-two-stage.md."""
+
+    def test_h1_parent_never_fails_a_spawned_record(self):
+        original = self.server.wait_for_run
+        def boom(run_id, budget):
+            raise OSError("ps exploded while waiting")
+        self.server.wait_for_run = boom
+        tid = self.add("spawned then parent error", budget=1)
+        body = self.refused("run_task", id=tid, cwd=self.repo)
+        self.assertIn("runner", body)
+        self.assertIn("owns the record", body)
+        self.server.wait_for_run = original
+        run_id = [r for r in self.server.all_runs(mark=False) if r.get("task_id") == tid][0]["run_id"]
+        rec = self.wait_run(run_id)
+        self.assertEqual(rec["state"], "done", "runner must finish normally; parent must not have failed it")
+        self.assertEqual(self.queue()[tid]["status"], "done")
+
+    def test_h2a_refused_running_transition_never_runs_a_worker(self):
+        os.environ["FAKE_TOUCH"] = "ran"
+        tid = self.add("refused", budget=1)
+        self.ok("queue_claim", id=tid)
+        record = self.server.reserve_run("claude", tid, "soojos")
+        self.server.mark_lost(record["run_id"], "reserved", "simulated stale classification")
+        spec = {"run_id": record["run_id"], "kind": "claude", "task": "x", "cwd": self.repo, "budget_minutes": 1,
+                "task_id": tid, "project": "soojos", "background": True, "zero_cash": True}
+        spec_path = os.path.join(self.private, "runs", record["run_id"] + ".spec.json")
+        self.server.write_json_atomic(spec_path, spec)
+        self.assertEqual(self.server.runner(spec_path), 4)
+        self.assertNoWorkerRun()
+        self.assertEqual(self.ok("run_status", id=record["run_id"])["run"]["state"], "lost")
+
+    def test_h2b_lost_marking_is_compare_and_swap(self):
+        rid = "run-claude-cas"
+        self.server.save_run({"run_id": rid, "kind": "claude", "state": "running", "pid": 999999, "started_at": utcnow().isoformat()})
+        # classification says lost, but the runner's final write lands first
+        self.server.save_run({"run_id": rid, "kind": "claude", "state": "done", "pid": 999999, "finished_at": utcnow().isoformat()})
+        self.assertEqual(self.server.mark_lost(rid, "running", "gone")["state"], "done")
+        self.assertEqual(self.ok("run_status", id=rid)["run"]["state"], "done")
+        rec = self.server.merge_run(rid, state="running")   # non-terminal after terminal is refused and reported
+        self.assertEqual(rec["state"], "done")
+        self.assertEqual(rec["refused_transition"], "running")
 
 
 class TestRpc(DeskTestCase):

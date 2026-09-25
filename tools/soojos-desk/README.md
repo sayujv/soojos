@@ -1,7 +1,7 @@
 # soojos-desk MCP server
 
 Minimal MCP server for the partnership desk. Python 3.9 stdlib only, stdio
-transport, hand-rolled JSON-RPC (no `mcp` or `fastmcp` dependency). Version 0.3.7.
+transport, hand-rolled JSON-RPC (no `mcp` or `fastmcp` dependency). Version 0.3.8.
 
 Run: `/usr/bin/python3 /Users/sayuj/soojos/tools/soojos-desk/server.py`
 
@@ -54,6 +54,8 @@ Workers:
 | --- | --- |
 | `run_claude(task, cwd, budget_minutes, background?, model?)` | `/Users/sayuj/.local/bin/claude -p … --output-format json --permission-mode acceptEdits --no-session-persistence --model <approved id> --max-turns <policy claude_turns> --strict-mcp-config --mcp-config worker-mcp.json --disallowedTools <fixed deny list> --allowedTools <local git only>`. |
 | `run_codex(task, cwd, budget_minutes, background?)` | `/Applications/ChatGPT.app/Contents/Resources/codex exec --sandbox workspace-write --skip-git-repo-check --ephemeral -C cwd [--add-dir …] -o <last-message>`. In a linked worktree, `--add-dir` grants only the worktree's own gitdir, the shared object store and the `desk/` ref and reflog directories, so a commit on the task branch works while the main checkout's HEAD, index and other refs stay outside the sandbox. |
+| `run_review(id, files, focus?, background?, cwd?)` | Two-stage review (decision 0007): a Sonnet triage names up to 12 hotspot regions in `files`, the task's verdict model (Fable by default) reviews only those excerpts (padded, at most 600 lines). Same claim, reservation, containment, deadline and completion as `run_task`; both stages' tokens are summed; whole-file fallback if triage yields nothing usable. Claude assignees only. |
+| `heartbeat_gate(dry_run?)` | The quiet-heartbeat check as a tool: UNCHANGED or ATTENTION with reasons. |
 | `run_task(id, background?, cwd?)` | Permission preflight → claim if queued → exclusive run reservation under the desk lock → `.worktrees/task-<id>` on `desk/<id>`, verified by git → deadline check → zero-cash check → run the assignee → `Desk.finish` or `Desk.block`. No worktree opt-out. |
 
 Every tool refuses while `~/.soojos/STOP` exists (`lexists`, so a dangling symlink
@@ -84,7 +86,10 @@ blocks its task instead of running.
 - **Evidence, not claims.** The done report's `verification` records exit code,
   elapsed time, timeout, the worktree HEAD before and after, and dirty paths; the
   server states it ran no tests itself. `evidence` lists the run note, worktree and
-  HEAD. Token counts come from the CLI usage output when present.
+  HEAD. Token counts come from the CLI usage output when present. When the task text
+  asks for a commit and HEAD did not change, the packet carries an
+  `acceptance_warning` and the verification says so: the task is still done by the
+  desk's rules, but the reader is told the worker's claim was not borne out.
 - **Every run is supervised by a detached runner** (`server.py --runner <spec>`) in
   its own session, foreground or background. The foreground call only waits on the
   run record, so a client that kills the server cannot orphan an unsupervised
@@ -207,6 +212,14 @@ review (6 findings versus 17, different depth), and the plan's usage limit is dr
 the same proportion. Findings 1, 5 and 6 of that review (transient `ps` failure marking a
 live worker lost; reservation TTL; directory fsync) were fixed in this version.
 
+**Two-stage review, measured 25 September** (`run_review` on server.py, same task as the two
+earlier runs): Sonnet triage 3 turns, 203k tokens, 12 hotspots, 432 excerpt lines; Fable
+verdict 11 turns, 339k tokens, standing context about 29k per turn instead of 63k to 72k.
+Combined 543k tokens against 781k for single-stage Fable, with Fable's own share down 57%
+and a list-price equivalent of roughly USD 1.2 against 2.40. Findings: 16 (2 high, 5 medium,
+9 low) against 17 for single-stage Fable and 6 for Sonnet alone. So the verdict model keeps
+its depth while reading less; that is the credit saving that does not create mistakes.
+
 Jev and similar hosted decision models were considered and not adopted: they are a new paid
 provider needing Sayuj's explicit approval, and they address tool-call gating rather than the
 standing-context cost the numbers point at. Revisit with data if wanted.
@@ -247,7 +260,7 @@ unavailable, run records carry `pid_start_note` and liveness falls back to pid o
 /usr/bin/python3 -m unittest discover -s /Users/sayuj/soojos/tools/soojos-desk/tests -v
 ```
 
-68 offline tests (`tests/test_server.py`, `tests/test_gate.py`). They initialise a canonical desk in temporary state (via
+77 offline tests (`tests/test_server.py`, `tests/test_gate.py`). They initialise a canonical desk in temporary state (via
 `Desk.initialize` and the v2 migration), use fake `claude`/`codex` under
 `tests/fakes/` that also answer the auth probes, and cover: STOP for every tool;
 canonical add/claim/finish/block validation; done refused without evidence, without
