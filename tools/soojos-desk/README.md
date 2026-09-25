@@ -1,7 +1,7 @@
 # soojos-desk MCP server
 
 Minimal MCP server for the partnership desk. Python 3.9 stdlib only, stdio
-transport, hand-rolled JSON-RPC (no `mcp` or `fastmcp` dependency). Version 0.3.8.
+transport, hand-rolled JSON-RPC (no `mcp` or `fastmcp` dependency). Version 0.3.9.
 
 Run: `/usr/bin/python3 /Users/sayuj/soojos/tools/soojos-desk/server.py`
 
@@ -55,6 +55,8 @@ Workers:
 | `run_claude(task, cwd, budget_minutes, background?, model?)` | `/Users/sayuj/.local/bin/claude -p … --output-format json --permission-mode acceptEdits --no-session-persistence --model <approved id> --max-turns <policy claude_turns> --strict-mcp-config --mcp-config worker-mcp.json --disallowedTools <fixed deny list> --allowedTools <local git only>`. |
 | `run_codex(task, cwd, budget_minutes, background?)` | `/Applications/ChatGPT.app/Contents/Resources/codex exec --sandbox workspace-write --skip-git-repo-check --ephemeral -C cwd [--add-dir …] -o <last-message>`. In a linked worktree, `--add-dir` grants only the worktree's own gitdir, the shared object store and the `desk/` ref and reflog directories, so a commit on the task branch works while the main checkout's HEAD, index and other refs stay outside the sandbox. |
 | `run_review(id, files, focus?, background?, cwd?)` | Two-stage review (decision 0007): a Sonnet triage names up to 12 hotspot regions in `files`, the task's verdict model (Fable by default) reviews only those excerpts (padded, at most 600 lines). Same claim, reservation, containment, deadline and completion as `run_task`; both stages' tokens are summed; whole-file fallback if triage yields nothing usable. Claude assignees only. |
+| `inbox_sync(dry_run?)` | Turns new sections of `context/desk/INBOX.md` (plain-language tasks with optional `project:`, `assignee:`, `budget:`, `action:`, `model:`, `inputs:`, `constraints:` lines) into validated queue entries through the canonical desk and writes `queued: <id>` or `queued: REFUSED <reason>` back under each heading. Idempotent. |
+| `desk_board(dry_run?)` | Renders `context/desk/BOARD.md`: running, queued, blocked with reasons, recent done, live runs. A view; the queue stays the truth. |
 | `heartbeat_gate(dry_run?)` | The quiet-heartbeat check as a tool: UNCHANGED or ATTENTION with reasons. |
 | `run_task(id, background?, cwd?)` | Permission preflight → claim if queued → exclusive run reservation under the desk lock → `.worktrees/task-<id>` on `desk/<id>`, verified by git → deadline check → zero-cash check → run the assignee → `Desk.finish` or `Desk.block`. No worktree opt-out. |
 
@@ -238,6 +240,18 @@ so a quiet beat costs zero model tokens and cannot be "confidently wrong". `--dr
 compares without saving; `--json` for machines. It reads desk state and writes only its own
 fingerprint file.
 
+## The human way in and out (0.3.9)
+
+The queue is dense JSON and stays the single source of truth. People write and read
+elsewhere:
+
+- **`context/desk/INBOX.md`** is where a task is asked for in plain words, one section per
+  task with a few optional `key:` lines. `inbox_sync` validates each new section through the
+  canonical desk and writes the outcome under the heading, so the file shows what happened
+  to your words and nothing is silently dropped. The heartbeat gate counts new sections as
+  attention, so writing a task is exactly what wakes the desk.
+- **`context/desk/BOARD.md`** is the generated status view. Evidence stays in the outbox.
+
 ## Operating helpers
 
 - `preflight.py [--tests] [--json]`: read-only readiness checklist (interpreter, server and
@@ -260,7 +274,7 @@ unavailable, run records carry `pid_start_note` and liveness falls back to pid o
 /usr/bin/python3 -m unittest discover -s /Users/sayuj/soojos/tools/soojos-desk/tests -v
 ```
 
-77 offline tests (`tests/test_server.py`, `tests/test_gate.py`). They initialise a canonical desk in temporary state (via
+80 offline tests (`tests/test_server.py`, `tests/test_gate.py`). They initialise a canonical desk in temporary state (via
 `Desk.initialize` and the v2 migration), use fake `claude`/`codex` under
 `tests/fakes/` that also answer the auth probes, and cover: STOP for every tool;
 canonical add/claim/finish/block validation; done refused without evidence, without

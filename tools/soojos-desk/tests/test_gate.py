@@ -65,6 +65,13 @@ class TestHeartbeatGate(DeskTestCase):
         res = self.gate.evaluate(now=at_seven_perth)
         self.assertIn("daily duty window (07:00-07:59 Perth)", res["reasons"])
 
+    def test_new_inbox_section_is_attention(self):
+        self.gate.evaluate(now=self.quiet_now())
+        with open(os.path.join(self.desk_dir, "INBOX.md"), "w") as fh:
+            fh.write("# inbox\n\n## Please look at X\nproject: soojos\nDetails.\n")
+        res = self.gate.evaluate(now=self.quiet_now())
+        self.assertIn("1 new inbox section(s) awaiting inbox_sync", res["reasons"])
+
     def test_dry_run_does_not_save_and_state_is_private(self):
         self.gate.evaluate(now=self.quiet_now())
         before = json.load(open(self.gate.STATE_PATH))

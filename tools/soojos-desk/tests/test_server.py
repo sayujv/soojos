@@ -1001,6 +1001,53 @@ class TestTwoStageReviewFindings(DeskTestCase):
         self.assertEqual(rec["refused_transition"], "running")
 
 
+class TestInboxAndBoard039(DeskTestCase):
+    def write_inbox(self, text):
+        self.server.INBOX_PATH = os.path.join(self.desk_dir, "INBOX.md")
+        self.server.BOARD_PATH = os.path.join(self.desk_dir, "BOARD.md")
+        with open(self.server.INBOX_PATH, "w") as fh:
+            fh.write(text)
+
+    def test_inbox_sections_become_validated_queue_entries_with_markers(self):
+        self.write_inbox("# Desk inbox\n\nintro text\n\n## Check the README\nproject: soojos\nbudget: 3\naction: verify\n"
+                         "Read README.md and list outdated statements.\n\n## Bad one\nproject: not-a-project\nDo something.\n\n"
+                         "## Already done\nproject: soojos\nqueued: 20260101-000000-claude-x at earlier\n")
+        dry = self.ok("inbox_sync", dry_run=True)
+        self.assertEqual(dry["new"], 2)
+        self.assertEqual(self.ok("queue_list")["count"], 0)          # dry run queues nothing
+        out = self.ok("inbox_sync")
+        self.assertEqual(out["new"], 2)
+        queued = [r for r in out["results"] if "queued" in r][0]
+        refused = [r for r in out["results"] if "refused" in r][0]
+        self.assertEqual(refused["title"], "Bad one")
+        self.assertIn("outside approved scope", refused["refused"])
+        task = self.queue()[queued["queued"]]
+        self.assertEqual(task["budget_minutes"], 3)
+        self.assertEqual(task["action_kind"], "verify")
+        self.assertEqual(task["worker_model"], "fable")
+        self.assertTrue(task["task"].startswith("Check the README\n"))
+        text = open(self.server.INBOX_PATH).read()
+        self.assertIn("queued: %s at " % queued["queued"], text)
+        self.assertIn("queued: REFUSED", text)
+        self.assertEqual(text.count("queued:"), 3)                     # one per processed section, none duplicated
+        self.assertIn("Read README.md and list outdated statements.", text)  # author's words untouched
+        again = self.ok("inbox_sync")
+        self.assertEqual(again["new"], 0)                              # idempotent
+
+    def test_board_renders_from_queue(self):
+        self.write_inbox("# inbox\n")
+        tid = self.add("Board me", budget=1)
+        self.ok("queue_claim", id=tid)
+        self.ok("queue_finish", id=tid, status="blocked", reason="waiting on Sayuj")
+        out = self.ok("desk_board")
+        board = open(self.server.BOARD_PATH).read()
+        self.assertIn("## Blocked", board)
+        self.assertIn("waiting on Sayuj", board)
+        self.assertIn(tid, board)
+        self.assertIn("the queue is the truth", board)
+        self.assertEqual(out["board"], self.server.BOARD_PATH)
+
+
 class TestRpc(DeskTestCase):
     def rpc(self, msg):
         buf = io.StringIO()

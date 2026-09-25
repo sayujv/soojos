@@ -43,7 +43,7 @@ import traceback
 from pathlib import Path
 
 SERVER_NAME = "soojos-desk"
-SERVER_VERSION = "0.3.8"
+SERVER_VERSION = "0.3.9"
 PROTOCOL_VERSION = "2025-06-18"
 MINUTE = float(os.environ.get("SOOJOS_MINUTE_SECONDS", "60"))  # tests shrink this to exercise timeouts quickly
 
@@ -1658,6 +1658,140 @@ def execute_review(spec, timeout_seconds):
     return report
 
 
+INBOX_PATH = os.path.join(DESK_DIR, "INBOX.md")
+BOARD_PATH = os.path.join(DESK_DIR, "BOARD.md")
+INBOX_FIELDS = {"project", "assignee", "budget", "budget_minutes", "model", "action", "action_kind", "inputs", "constraints"}
+
+
+def parse_inbox(text):
+    """Sections start with '## '. Lines 'key: value' set fields; other lines are the task text.
+    A section already carrying a 'queued:' line has been processed and is skipped."""
+    sections, current = [], None
+    for raw in text.splitlines():
+        if raw.startswith("## "):
+            current = {"title": raw[3:].strip(), "fields": {}, "body": [], "queued": None}
+            sections.append(current)
+            continue
+        if current is None:
+            continue
+        m = re.match(r"^\s*([A-Za-z_]+):\s*(.*)$", raw)
+        if m and m.group(1).lower() in INBOX_FIELDS | {"queued"}:
+            key, value = m.group(1).lower(), m.group(2).strip()
+            if key == "queued":
+                current["queued"] = value
+            else:
+                current["fields"][key] = value
+        else:
+            current["body"].append(raw.rstrip())
+    return sections
+
+
+def inbox_task_args(section):
+    f = section["fields"]
+    text = ("%s\n%s" % (section["title"], "\n".join(section["body"]))).strip()
+    args = {"project": f.get("project"), "assignee": f.get("assignee", "claude"), "task": text,
+            "budget_minutes": int(f.get("budget_minutes") or f.get("budget") or 10),
+            "action_kind": f.get("action_kind") or f.get("action") or "research"}
+    if f.get("model"):
+        args["model"] = f["model"]
+    for key in ("inputs", "constraints"):
+        if f.get(key):
+            args[key] = [x.strip() for x in f[key].split(";") if x.strip()]
+    return args
+
+
+def t_inbox_sync(args):
+    """Turn each new INBOX.md section into a validated queue entry (through the canonical desk) and write
+    'queued: <id>' back under it. Sections that fail validation get 'queued: REFUSED <reason>' so the
+    author sees why; nothing is silently dropped. dry_run parses and validates only."""
+    dry = bool(args.get("dry_run", False))
+    if not os.path.exists(INBOX_PATH):
+        return {"inbox": INBOX_PATH, "new": 0, "note": "no inbox file"}
+    text = open(INBOX_PATH).read()
+    sections = parse_inbox(text)
+    results = []
+    for sec in sections:
+        if sec["queued"] is not None:
+            continue
+        try:
+            task_args = inbox_task_args(sec)
+            if not task_args["project"]:
+                raise ToolError("project: is required (one of the approved projects)")
+            if dry:
+                results.append({"title": sec["title"], "would_queue": task_args})
+                continue
+            added = t_queue_add(task_args)["added"]
+            sec["queued"] = "%s at %s" % (added["id"], iso())
+            results.append({"title": sec["title"], "queued": added["id"]})
+        except (ToolError, ValueError) as exc:
+            reason = str(exc).replace("\n", " ")[:300]
+            if not dry:
+                sec["queued"] = "REFUSED %s at %s" % (reason, iso())
+            results.append({"title": sec["title"], "refused": reason})
+    if not dry and results:
+        # Write the marker back under each processed heading; the author's own text is untouched.
+        out, idx = [], -1
+        for raw in text.splitlines():
+            out.append(raw)
+            if raw.startswith("## "):
+                idx += 1
+                sec = sections[idx]
+                if sec["queued"] is not None and ("queued:" not in "\n".join(_section_lines(text, idx))):
+                    out.append("queued: " + sec["queued"])
+        with open(INBOX_PATH, "w") as fh:
+            fh.write("\n".join(out) + ("\n" if text.endswith("\n") else ""))
+    return {"inbox": INBOX_PATH, "new": len(results), "results": results, "dry_run": dry}
+
+
+def _section_lines(text, index):
+    lines, current = [], -1
+    for raw in text.splitlines():
+        if raw.startswith("## "):
+            current += 1
+        if current == index:
+            lines.append(raw)
+    return lines
+
+
+def render_board(tasks, runs):
+    now = now_utc()
+    def row(t):
+        deadline = parse_iso(t.get("deadline"))
+        extra = ""
+        if t.get("status") == "running" and deadline:
+            extra = "overdue" if now > deadline else "due %s" % t["deadline"][11:16] + "Z"
+        elif t.get("status") == "blocked":
+            extra = (t.get("blocked_reason") or "")[:90]
+        elif t.get("status") == "done":
+            extra = "%s min, %s tok" % (t.get("actual_minutes"), t.get("actual_tokens"))
+        return "| %s | %s | %s | %s | %s | %s |" % (t.get("id"), t.get("project"), t.get("assignee"),
+                                                 (t.get("worker_model") or ""), (t.get("task") or "").replace("|", "/").splitlines()[0][:70], extra)
+    head = "| id | project | who | model | task | note |\n| --- | --- | --- | --- | --- | --- |"
+    parts = ["# Desk board", "", "Generated %s UTC by soojos-desk %s from queue.jsonl. Read-only view; the queue is the truth." % (now.strftime("%Y-%m-%d %H:%M"), SERVER_VERSION), ""]
+    for status, title, limit in (("running", "Running", 20), ("queued", "Queued", 50), ("blocked", "Blocked (latest 15)", 15), ("done", "Done (latest 15)", 15)):
+        rows = [t for t in tasks if t.get("status") == status]
+        rows = sorted(rows, key=lambda t: t.get("completed_at") or t.get("started_at") or t.get("created_at") or "", reverse=True)[:limit]
+        parts += ["## %s (%d)" % (title, len([t for t in tasks if t.get("status") == status])), ""]
+        parts += [head] + [row(t) for t in rows] if rows else ["none"]
+        parts.append("")
+    live = [r for r in runs if r.get("state") in LIVE_STATES]
+    parts += ["## Live runs (%d)" % len(live), ""] + (["- %s %s %s" % (r.get("run_id"), r.get("state"), r.get("task_id") or "") for r in live] or ["none"])
+    parts += ["", "Outbox: %s. Inbox: %s." % (OUTBOX_DIR, INBOX_PATH)]
+    return "\n".join(parts) + "\n"
+
+
+def t_desk_board(args):
+    """Write the human-readable BOARD.md from the queue and run records (read-only view of state)."""
+    content = render_board(read_queue(), all_runs(mark=False))
+    if not bool(args.get("dry_run", False)):
+        fd, tmp = tempfile.mkstemp(prefix=".board.", dir=DESK_DIR)
+        with os.fdopen(fd, "w") as fh:
+            fh.write(content)
+        os.chmod(tmp, 0o644)
+        os.replace(tmp, BOARD_PATH)
+    return {"board": BOARD_PATH, "chars": len(content), "preview": content[:1200]}
+
+
 def t_heartbeat_gate(args):
     """Decision 0007: answer 'did anything change since the last beat' in code. Writes only its own
     private fingerprint file (unless dry_run)."""
@@ -1767,6 +1901,15 @@ TOOLS = [
                                     "files": {"type": "array", "items": {"type": "string"}, "description": "Repository-relative files to review"},
                                     "focus": _s("What to look for (default: correctness bugs, race conditions and failure modes)"),
                                     "cwd": _s("Optional absolute git repository overriding the project mapping")}}},
+    {"name": "inbox_sync", "fn": t_inbox_sync, "annotations": RW,
+     "description": "Turn new sections of context/desk/INBOX.md (plain-language tasks with project:, assignee:, budget:, "
+                    "model:, action: lines) into validated queue entries through the canonical desk, writing 'queued: <id>' "
+                    "or 'queued: REFUSED <reason>' back under each heading.",
+     "inputSchema": {"type": "object", "properties": {"dry_run": {"type": "boolean", "default": False}}}},
+    {"name": "desk_board", "fn": t_desk_board, "annotations": RW,
+     "description": "Render context/desk/BOARD.md: running, queued, blocked (with reasons) and done tasks plus live runs, "
+                    "from the queue and run records. A read-only view; the queue stays the truth.",
+     "inputSchema": {"type": "object", "properties": {"dry_run": {"type": "boolean", "default": False}}}},
     {"name": "heartbeat_gate", "fn": t_heartbeat_gate, "annotations": RW,
      "description": "Deterministic quiet-heartbeat check (decision 0007): UNCHANGED or ATTENTION with reasons, comparing a "
                     "fingerprint of desk state with the last beat. Zero model tokens. Writes only its private fingerprint file.",
