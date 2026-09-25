@@ -4,8 +4,10 @@
     /usr/bin/python3 /Users/sayuj/soojos/tools/soojos-desk/desk_beat.py [--dry-run] [--json]
 
 Order: gate -> (on ATTENTION) desk_tick -> inbox_sync (Haiku routes only sections that left project: out)
--> dispatch queued tasks that carry auto_dispatch, oldest first, while worker slots are free and the
-assignee's zero-cash evidence is fresh -> desk_board -> one line in ~/.soojos/desk/beat.log.
+-> when an auto task waits on evidence older than 45 minutes, observe_billing.py reads the account page
+and refreshes it (or reports why it could not) -> dispatch queued tasks that carry auto_dispatch, oldest
+first, while worker slots are free and the assignee's zero-cash evidence is fresh -> desk_board -> one
+line in ~/.soojos/desk/beat.log.
 Every action goes through the same server tools a person would call, so every refusal is the desk's.
 STOP makes every tool refuse; the beat then only logs. Tasks without auto_dispatch (for example one
 addressed to Astra) are left alone.
@@ -13,6 +15,7 @@ addressed to Astra) are left alone.
 import datetime as dt
 import json
 import os
+import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -38,10 +41,44 @@ def evidence_fresh(kind):
     return bool(verified and 0 <= (server.now_utc() - verified).total_seconds() <= 3600 and ev.get("usage_credits_disabled"))
 
 
+OBSERVER = os.environ.get("SOOJOS_OBSERVER_CMD")  # tests point this at a fake; default is the real observer
+OBSERVER_DEFAULT = ["/Users/sayuj/.local/share/uv/tools/scrapling/bin/python", os.path.join(HERE, "observe_billing.py")]
+REFRESH_BEFORE_SECONDS = 45 * 60  # observe when evidence is older than this and an auto task is waiting
+
+
+def evidence_age(kind):
+    ev = server.load_json(server.BILLING_PATHS[kind], {})
+    verified = server.parse_iso(ev.get("verified_at")) if ev else None
+    return (server.now_utc() - verified).total_seconds() if verified else None
+
+
+def observe(kind, dry_run):
+    """Refresh the evidence by really reading the account page (observe_billing.py). Never writes on failure."""
+    if dry_run:
+        return {"kind": kind, "would_observe": True}
+    cmd = (OBSERVER.split() if OBSERVER else OBSERVER_DEFAULT) + ["--only", kind, "--json"]
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+        try:
+            status = json.loads(r.stdout)
+            obs = (status.get("results") or {}).get(kind, {})
+            return {"kind": kind, "verified": bool(obs.get("verified")), "reason": obs.get("reason"), "exit": r.returncode}
+        except ValueError:
+            return {"kind": kind, "verified": False, "reason": "observer produced no JSON (exit %s): %s" % (r.returncode, (r.stderr or r.stdout)[-200:])}
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return {"kind": kind, "verified": False, "reason": "observer failed: %s" % exc}
+
+
 def dispatch(dry_run):
-    """Launch auto tasks into free slots. Skips (and says why) rather than forcing a refusal."""
+    """Launch auto tasks into free slots. Skips (and says why) rather than forcing a refusal.
+    When an auto task waits on stale evidence, the observer is asked to look at the account page first."""
     out = []
     tasks = server.read_queue()
+    waiting_kinds = {t.get("assignee") for t in tasks if t.get("status") == "queued" and t.get("auto_dispatch")}
+    for kind in sorted(k for k in waiting_kinds if k in server.BILLING_PATHS):
+        age = evidence_age(kind)
+        if age is None or age > REFRESH_BEFORE_SECONDS:
+            out.append({"observe": observe(kind, dry_run)})
     running = sum(1 for t in tasks if t.get("status") == "running")
     slots = max(0, int(server.policy().get("max_workers", 2)) - running)
     queued = sorted((t for t in tasks if t.get("status") == "queued"), key=lambda t: t.get("created_at") or "")

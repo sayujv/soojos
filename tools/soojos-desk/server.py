@@ -43,7 +43,7 @@ import traceback
 from pathlib import Path
 
 SERVER_NAME = "soojos-desk"
-SERVER_VERSION = "0.4.0"
+SERVER_VERSION = "0.4.1"
 PROTOCOL_VERSION = "2025-06-18"
 MINUTE = float(os.environ.get("SOOJOS_MINUTE_SECONDS", "60"))  # tests shrink this to exercise timeouts quickly
 
@@ -1297,7 +1297,10 @@ def t_desk_status(args):
         billing[kind] = {"path": path, "present": bool(ev), "verified_at": ev.get("verified_at"),
                          "usage_credits_disabled": ev.get("usage_credits_disabled"),
                          "fresh_within_hour": bool(age is not None and 0 <= age <= 3600)}
+    observe = load_json(os.path.join(PRIVATE_DIR, "observe-status.json"), {})
     return {"stop_present": stop_present(), "stop_path": STOP_PATH, "desk_dir": DESK_DIR, "queue_counts": counts,
+            "observer": {"at": observe.get("at"), "results": {k: {"verified": v.get("verified"), "reason": v.get("reason")}
+                                                              for k, v in (observe.get("results") or {}).items()}},
             "running": running, "runs": live, "canonical_desk": canonical, "billing_evidence": billing,
             "policy": {k: pol.get(k) for k in ("version", "task_minutes", "max_workers", "max_chain_depth", "token_mode", "code_root")},
             "workers": {"claude": {"bin": CLAUDE_BIN, "present": os.path.exists(CLAUDE_BIN)},
@@ -1922,6 +1925,10 @@ def render_board(tasks, runs):
         parts.append("")
     live = [r for r in runs if r.get("state") in LIVE_STATES]
     parts += ["## Live runs (%d)" % len(live), ""] + (["- %s %s %s" % (r.get("run_id"), r.get("state"), r.get("task_id") or "") for r in live] or ["none"])
+    observe = load_json(os.path.join(PRIVATE_DIR, "observe-status.json"), {})
+    bad = [(k, v.get("reason")) for k, v in (observe.get("results") or {}).items() if not v.get("verified")]
+    if bad:
+        parts += ["", "## Needs you", ""] + ["- %s evidence could not be verified automatically: %s. Run `observe_billing.py --login` and sign in, or record it by hand." % (k, r) for k, r in bad]
     parts += ["", "Outbox: %s. Inbox: %s." % (OUTBOX_DIR, INBOX_PATH)]
     return "\n".join(parts) + "\n"
 

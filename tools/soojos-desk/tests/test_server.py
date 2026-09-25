@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline tests for soojos-desk 0.4.0. Fake workers under tests/fakes; the canonical Desk from the
+"""Offline tests for soojos-desk 0.4.1. Fake workers under tests/fakes; the canonical Desk from the
 approved harness (policy code_root) runs against temporary state. No real claude/codex, no network.
 
 Run:  /usr/bin/python3 -m unittest discover -s /Users/sayuj/soojos/tools/soojos-desk/tests -v
@@ -1141,7 +1141,7 @@ class TestBeat040(DeskTestCase):
         auto = self.ok("queue_add", project="soojos", task="auto me", assignee="claude", budget_minutes=1, auto=True)["added"]["id"]
         rec = self.beat.beat()
         self.assertEqual(rec["gate"], "ATTENTION")
-        by_id = {d["id"]: d for d in rec["dispatch"]}
+        by_id = {d["id"]: d for d in rec["dispatch"] if "id" in d}
         self.assertIn("not marked for automatic dispatch", by_id[manual]["skipped"])
         self.assertTrue(by_id[auto].get("launched"))
         self.assertEqual(self.wait_run(by_id[auto]["launched"])["state"], "done")
@@ -1149,8 +1149,35 @@ class TestBeat040(DeskTestCase):
         self.write_billing(fresh=False)
         stale = self.ok("queue_add", project="soojos", task="stale evidence", assignee="claude", budget_minutes=1, auto=True)["added"]["id"]
         rec = self.beat.beat()
-        self.assertIn("billing evidence not fresh", {d["id"]: d for d in rec["dispatch"]}[stale]["skipped"])
+        self.assertIn("billing evidence not fresh", {d["id"]: d for d in rec["dispatch"] if "id" in d}[stale]["skipped"])
         self.assertEqual(self.queue()[stale]["status"], "queued")
+
+    def test_beat_observes_before_dispatch_when_evidence_is_stale(self):
+        os.environ["SOOJOS_OBSERVER_CMD"] = os.path.join(FAKES, "fake_observer")
+        self.beat = importlib.reload(self.beat); self.beat.server = self.server; self.beat.heartbeat_gate = self.gate
+        self.beat.LOG_PATH = os.path.join(self.private, "beat.log")
+        self.write_billing(fresh=False)
+        tid = self.ok("queue_add", project="soojos", task="needs fresh evidence", assignee="claude", budget_minutes=1, auto=True)["added"]["id"]
+        rec = self.beat.beat()
+        observed = [d["observe"] for d in rec["dispatch"] if "observe" in d]
+        self.assertEqual(observed[0]["kind"], "claude")
+        self.assertTrue(observed[0]["verified"])
+        launched = [d for d in rec["dispatch"] if d.get("launched")]
+        self.assertEqual(launched[0]["id"], tid)                 # refreshed evidence let the task launch
+        self.wait_run(launched[0]["launched"])
+        # observer cannot verify (session lapsed): evidence stays stale, task stays queued, board says why
+        os.environ["FAKE_OBSERVE"] = "no"
+        self.write_billing(fresh=False)
+        tid2 = self.ok("queue_add", project="soojos", task="blocked by login", assignee="claude", budget_minutes=1, auto=True)["added"]["id"]
+        self.server.write_json_atomic(os.path.join(self.private, "observe-status.json"),
+                                      {"results": {"claude": {"verified": False, "reason": "not_logged_in"}}})
+        rec = self.beat.beat()
+        by_id = {d["id"]: d for d in rec["dispatch"] if "id" in d}
+        self.assertIn("billing evidence not fresh", by_id[tid2]["skipped"])
+        self.assertEqual(self.queue()[tid2]["status"], "queued")
+        self.assertIn("Needs you", open(self.server.BOARD_PATH).read())
+        self.assertFalse(self.ok("desk_status")["observer"]["results"]["claude"]["verified"])
+        del os.environ["FAKE_OBSERVE"]; del os.environ["SOOJOS_OBSERVER_CMD"]
 
     def test_beat_under_stop_only_logs(self):
         self.add("x", budget=1)

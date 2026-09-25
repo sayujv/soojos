@@ -35,10 +35,10 @@ verdict applies to.
 
 | Item | State |
 | --- | --- |
-| Server | `tools/soojos-desk/server.py` 0.4.0, stdlib only; `README.md` documents every tool and control |
+| Server | `tools/soojos-desk/server.py` 0.4.1, stdlib only; `README.md` documents every tool and control |
 | Registration | Claude Code: `.mcp.json` (approved in `~/.claude.json`); Codex: `[mcp_servers.soojos-desk]` in `~/.codex/config.toml` |
 | Lifecycle | delegated to the canonical `Desk` at policy `code_root`; no second schema |
-| Tests | 88 offline tests (`tests/`), fake workers; native probe evidence in `tests/evidence/` |
+| Tests | 89 offline tests (`tests/`), fake workers; native probe evidence in `tests/evidence/` |
 | Token discipline | Claude workers run stripped (`--strict-mcp-config`), capped at policy `claude_turns`; model routed by action kind (verify/retro → fable, else sonnet) unless the task names `model`; `token_split` in every run note |
 | Live use | two tasks completed end to end on 22 Sep (Claude review, Codex changelog); handoff entries on `desk/20260917-soojos-desk-mcp` |
 | Reviews answered | your 0.2.0 lifecycle review (6), your 0.2.1 permission review (3), the Claude worker's REVIEW-2026-09-18 (17) |
@@ -82,7 +82,12 @@ interactive Codex app or Claude Code as the caller. Per beat:
 The full text is the "soojos-desk MCP tools" section of `context/desk/active-development.md`
 on the shared checkout.
 
-## Step 3 — refreshing billing evidence (only before a worker launch)
+## Step 3 — refreshing billing evidence (now automated)
+
+The beat runs `observe_billing.py` when evidence is older than 45 minutes and an auto task is
+waiting: it reads the real account pages in a signed-in Chromium profile and writes the evidence
+only when the switch is verifiably off. If BOARD.md shows "Needs you", the profile's session has
+lapsed: Sayuj runs `observe_billing.py --login` and signs in once. Manual recording still works:
 
 The launch gate applies the canonical worker's rule: native subscription login plus usage
 credits verified OFF within the last hour. Observe, then record what you saw:

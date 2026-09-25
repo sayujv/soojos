@@ -1,7 +1,7 @@
 # soojos-desk MCP server
 
 Minimal MCP server for the partnership desk. Python 3.9 stdlib only, stdio
-transport, hand-rolled JSON-RPC (no `mcp` or `fastmcp` dependency). Version 0.4.0.
+transport, hand-rolled JSON-RPC (no `mcp` or `fastmcp` dependency). Version 0.4.1.
 
 Run: `/usr/bin/python3 /Users/sayuj/soojos/tools/soojos-desk/server.py`
 
@@ -240,6 +240,20 @@ so a quiet beat costs zero model tokens and cannot be "confidently wrong". `--dr
 compares without saving; `--json` for machines. It reads desk state and writes only its own
 fingerprint file.
 
+## Automated observation of the zero-cash evidence (0.4.1)
+
+`observe_billing.py` (runs on the Playwright bundled with the local Scrapling tool) opens the two
+account pages in a dedicated, persistent Chromium profile at `~/.soojos/desk/browser-profile`
+(0700), reads the "Usage credits" switch on claude.ai and the credits balance plus the
+auto-reload dialog on chatgpt.com, and writes the evidence files only when it actually sees the
+required state. It never signs in and never changes a setting. `--login` opens a visible window
+for a one-time sign-in by Sayuj. Every observation, verified or not, is recorded in
+`~/.soojos/desk/observe-status.json`; `desk_status` and BOARD.md ("Needs you") surface a failed
+one, and preflight shows it. The beat calls the observer when an auto task is waiting and the
+evidence is older than 45 minutes, so the hourly rule of policy v2 is met by a real read of the
+page rather than relaxed. If a session lapses, evidence goes stale, launches stop, and the board
+asks for `--login` again.
+
 ## Five-minute beat, notes, routing and project scope (0.4.0)
 
 - **`desk_beat.py` every 5 minutes** (launch agent `com.soojos.desk-beat`, installed by
@@ -303,7 +317,7 @@ unavailable, run records carry `pid_start_note` and liveness falls back to pid o
 /usr/bin/python3 -m unittest discover -s /Users/sayuj/soojos/tools/soojos-desk/tests -v
 ```
 
-88 offline tests (`tests/test_server.py`, `tests/test_gate.py`). They initialise a canonical desk in temporary state (via
+89 offline tests (`tests/test_server.py`, `tests/test_gate.py`). They initialise a canonical desk in temporary state (via
 `Desk.initialize` and the v2 migration), use fake `claude`/`codex` under
 `tests/fakes/` that also answer the auth probes, and cover: STOP for every tool;
 canonical add/claim/finish/block validation; done refused without evidence, without
