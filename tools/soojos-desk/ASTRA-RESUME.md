@@ -35,11 +35,11 @@ verdict applies to.
 
 | Item | State |
 | --- | --- |
-| Server | `tools/soojos-desk/server.py` 0.3.5, stdlib only; `README.md` documents every tool and control |
+| Server | `tools/soojos-desk/server.py` 0.3.6, stdlib only; `README.md` documents every tool and control |
 | Registration | Claude Code: `.mcp.json` (approved in `~/.claude.json`); Codex: `[mcp_servers.soojos-desk]` in `~/.codex/config.toml` |
 | Lifecycle | delegated to the canonical `Desk` at policy `code_root`; no second schema |
-| Tests | 59 offline tests (`tests/`), fake workers; native probe evidence in `tests/evidence/` |
-| Token discipline | Claude workers run stripped (`--strict-mcp-config`), on Sonnet unless the task names `model`, capped at policy `claude_turns`; `token_split` in every run note |
+| Tests | 62 offline tests (`tests/`), fake workers; native probe evidence in `tests/evidence/` |
+| Token discipline | Claude workers run stripped (`--strict-mcp-config`), capped at policy `claude_turns`; model routed by action kind (verify/retro → fable, else sonnet) unless the task names `model`; `token_split` in every run note |
 | Live use | two tasks completed end to end on 22 Sep (Claude review, Codex changelog); handoff entries on `desk/20260917-soojos-desk-mcp` |
 | Reviews answered | your 0.2.0 lifecycle review (6), your 0.2.1 permission review (3), the Claude worker's REVIEW-2026-09-18 (17) |
 | Branches | `desk/20260917-soojos-desk-mcp` (shared checkout, carries handoff entries and your earlier desk commits); `desk/soojos-desk-mcp` (PR #1, rebased onto main) |

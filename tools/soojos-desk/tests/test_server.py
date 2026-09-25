@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline tests for soojos-desk 0.3.5. Fake workers under tests/fakes; the canonical Desk from the
+"""Offline tests for soojos-desk 0.3.6. Fake workers under tests/fakes; the canonical Desk from the
 approved harness (policy code_root) runs against temporary state. No real claude/codex, no network.
 
 Run:  /usr/bin/python3 -m unittest discover -s /Users/sayuj/soojos/tools/soojos-desk/tests -v
@@ -842,6 +842,19 @@ class TestTokenDiscipline035(DeskTestCase):
         self.assertEqual(out["command"][out["command"].index("--model") + 1], "claude-haiku-4-5-20251001")
         codex_tid = self.add("codex inherits", assignee="codex", budget=1)
         self.assertIsNone(self.queue()[codex_tid]["worker_model"])
+
+    def test_model_routes_by_action_kind_unless_named(self):
+        verify = self.ok("queue_add", project="soojos", task="review it", assignee="claude", budget_minutes=1,
+                         action_kind="verify")["added"]["id"]
+        self.assertEqual(self.queue()[verify]["worker_model"], "fable")      # verdict-bearing work: strongest model
+        code = self.ok("queue_add", project="soojos", task="write it", assignee="claude", budget_minutes=1,
+                       action_kind="code")["added"]["id"]
+        self.assertEqual(self.queue()[code]["worker_model"], "sonnet")      # production work: Sonnet, checked downstream
+        named = self.ok("queue_add", project="soojos", task="cheap check", assignee="claude", budget_minutes=1,
+                        action_kind="verify", model="haiku")["added"]["id"]
+        self.assertEqual(self.queue()[named]["worker_model"], "haiku")      # an explicit model always wins
+        self.assertEqual(self.server.resolve_model("claude", None, "retro"), "fable")
+        self.assertEqual(self.server.resolve_model("claude", None, "research"), "sonnet")
 
     def test_token_split_is_recorded(self):
         out = self.ok("run_claude", task="ping", cwd=self.tmp, budget_minutes=1, model="sonnet")

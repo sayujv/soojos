@@ -42,7 +42,7 @@ import traceback
 from pathlib import Path
 
 SERVER_NAME = "soojos-desk"
-SERVER_VERSION = "0.3.5"
+SERVER_VERSION = "0.3.6"
 PROTOCOL_VERSION = "2025-06-18"
 MINUTE = float(os.environ.get("SOOJOS_MINUTE_SECONDS", "60"))  # tests shrink this to exercise timeouts quickly
 
@@ -83,15 +83,18 @@ DEFAULT_CODEX_SANDBOX = "workspace-write"
 APPROVED_CLAUDE_MODELS = {"sonnet": "claude-sonnet-5", "haiku": "claude-haiku-4-5-20251001",
                           "opus": "claude-opus-5", "fable": "claude-fable-5-1"}
 DEFAULT_CLAUDE_MODEL = "sonnet"
+# Route by where a mistake costs the most: verdict-bearing work (reviews, verification, retrospectives)
+# defaults to the strongest model; production and research default to Sonnet. An explicit model wins.
+MODEL_BY_ACTION = {"verify": "fable", "retro": "fable"}
 WORKER_MCP_CONFIG = os.path.join(HERE, "worker-mcp.json")   # {"mcpServers": {}}: a worker loads no connectors
 
 
-def resolve_model(kind, model):
+def resolve_model(kind, model, action_kind=None):
     if kind != "claude":
         if model not in (None, "", "default"):
             raise ToolError("model override is not supported for %s workers; they inherit their configured model" % kind)
         return None
-    model = model or DEFAULT_CLAUDE_MODEL
+    model = model or MODEL_BY_ACTION.get(action_kind or "", DEFAULT_CLAUDE_MODEL)
     if model not in APPROVED_CLAUDE_MODELS:
         raise ToolError("model %r is not in the approved set %s" % (model, sorted(APPROVED_CLAUDE_MODELS)))
     return model
@@ -1240,7 +1243,7 @@ def t_queue_add(args):
     entry["inputs"] = list(args.get("inputs") or [])
     entry["constraints"] = list(args.get("constraints") or entry["constraints"])
     entry["action_kind"] = args.get("action_kind", "research")
-    entry["worker_model"] = resolve_model(assignee, args.get("model"))  # None for codex (inherits)
+    entry["worker_model"] = resolve_model(assignee, args.get("model"), entry["action_kind"])  # None for codex (inherits)
     entry["priority"] = {"rank": 1, "reason": "Queued via %s" % SERVER_NAME}
     stored = desk_call(desk().enqueue, entry)  # canonical validation: scope, budgets, branch, ancestry
     return {"added": stored, "queue_path": QUEUE_PATH}
@@ -1499,8 +1502,8 @@ TOOLS = [
                                     "assignee": _s("codex or claude"),
                                     "budget_minutes": _BUDGET,
                                     "action_kind": {"type": "string", "enum": ["research", "analysis", "code", "verify", "harness", "retro"], "default": "research"},
-                                    "model": {"type": "string", "enum": ["sonnet", "haiku", "opus", "fable"], "default": "sonnet",
-                                              "description": "Claude worker model (approved set); codex assignees inherit their configured model"},
+                                    "model": {"type": "string", "enum": ["sonnet", "haiku", "opus", "fable"],
+                                              "description": "Claude worker model (approved set). Default: fable for verify/retro, sonnet otherwise; codex assignees inherit their configured model"},
                                     "inputs": {"type": "array", "items": {"type": "string"}},
                                     "constraints": {"type": "array", "items": {"type": "string"}}}}},
     {"name": "queue_claim", "fn": t_queue_claim, "annotations": RW,
