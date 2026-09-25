@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline tests for soojos-desk 0.3.4. Fake workers under tests/fakes; the canonical Desk from the
+"""Offline tests for soojos-desk 0.3.5. Fake workers under tests/fakes; the canonical Desk from the
 approved harness (policy code_root) runs against temporary state. No real claude/codex, no network.
 
 Run:  /usr/bin/python3 -m unittest discover -s /Users/sayuj/soojos/tools/soojos-desk/tests -v
@@ -675,6 +675,21 @@ class TestReviewFixes032(DeskTestCase):
         self.assertNoWorkerRun()
         self.assertEqual(self.queue()[tid]["status"], "blocked")
 
+    def test_transient_ps_failure_does_not_mark_live_worker_lost(self):
+        self.server.save_run({"run_id": "run-claude-psflake", "kind": "claude", "task_id": "t", "state": "running",
+                              "pid": os.getpid(), "pid_start": self.server.proc_start(os.getpid()),
+                              "started_at": utcnow().isoformat()})
+        self.server.proc_start = lambda pid: None   # ps timed out this instant
+        self.assertEqual(self.ok("run_status", id="run-claude-psflake")["run"]["state"], "running")
+
+    def test_reserved_goes_stale_faster_than_spawned(self):
+        old = (utcnow() - dt.timedelta(seconds=200)).isoformat()
+        self.server.save_run({"run_id": "run-claude-res", "kind": "claude", "state": "reserved", "pid": os.getpid(), "reserved_at": old})
+        self.server.save_run({"run_id": "run-claude-spn", "kind": "claude", "state": "spawned", "pid": os.getpid(), "spawned_at": old})
+        states = {r["run_id"]: r["state"] for r in self.server.all_runs()}
+        self.assertEqual(states["run-claude-res"], "lost")
+        self.assertEqual(states["run-claude-spn"], "spawned")
+
     def test_m5_reused_pid_is_not_alive(self):
         self.server.save_run({"run_id": "run-claude-reused", "kind": "claude", "task_id": "t", "state": "running",
                               "pid": os.getpid(), "pid_start": "Mon Jan  1 00:00:00 2001", "started_at": utcnow().isoformat()})
@@ -798,6 +813,43 @@ class TestQuotaAndHostTolerance(DeskTestCase):
         self.assertIn("pid_start_note", ident)
         self.assertTrue(self.server.pid_alive(os.getpid(), None))
         self.assertFalse(self.server.pid_alive(999999, None))
+
+
+class TestTokenDiscipline035(DeskTestCase):
+    def test_claude_worker_session_is_stripped_and_capped(self):
+        argv = self.server.worker_command("claude", "x", self.tmp, None)
+        self.assertIn("--strict-mcp-config", argv)
+        self.assertEqual(argv[argv.index("--mcp-config") + 1], self.server.WORKER_MCP_CONFIG)
+        self.assertEqual(json.load(open(self.server.WORKER_MCP_CONFIG)), {"mcpServers": {}})
+        self.assertEqual(argv[argv.index("--max-turns") + 1], "8")     # policy claude_turns
+        self.assertEqual(argv[argv.index("--model") + 1], "claude-sonnet-5")   # default sonnet
+        argv = self.server.worker_command("claude", "x", self.tmp, None, model="opus")
+        self.assertEqual(argv[argv.index("--model") + 1], "claude-opus-5")
+        with self.assertRaises(self.server.ToolError):
+            self.server.worker_command("claude", "x", self.tmp, None, model="gpt-6")
+        self.assertNotIn("--model", self.server.worker_command("codex", "x", self.tmp, "/dev/null"))
+
+    def test_queue_add_validates_model_and_run_task_uses_it(self):
+        self.assertIn("approved set", self.refused("queue_add", project="soojos", task="x", assignee="claude",
+                                                   budget_minutes=1, model="gpt-6"))
+        self.assertIn("not supported for codex", self.refused("queue_add", project="soojos", task="x", assignee="codex",
+                                                              budget_minutes=1, model="sonnet"))
+        tid = self.ok("queue_add", project="soojos", task="haiku please", assignee="claude", budget_minutes=1,
+                      model="haiku")["added"]["id"]
+        self.assertEqual(self.queue()[tid]["worker_model"], "haiku")
+        out = self.ok("run_task", id=tid, cwd=self.repo)
+        self.assertEqual(out["model"], "haiku")
+        self.assertEqual(out["command"][out["command"].index("--model") + 1], "claude-haiku-4-5-20251001")
+        codex_tid = self.add("codex inherits", assignee="codex", budget=1)
+        self.assertIsNone(self.queue()[codex_tid]["worker_model"])
+
+    def test_token_split_is_recorded(self):
+        out = self.ok("run_claude", task="ping", cwd=self.tmp, budget_minutes=1, model="sonnet")
+        split = out["token_split"]
+        self.assertEqual(split["actual_tokens"], 115)
+        self.assertEqual(split["cache_creation_input_tokens"], 100)
+        self.assertEqual(split["standing_context_per_turn"], 100)   # 1 turn, 100 created + 0 read
+        self.assertEqual(out["model"], "sonnet")
 
 
 class TestRpc(DeskTestCase):

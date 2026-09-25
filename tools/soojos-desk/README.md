@@ -1,7 +1,7 @@
 # soojos-desk MCP server
 
 Minimal MCP server for the partnership desk. Python 3.9 stdlib only, stdio
-transport, hand-rolled JSON-RPC (no `mcp` or `fastmcp` dependency). Version 0.3.4.
+transport, hand-rolled JSON-RPC (no `mcp` or `fastmcp` dependency). Version 0.3.5.
 
 Run: `/usr/bin/python3 /Users/sayuj/soojos/tools/soojos-desk/server.py`
 
@@ -42,7 +42,7 @@ Mutating:
 
 | Tool | What it does |
 | --- | --- |
-| `queue_add(project, task, assignee, budget_minutes, action_kind?, inputs?, constraints?)` | Canonical enqueue. |
+| `queue_add(project, task, assignee, budget_minutes, action_kind?, model?, inputs?, constraints?)` | Canonical enqueue. `model` (Claude assignees only) from the approved set `sonnet` (default), `haiku`, `opus`, `fable`; stored as `worker_model`. |
 | `queue_claim(id)` | Canonical claim. |
 | `queue_finish(id, status, reason?, report?)` | Canonical done/blocked. |
 | `desk_tick()` | Canonical recovery; also lists lost runs. |
@@ -52,7 +52,7 @@ Workers:
 
 | Tool | What it does |
 | --- | --- |
-| `run_claude(task, cwd, budget_minutes, background?)` | `/Users/sayuj/.local/bin/claude -p … --output-format json --permission-mode acceptEdits --no-session-persistence --disallowedTools <fixed deny list> --allowedTools <local git only>`. |
+| `run_claude(task, cwd, budget_minutes, background?, model?)` | `/Users/sayuj/.local/bin/claude -p … --output-format json --permission-mode acceptEdits --no-session-persistence --model <approved id> --max-turns <policy claude_turns> --strict-mcp-config --mcp-config worker-mcp.json --disallowedTools <fixed deny list> --allowedTools <local git only>`. |
 | `run_codex(task, cwd, budget_minutes, background?)` | `/Applications/ChatGPT.app/Contents/Resources/codex exec --sandbox workspace-write --skip-git-repo-check --ephemeral -C cwd [--add-dir …] -o <last-message>`. In a linked worktree, `--add-dir` grants only the worktree's own gitdir, the shared object store and the `desk/` ref and reflog directories, so a commit on the task branch works while the main checkout's HEAD, index and other refs stay outside the sandbox. |
 | `run_task(id, background?, cwd?)` | Permission preflight → claim if queued → exclusive run reservation under the desk lock → `.worktrees/task-<id>` on `desk/<id>`, verified by git → deadline check → zero-cash check → run the assignee → `Desk.finish` or `Desk.block`. No worktree opt-out. |
 
@@ -175,6 +175,39 @@ Headless `codex exec` refuses the mutating tools ("requires approval"); use the
 interactive Codex app or Claude Code. `claude -p` needs
 `--allowedTools "mcp__soojos-desk__*"` (or narrower) to call them.
 
+## Token discipline (0.3.5)
+
+Measured on the 22 September review run: 11 turns, 694k cache-read tokens, about 63k
+tokens of standing context re-read every turn, because a `claude -p` worker in the soojos
+checkout inherited every user MCP server, claude.ai connector and plugin tool. Zero cash on
+the subscription, but all of it counted against the plan's usage limit. 0.3.5 therefore:
+
+- **Strips the worker session.** `--strict-mcp-config --mcp-config worker-mcp.json` (an
+  empty `{"mcpServers": {}}`), so a worker loads no connectors, plugin servers or user MCP
+  servers. It still reads the repository's CLAUDE.md router.
+- **Picks the model per task** from an approved set: `sonnet` by default, `haiku`, `opus`
+  or `fable` only when the task names it (`queue_add … model=`, `run_claude … model=`).
+  Codex workers inherit their configured model; an override is refused.
+- **Caps turns** at policy `claude_turns` (8), the already-approved control.
+- **Reports the split** in every run note and record as `token_split`: input, output,
+  cache creation, cache reads, turns, and `standing_context_per_turn`, so a saving is visible
+  next to the accounting instead of asserted.
+
+**Measured, 25 September.** The same review task re-run on Sonnet with the stripped session:
+10 turns, 640k cache reads, 76k cache creation, 23k output; standing context per turn about
+72k versus about 63k on 22 September (server.py had grown by 600 lines, which the reviewer
+reads). A direct one-turn probe put the baseline system context at about 40k tokens with 88
+MCP tools loaded and about 37k with none, so the strip removes only about 3k tokens per turn;
+its value is that a worker reaches no connectors at all. The saving that mattered was the
+model: list-price equivalent A$-neutral cost fell from USD 2.40 to USD 0.66 for a comparable
+review (6 findings versus 17, different depth), and the plan's usage limit is drawn down in
+the same proportion. Findings 1, 5 and 6 of that review (transient `ps` failure marking a
+live worker lost; reservation TTL; directory fsync) were fixed in this version.
+
+Jev and similar hosted decision models were considered and not adopted: they are a new paid
+provider needing Sayuj's explicit approval, and they address tool-call gating rather than the
+standing-context cost the numbers point at. Revisit with data if wanted.
+
 ## Operating helpers
 
 - `preflight.py [--tests] [--json]`: read-only readiness checklist (interpreter, server and
@@ -197,7 +230,7 @@ unavailable, run records carry `pid_start_note` and liveness falls back to pid o
 /usr/bin/python3 -m unittest discover -s /Users/sayuj/soojos/tools/soojos-desk/tests -v
 ```
 
-56 offline tests. They initialise a canonical desk in temporary state (via
+61 offline tests. They initialise a canonical desk in temporary state (via
 `Desk.initialize` and the v2 migration), use fake `claude`/`codex` under
 `tests/fakes/` that also answer the auth probes, and cover: STOP for every tool;
 canonical add/claim/finish/block validation; done refused without evidence, without
