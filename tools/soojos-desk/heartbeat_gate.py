@@ -7,7 +7,7 @@ so an unchanged beat costs zero model tokens (decision 0007).
 Exit 0 and print UNCHANGED when nothing needs a model's attention; exit 10 and print ATTENTION with
 the reasons otherwise. The coordinator's automation should call this first and stop on UNCHANGED.
 
-What it fingerprints (read-only): STOP presence; every queue row's status/deadline; outbox file set;
+What it fingerprints (read-only): STOP presence; every queue row's status/deadline; outbox file set; INBOX.md;
 run records' live states; billing evidence freshness; the canonical handoff's size; HEAD of the
 soojos checkout. What always counts as attention regardless of the fingerprint: STOP present, a
 queued task, a running task past its deadline, a lost/corrupt/quota run, the 07:00-07:59 Perth
@@ -39,6 +39,12 @@ def snapshot(now=None):
     billing = {k: bool(server.load_json(p, {}).get("verified_at")) for k, p in server.BILLING_PATHS.items()}
     handoff = os.path.join(server.SOOJOS_ROOT, "context", "handoff.md")
     handoff_size = os.path.getsize(handoff) if os.path.exists(handoff) else 0
+    inbox_path = os.path.join(server.DESK_DIR, "INBOX.md")
+    inbox_new = 0
+    inbox_size = 0
+    if os.path.exists(inbox_path):
+        inbox_size = os.path.getsize(inbox_path)
+        inbox_new = sum(1 for sec in server.parse_inbox(open(inbox_path).read()) if sec["queued"] is None)
     _, head, _ = server.git(server.SOOJOS_ROOT, "rev-parse", "HEAD") if os.path.isdir(server.SOOJOS_ROOT) else (1, "", "")
     reasons = []
     if server.stop_present():
@@ -53,11 +59,13 @@ def snapshot(now=None):
     for r in runs:
         if r.get("state") in ("lost", "corrupt", "quota"):
             reasons.append("run %s is %s" % (r.get("run_id"), r.get("state")))
+    if inbox_new:
+        reasons.append("%d new inbox section(s) awaiting inbox_sync" % inbox_new)
     local = now.astimezone(PERTH_OFFSET)
     if local.hour == DAILY_DUTY_HOUR:
         reasons.append("daily duty window (07:00-07:59 Perth)")
     material = {"stop": server.stop_present(), "queue": queue_view, "outbox": outbox, "runs": run_view,
-                "billing_present": billing, "handoff_size": handoff_size, "head": head}
+                "billing_present": billing, "handoff_size": handoff_size, "head": head, "inbox_size": inbox_size}
     digest = hashlib.sha256(json.dumps(material, sort_keys=True, default=str).encode()).hexdigest()
     return {"at": now.isoformat(), "fingerprint": digest, "always_attention": reasons,
             "summary": {"queue_rows": len(tasks), "outbox_files": len(outbox), "live_runs":
