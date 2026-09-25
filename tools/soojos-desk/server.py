@@ -28,6 +28,7 @@ Background runs: `server.py --runner <spec.json>` is the detached runner the
 server spawns in its own session; it survives the MCP client exiting.
 """
 import datetime as _dt
+import fcntl
 import importlib
 import json
 import os
@@ -42,7 +43,7 @@ import traceback
 from pathlib import Path
 
 SERVER_NAME = "soojos-desk"
-SERVER_VERSION = "0.3.7"
+SERVER_VERSION = "0.3.8"
 PROTOCOL_VERSION = "2025-06-18"
 MINUTE = float(os.environ.get("SOOJOS_MINUTE_SECONDS", "60"))  # tests shrink this to exercise timeouts quickly
 
@@ -610,20 +611,53 @@ def load_run(run_id, mark=True):
         return None
     state, note = effective_state(rec)
     if state != rec.get("state"):
-        rec["state"], rec["note"] = state, note
         if mark:
-            save_run(rec)
+            rec = mark_lost(run_id, rec.get("state"), note) or rec   # CAS: a runner's final write in between wins
+        else:
+            rec = dict(rec, state=state, note=note)
     return rec
+
+
+class record_lock:
+    """flock on <record>.lock so runner writes and status-side lost-marking serialise."""
+
+    def __init__(self, run_id):
+        self.path = run_record_path(run_id) + ".lock"
+
+    def __enter__(self):
+        os.makedirs(RUNS_DIR, exist_ok=True)
+        self.fh = open(self.path, "a+")
+        fcntl.flock(self.fh, fcntl.LOCK_EX)
+        return self
+
+    def __exit__(self, *exc):
+        fcntl.flock(self.fh, fcntl.LOCK_UN)
+        self.fh.close()
+        return False
 
 
 def merge_run(run_id, **fields):
-    """Runner-side update that never lets a non-terminal write follow a terminal one."""
-    rec = load_json(run_record_path(run_id), None) or {"run_id": run_id}
-    if rec.get("state") not in LIVE_STATES and rec.get("state") is not None and fields.get("state") in LIVE_STATES:
+    """Runner-side update under the record lock; never lets a non-terminal write follow a terminal one.
+    Returns the record as it is on disk afterwards, so a caller can see a refused transition."""
+    with record_lock(run_id):
+        rec = load_json(run_record_path(run_id), None) or {"run_id": run_id}
+        if rec.get("state") not in LIVE_STATES and rec.get("state") is not None and fields.get("state") in LIVE_STATES:
+            rec["refused_transition"] = fields.get("state")
+            return rec
+        rec.update(fields)
+        save_run(rec)
         return rec
-    rec.update(fields)
-    save_run(rec)
-    return rec
+
+
+def mark_lost(run_id, expected_state, note):
+    """Compare-and-swap under the record lock: only write lost if the on-disk state is still what was classified."""
+    with record_lock(run_id):
+        rec = load_json(run_record_path(run_id), None)
+        if not isinstance(rec, dict) or rec.get("state") != expected_state:
+            return rec
+        rec["state"], rec["note"] = "lost", note
+        save_run(rec)
+        return rec
 
 
 def run_record_files():
@@ -1001,12 +1035,25 @@ def complete_task_from_report(spec, report):
                             "no tests were run by soojos-desk itself"
                             % (kind, report.get("elapsed_seconds"), report.get("timeout_seconds"), after.get("head"),
                                after.get("branch"), before.get("head"), after.get("dirty_paths") or 0))
+            acceptance_warning = None
+            if re.search(r"\bcommit", task.get("task") or "", re.IGNORECASE) and before.get("head") and before.get("head") == after.get("head"):
+                acceptance_warning = "task text asks for a commit but HEAD did not change; the worker's report is a claim, check it"
+                verification += "; ACCEPTANCE WARNING: " + acceptance_warning
+            if report.get("stages"):
+                rv = report.get("review") or {}
+                verification += "; two-stage review: triage %s -> %d hotspot(s), %d excerpt line(s)%s; verdict %s" % (
+                    rv.get("triage_model"), len(rv.get("hotspots") or []), rv.get("excerpt_lines") or 0,
+                    " (fallback: %s)" % rv["fallback"] if rv.get("fallback") else "", rv.get("review_model"))
             evidence = [report.get("outbox_file"), spec.get("worktree") or spec.get("cwd"),
                         "HEAD %s" % after.get("head") if after.get("head") else "no git snapshot"]
             done = {"status": "done", "summary": clip(report.get("result") or "", 4000), "verification": verification,
                     "evidence": [e for e in evidence if e], "actual_minutes": minutes,
                     "actual_tokens": report.get("actual_tokens"), "actual_cost_aud": acc.get("actual_cost_aud"),
                     "billing_mode": acc.get("billing_mode"), "run_id": run_id}
+            if acceptance_warning:
+                done["acceptance_warning"] = acceptance_warning
+            if report.get("token_split"):
+                done["token_split"] = report["token_split"]
             try:
                 return {"status": "done", "task": desk_call(d.finish, task_id, done)}
             except ToolError as exc:
@@ -1047,8 +1094,14 @@ def launch_floor_seconds(budget_minutes):
 def run_spec(spec):
     """Executed by the detached runner (the only writer of running/terminal states)."""
     run_id = spec["run_id"]
-    merge_run(run_id, state="running", started_at=iso(), cwd=spec["cwd"], budget_minutes=spec["budget_minutes"],
-              background=spec.get("background", False), **self_identity())
+    rec = merge_run(run_id, state="running", started_at=iso(), cwd=spec["cwd"], budget_minutes=spec["budget_minutes"],
+                    background=spec.get("background", False), **self_identity())
+    if rec.get("state") != "running":
+        # The record moved on without us (marked lost, or failed by the parent before spawn): never run
+        # unrecorded. No worker was started, so there is nothing to kill.
+        return {"status": "refused", "run_id": run_id, "task_id": spec.get("task_id"),
+                "error": "running transition refused; record is %s" % rec.get("state"), "finished_at": iso(),
+                "actual_tokens": None, "stdout": "", "stderr": ""}
     timeout = spec["budget_minutes"] * MINUTE
     if spec.get("task_id"):
         try:
@@ -1069,7 +1122,7 @@ def run_spec(spec):
             remove_spec(run_id)
             return report
         timeout = min(timeout, remaining)
-    report = execute_worker(spec, timeout)
+    report = execute_review(spec, timeout) if spec.get("review") else execute_worker(spec, timeout)
     if report.get("signalled"):
         report["status"] = "killed"
         report["error"] = "runner received %s; worker group killed" % report["signalled"]
@@ -1105,19 +1158,33 @@ def spawn_runner(spec, record):
                   cwd=spec["cwd"], budget_minutes=spec["budget_minutes"], spec=spec_path)
     save_run(record)
     with open(log_path, "ab") as log:
-        subprocess.Popen([sys.executable, os.path.abspath(__file__), "--runner", spec_path],
-                         stdin=subprocess.DEVNULL, stdout=log, stderr=log, start_new_session=True, cwd=spec["cwd"])
+        proc = subprocess.Popen([sys.executable, os.path.abspath(__file__), "--runner", spec_path],
+                                stdin=subprocess.DEVNULL, stdout=log, stderr=log, start_new_session=True, cwd=spec["cwd"])
+    _RUNNERS[spec["run_id"]] = proc   # foreground waiter can notice a runner that dies before reporting
     return record
+
+
+_RUNNERS = {}
 
 
 def wait_for_run(run_id, budget_minutes):
     """Foreground path: block this call on the record, not on the worker. The runner owns the timeout."""
     limit = budget_minutes * MINUTE + CLOSURE_MAX_SECONDS + 60
     started = time.monotonic()
+    proc = _RUNNERS.get(run_id)
     while time.monotonic() - started < limit:
         rec = load_run(run_id)
         if rec and rec.get("state") not in LIVE_STATES:
             return rec
+        if proc is not None and proc.poll() is not None and rec and rec.get("state") in LIVE_STATES:
+            tail = ""
+            try:
+                with open(os.path.join(RUNS_DIR, run_id + ".log")) as fh:
+                    tail = fh.read()[-400:]
+            except OSError:
+                pass
+            return mark_lost(run_id, rec.get("state"), "runner exited with code %s before reporting: %s"
+                             % (proc.returncode, tail.strip()[-300:])) or rec
         time.sleep(0.5)
     return load_run(run_id)
 
@@ -1138,7 +1205,7 @@ def report_from_record(rec):
 
 
 def launch(kind, task, cwd, budget_minutes, background=False, task_id=None, project=None, worktree=None,
-           branch=None, record=None, model=None):
+           branch=None, record=None, model=None, review=None):
     """Validate, verify zero cash, reserve (if not already reserved), and run or detach."""
     if not isinstance(task, str) or not task.strip():
         raise ToolError("task must be a non-empty string")
@@ -1157,7 +1224,7 @@ def launch(kind, task, cwd, budget_minutes, background=False, task_id=None, proj
     spec = {"run_id": record["run_id"], "kind": kind, "task": task, "cwd": cwd, "budget_minutes": budget,
             "task_id": task_id, "project": project, "worktree": worktree, "branch": branch,
             "background": bool(background), "zero_cash": True, "cash_evidence": cash,
-            "containment": containment, "permissions": permission_settings(), "model": model}
+            "containment": containment, "permissions": permission_settings(), "model": model, "review": review}
     rec = spawn_runner(spec, record)
     if background:
         return {"run_id": rec["run_id"], "state": rec["state"], "background": True,
@@ -1380,13 +1447,13 @@ def compose_task_prompt(task, cwd, worktree, branch):
     return "\n".join(lines)
 
 
-def t_run_task(args):
-    """Claim (if queued), reserve one run identity under the desk lock, isolate in a worktree,
-    check the persisted deadline, verify zero cash, run the assignee, complete through the desk."""
+def start_task_run(args, launcher, what="run"):
+    """Shared preflight for task workers: permission check, repo check, canonical claim, exclusive run
+    reservation under the desk lock, worktree containment, deadline floor; then hand off to `launcher`.
+    Any refusal or exception after the claim fails the record and blocks the task."""
     task_id = args.get("id")
     if not isinstance(task_id, str) or not task_id:
         raise ToolError("id is required")
-    background = bool(args.get("background", False))
     if "use_worktree" in args and not args["use_worktree"]:
         raise ToolError("use_worktree=false is not supported: task workers always run in .worktrees/task-<id>")
     d = desk()
@@ -1417,8 +1484,6 @@ def t_run_task(args):
         return ""
 
     try:
-        # Exclusive run reservation under the same lock the desk uses, so two callers that both
-        # observe a running task without a live run cannot both launch.
         core = desk_modules()["core"]
         try:
             with d.locked():
@@ -1435,32 +1500,171 @@ def t_run_task(args):
                             % (task_id, task.get("deadline"), int(closure_seconds(budget)), int(launch_floor_seconds(budget))))
         cwd, worktree, branch = ensure_task_worktree(project_dir, task_id)
         verify_task_worktree(cwd, worktree, task_id)  # containment preflight; refused launches block below
-        prompt = compose_task_prompt(task, cwd, worktree, branch)
-        out = launch(kind, prompt, cwd, budget, background=background, task_id=task_id,
-                     project=task.get("project"), worktree=worktree, branch=branch, record=record,
-                     model=task.get("worker_model"))
+        out = launcher(task=task, kind=kind, cwd=cwd, worktree=worktree, branch=branch, record=record, budget=budget)
     except ToolError as exc:
-        # A live-run refusal must not block the task (another run owns it). Any other refusal before the
-        # runner took over leaves the task running with no worker: fail the record and block it now.
         if "already has a live run" in str(exc):
             raise
         rec = (load_run(record["run_id"]) if record else None) or record
         if rec is None or rec.get("state") == "reserved":
             if rec:
                 fail_run(rec, str(exc)[:500])
-            raise ToolError("%s%s" % (exc, block_task("launch refused: %s" % exc)))
+            raise ToolError("%s%s" % (exc, block_task("%s refused: %s" % (what, exc))))
         raise
     except Exception as exc:  # git timeouts, OSError, spec collisions: never leave an orphan reservation
-        reason = "launch failed: %s: %s" % (type(exc).__name__, str(exc)[:300])
-        rec = (load_run(record["run_id"]) if record else None) or record
-        if rec and rec.get("state") in ("reserved", "spawned"):
+        reason = "%s failed: %s: %s" % (what, type(exc).__name__, str(exc)[:300])
+        rec = (load_json(run_record_path(record["run_id"]), None) if record else None) or record
+        if rec and rec.get("state") == "reserved":   # nothing spawned yet: safe to fail and block
             fail_run(rec, reason)
-        raise ToolError("%s%s" % (reason, block_task(reason)))
+            raise ToolError("%s%s" % (reason, block_task(reason)))
+        # spawned or later: the runner owns the record and the task outcome; report, do not touch
+        raise ToolError("%s (runner %s owns the record; task left to it)" % (reason, record["run_id"] if record else "none"))
     out["task_id"] = task_id
     out["worktree"] = worktree
     out["branch"] = branch
     out["run_id"] = record["run_id"]
     return out
+
+
+def t_run_task(args):
+    """Claim (if queued), reserve one run identity under the desk lock, isolate in a worktree,
+    check the persisted deadline, verify zero cash, run the assignee, complete through the desk."""
+    background = bool(args.get("background", False))
+
+    def launcher(task, kind, cwd, worktree, branch, record, budget):
+        prompt = compose_task_prompt(task, cwd, worktree, branch)
+        return launch(kind, prompt, cwd, budget, background=background, task_id=task["id"], project=task.get("project"),
+                      worktree=worktree, branch=branch, record=record, model=task.get("worker_model"))
+    return start_task_run(args, launcher, "launch")
+
+
+REVIEW_MAX_EXCERPT_LINES = 600
+REVIEW_TRIAGE_SHARE = 0.3
+REVIEW_PAD_LINES = 8
+
+
+def t_run_review(args):
+    """Two-stage review (decision 0007): a Sonnet triage names the hotspots in the given files, then the
+    verdict model reads only those excerpts. Same claim, reservation, containment and desk completion as
+    run_task; tokens of both stages are summed into the accounting."""
+    files = args.get("files")
+    if not isinstance(files, list) or not files or not all(isinstance(f, str) and f and not os.path.isabs(f) for f in files):
+        raise ToolError("files must be a non-empty list of repository-relative paths")
+    background = bool(args.get("background", False))
+    focus = args.get("focus") or "correctness bugs, race conditions and failure modes"
+
+    def launcher(task, kind, cwd, worktree, branch, record, budget):
+        if kind != "claude":
+            raise ToolError("run_review needs a claude assignee (two Claude stages); this task is assigned to %s" % kind)
+        for f in files:
+            if not os.path.isfile(os.path.join(cwd, f)):
+                raise ToolError("review file not found in the task worktree: %s" % f)
+        prompt = compose_task_prompt(task, cwd, worktree, branch)
+        review = {"files": files, "focus": focus, "triage_model": "sonnet",
+                  "review_model": task.get("worker_model") or "fable"}
+        return launch(kind, prompt, cwd, budget, background=background, task_id=task["id"], project=task.get("project"),
+                      worktree=worktree, branch=branch, record=record, model=review["review_model"], review=review)
+    return start_task_run(args, launcher, "review launch")
+
+
+def parse_hotspots(text, files):
+    """First JSON array in the triage output; keep well-formed entries for the requested files only."""
+    if not text:
+        return []
+    start, end = text.find("["), text.rfind("]")
+    if start < 0 or end <= start:
+        return []
+    try:
+        items = json.loads(text[start:end + 1])
+    except ValueError:
+        return []
+    out = []
+    for it in items if isinstance(items, list) else []:
+        if not isinstance(it, dict) or it.get("file") not in files:
+            continue
+        try:
+            a, b = int(it.get("start")), int(it.get("end"))
+        except (TypeError, ValueError):
+            continue
+        if a < 1 or b < a:
+            continue
+        out.append({"file": it["file"], "start": a, "end": b, "why": str(it.get("why") or "")[:200]})
+    return out[:12]
+
+
+def build_excerpts(cwd, hotspots, max_lines=REVIEW_MAX_EXCERPT_LINES, pad=REVIEW_PAD_LINES):
+    """Numbered excerpts around each hotspot, bounded in total so the verdict model reads less."""
+    parts, used = [], 0
+    for h in hotspots:
+        try:
+            lines = open(os.path.join(cwd, h["file"])).read().splitlines()
+        except OSError:
+            continue
+        a = max(1, h["start"] - pad)
+        b = min(len(lines), h["end"] + pad)
+        if used + (b - a + 1) > max_lines:
+            b = a + max(0, max_lines - used) - 1
+        if b < a:
+            break
+        body = "\n".join("%5d| %s" % (i, lines[i - 1]) for i in range(a, b + 1))
+        parts.append("### %s lines %d-%d (%s)\n%s" % (h["file"], a, b, h.get("why") or "hotspot", body))
+        used += b - a + 1
+        if used >= max_lines:
+            break
+    return "\n\n".join(parts), used
+
+
+def execute_review(spec, timeout_seconds):
+    """Stage 1: cheap triage names hotspots. Stage 2: the verdict model reviews only those excerpts.
+    Falls back to a whole-file review if triage yields nothing usable. Returns one combined report."""
+    review = spec["review"]
+    cwd, files = spec["cwd"], review["files"]
+    t1 = max(30.0 * (MINUTE / 60.0), timeout_seconds * REVIEW_TRIAGE_SHARE)
+    started = time.monotonic()
+    triage_prompt = ("HOTSPOT TRIAGE. Read these files in the current directory: %s. For the focus '%s', reply with ONLY a "
+                     "JSON array (no prose) of at most 12 objects {\"file\": <one of the files>, \"start\": <line>, "
+                     "\"end\": <line>, \"why\": <under 20 words>} naming the regions most likely to contain defects. "
+                     "Do not modify anything." % (", ".join(files), review["focus"]))
+    s1 = execute_worker(dict(spec, task=triage_prompt, model=review["triage_model"], run_id=spec["run_id"] + "-s1"), t1)
+    hotspots = parse_hotspots(s1.get("result"), files) if s1.get("status") == "done" else []
+    excerpts, used = build_excerpts(cwd, hotspots) if hotspots else ("", 0)
+    fallback = None
+    if not excerpts:
+        fallback = "triage %s; reviewing whole files" % (s1.get("status") if s1.get("status") != "done" else "returned no usable hotspots")
+        stage2_prompt = spec["task"] + "\n\nFiles to review: %s. Focus: %s." % (", ".join(files), review["focus"])
+    else:
+        stage2_prompt = (spec["task"] + "\n\nReview ONLY the following excerpts (line numbers are authoritative; you may open a "
+                         "file to confirm a specific line, but do not read whole files). Focus: %s.\n\n%s" % (review["focus"], excerpts))
+    remaining = max(5.0, timeout_seconds - (time.monotonic() - started))
+    s2 = execute_worker(dict(spec, task=stage2_prompt, model=review["review_model"], run_id=spec["run_id"] + "-s2"), remaining)
+    report = dict(s2)
+    report["run_id"] = spec["run_id"]
+    report["task"] = spec["task"]
+    report["review"] = {"files": files, "focus": review["focus"], "hotspots": hotspots, "excerpt_lines": used,
+                        "fallback": fallback, "triage_model": review["triage_model"], "review_model": review["review_model"]}
+    report["stages"] = [{"stage": 1, "model": review["triage_model"], "status": s1.get("status"), "run_id": s1.get("run_id"),
+                         "outbox_file": s1.get("outbox_file"), "token_split": s1.get("token_split"), "actual_tokens": s1.get("actual_tokens")},
+                        {"stage": 2, "model": review["review_model"], "status": s2.get("status"), "run_id": s2.get("run_id"),
+                         "outbox_file": s2.get("outbox_file"), "token_split": s2.get("token_split"), "actual_tokens": s2.get("actual_tokens"),
+                         "prompt_chars": len(stage2_prompt)}]
+    toks = [x.get("actual_tokens") for x in (s1, s2) if type(x.get("actual_tokens")) is int]
+    report["actual_tokens"] = sum(toks) if toks else None
+    report["token_split"] = {"stage1": s1.get("token_split"), "stage2": s2.get("token_split"), "actual_tokens": report["actual_tokens"]}
+    report["elapsed_seconds"] = round(time.monotonic() - started, 2)
+    report["git_before"] = s1.get("git_before")
+    note = dict(report)
+    note["stdout"] = clip(s2.get("stdout", ""), MAX_OUTBOX_CHARS)
+    note["stderr"] = clip(s2.get("stderr", ""), MAX_OUTBOX_CHARS)
+    report["outbox_file"] = write_outbox(spec["run_id"], spec.get("project"), note, task_id=spec.get("task_id"), run_note=True)
+    return report
+
+
+def t_heartbeat_gate(args):
+    """Decision 0007: answer 'did anything change since the last beat' in code. Writes only its own
+    private fingerprint file (unless dry_run)."""
+    if HERE not in sys.path:
+        sys.path.insert(0, HERE)
+    gate = importlib.import_module("heartbeat_gate")
+    return gate.evaluate(save=not bool(args.get("dry_run", False)))
 
 
 def t_run_status(args):
@@ -1554,6 +1758,19 @@ TOOLS = [
      "inputSchema": {"type": "object", "required": ["id"],
                      "properties": {"id": _s("Task id"), "background": _BG,
                                     "cwd": _s("Optional absolute git repository overriding the project mapping")}}},
+    {"name": "run_review", "fn": t_run_review, "annotations": EXEC,
+     "description": "Two-stage review through the canonical desk (decision 0007): Sonnet triage names hotspots in the given "
+                    "files, then the task's verdict model (fable by default) reviews only those excerpts. Same claim, "
+                    "reservation, containment, deadline and completion as run_task; both stages' tokens are summed.",
+     "inputSchema": {"type": "object", "required": ["id", "files"],
+                     "properties": {"id": _s("Task id (claude assignee)"), "background": _BG,
+                                    "files": {"type": "array", "items": {"type": "string"}, "description": "Repository-relative files to review"},
+                                    "focus": _s("What to look for (default: correctness bugs, race conditions and failure modes)"),
+                                    "cwd": _s("Optional absolute git repository overriding the project mapping")}}},
+    {"name": "heartbeat_gate", "fn": t_heartbeat_gate, "annotations": RW,
+     "description": "Deterministic quiet-heartbeat check (decision 0007): UNCHANGED or ATTENTION with reasons, comparing a "
+                    "fingerprint of desk state with the last beat. Zero model tokens. Writes only its private fingerprint file.",
+     "inputSchema": {"type": "object", "properties": {"dry_run": {"type": "boolean", "default": False}}}},
     {"name": "run_status", "fn": t_run_status, "annotations": RO,
      "description": "State of one run (id) or the most recent runs. States: reserved, spawned, running, done, failed, "
                     "timeout, escaped, killed, stopped (STOP appeared mid-run), quota (usage limit hit), lost, corrupt.",
@@ -1664,6 +1881,9 @@ def runner(spec_path):
         remove_spec(spec["run_id"])
         return 3
     report = run_spec(spec)
+    if report.get("status") == "refused":
+        sys.stderr.write("runner: %s\n" % report.get("error"))
+        return 4
     return 0 if report["status"] == "done" else 1
 
 

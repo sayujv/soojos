@@ -15,6 +15,12 @@ for a in "$@"; do
     exit 0
   fi
 done
+case "$*" in *"HOTSPOT TRIAGE"*)
+  # triage stage: name lines 20-25 of FAKE_HOTSPOT_FILE (default probe.py); single quotes keep the JSON escapes intact
+  f="${FAKE_HOTSPOT_FILE:-probe.py}"
+  echo '{"type":"result","subtype":"success","is_error":false,"result":"[{\"file\":\"'"$f"'\",\"start\":20,\"end\":25,\"why\":\"lock ordering\"}]","num_turns":2,"usage":{"input_tokens":5,"output_tokens":40,"cache_creation_input_tokens":300,"cache_read_input_tokens":300}}'
+  exit 0;;
+esac
 [ -n "$FAKE_TOUCH" ] && : > "$PWD/$FAKE_TOUCH"
 # FAKE_SWITCH=1: misbehave by leaving the task branch (what a preflight cannot prevent)
 [ -n "$FAKE_SWITCH" ] && /usr/bin/git checkout -q -b escaped >/dev/null 2>&1

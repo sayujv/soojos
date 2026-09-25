@@ -35,10 +35,10 @@ verdict applies to.
 
 | Item | State |
 | --- | --- |
-| Server | `tools/soojos-desk/server.py` 0.3.7, stdlib only; `README.md` documents every tool and control |
+| Server | `tools/soojos-desk/server.py` 0.3.8, stdlib only; `README.md` documents every tool and control |
 | Registration | Claude Code: `.mcp.json` (approved in `~/.claude.json`); Codex: `[mcp_servers.soojos-desk]` in `~/.codex/config.toml` |
 | Lifecycle | delegated to the canonical `Desk` at policy `code_root`; no second schema |
-| Tests | 68 offline tests (`tests/`), fake workers; native probe evidence in `tests/evidence/` |
+| Tests | 74 offline tests (`tests/`), fake workers; native probe evidence in `tests/evidence/` |
 | Token discipline | Claude workers run stripped (`--strict-mcp-config`), capped at policy `claude_turns`; model routed by action kind (verify/retro → fable, else sonnet) unless the task names `model`; `token_split` in every run note |
 | Live use | two tasks completed end to end on 22 Sep (Claude review, Codex changelog); handoff entries on `desk/20260917-soojos-desk-mcp` |
 | Reviews answered | your 0.2.0 lifecycle review (6), your 0.2.1 permission review (3), the Claude worker's REVIEW-2026-09-18 (17) |
@@ -63,7 +63,9 @@ interactive Codex app or Claude Code as the caller. Per beat:
 
 1. `desk_status`. If `stop_present`, stop.
 2. `desk_tick` (recovery), then `queue_list(status="running")` and `run_status`.
-3. For an eligible queued task: `run_task(id, background=true)`; poll `run_status(run_id)`
+3. For an eligible queued task: `run_task(id, background=true)`, or for a review of named files
+   `run_review(id, files=[…], background=true)` (Sonnet triage, Fable verdict on the excerpts);
+   poll `run_status(run_id)`
    next beat; `outbox_read(id)` gives the desk's packet. Tasks run inside
    `.worktrees/task-<id>` on `desk/<id>`, bounded by budget and deadline.
 4. Nothing queued: `queue_add(project, task, assignee, budget_minutes, action_kind, inputs,
