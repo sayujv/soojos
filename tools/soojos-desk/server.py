@@ -42,7 +42,7 @@ import traceback
 from pathlib import Path
 
 SERVER_NAME = "soojos-desk"
-SERVER_VERSION = "0.3.4"
+SERVER_VERSION = "0.3.5"
 PROTOCOL_VERSION = "2025-06-18"
 MINUTE = float(os.environ.get("SOOJOS_MINUTE_SECONDS", "60"))  # tests shrink this to exercise timeouts quickly
 
@@ -78,6 +78,32 @@ CLAUDE_DENIED_RULES = ("Bash(git push:*)", "Bash(git checkout:*)", "Bash(git swi
                        "Bash(git fetch:*)", "Bash(git pull:*)", "WebFetch", "WebSearch")
 APPROVED_CODEX_SANDBOXES = ("read-only", "workspace-write")
 DEFAULT_CODEX_SANDBOX = "workspace-write"
+# Worker model per task, from an approved set. Routine desk work runs on Sonnet by default; the larger
+# models only when the task names them. Codex inherits its configured model (no override).
+APPROVED_CLAUDE_MODELS = {"sonnet": "claude-sonnet-5", "haiku": "claude-haiku-4-5-20251001",
+                          "opus": "claude-opus-5", "fable": "claude-fable-5-1"}
+DEFAULT_CLAUDE_MODEL = "sonnet"
+WORKER_MCP_CONFIG = os.path.join(HERE, "worker-mcp.json")   # {"mcpServers": {}}: a worker loads no connectors
+
+
+def resolve_model(kind, model):
+    if kind != "claude":
+        if model not in (None, "", "default"):
+            raise ToolError("model override is not supported for %s workers; they inherit their configured model" % kind)
+        return None
+    model = model or DEFAULT_CLAUDE_MODEL
+    if model not in APPROVED_CLAUDE_MODELS:
+        raise ToolError("model %r is not in the approved set %s" % (model, sorted(APPROVED_CLAUDE_MODELS)))
+    return model
+
+
+def claude_max_turns():
+    """The approved eight-turn control from policy.json (claude_turns), never more."""
+    turns = policy().get("claude_turns", 8)
+    try:
+        return max(1, min(int(turns), 8))
+    except (TypeError, ValueError):
+        return 8
 
 
 def permission_settings():
@@ -116,7 +142,8 @@ MAX_RETURN_CHARS = 20000     # per stream in the tool result
 MAX_OUTBOX_CHARS = 200000    # per stream in the outbox file
 CLOSURE_FRACTION = 0.2       # share of the budget kept back for completion accounting
 CLOSURE_MAX_SECONDS = 180.0
-RESERVATION_TTL_SECONDS = 600.0   # a reservation that never started is stale after this
+RESERVATION_TTL_SECONDS = 600.0   # a spawned runner that never reported running is stale after this
+RESERVED_TTL_SECONDS = 120.0      # a reservation that never even spawned is stale after this (spawning is local and fast)
 STOP_POLL_SECONDS = 2.0           # how often a running worker is checked against STOP
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,79}$")
 UUID_RE = re.compile(r"^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$")
@@ -173,6 +200,20 @@ def json_file_state(path):
         return "corrupt"
 
 
+def fsync_dir(directory):
+    """Make a rename/create durable across a crash: fsync the directory entry too."""
+    try:
+        fd = os.open(directory, os.O_RDONLY)
+    except OSError:
+        return
+    try:
+        os.fsync(fd)
+    except OSError:
+        pass
+    finally:
+        os.close(fd)
+
+
 def write_json_atomic(path, payload, mode=0o600):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     fd, tmp = tempfile.mkstemp(prefix=".tmp.", dir=os.path.dirname(path))
@@ -184,6 +225,7 @@ def write_json_atomic(path, payload, mode=0o600):
             os.fsync(fh.fileno())
         os.chmod(tmp, mode)
         os.replace(tmp, path)
+        fsync_dir(os.path.dirname(path))
     except BaseException:
         try:
             os.unlink(tmp)
@@ -309,6 +351,7 @@ def create_exclusive_json(candidates, payload, mode):
             fh.write("\n")
             fh.flush()
             os.fsync(fh.fileno())
+        fsync_dir(os.path.dirname(path))
         return path
     raise ToolError("could not create a unique outbox note for %s" % candidates[0])
 
@@ -529,7 +572,9 @@ def pid_alive(pid, pid_start=None):
         pass
     if pid_start:
         current = proc_start(pid)
-        return current is not None and current == pid_start
+        if current is None:
+            return True   # ps failed or timed out: unknown is not dead; the pid itself still answers
+        return current == pid_start
     return True
 
 
@@ -543,7 +588,8 @@ def effective_state(rec):
         return "lost", "runner process is gone without a final record"
     if state in ("reserved", "spawned"):
         since = parse_iso(rec.get("spawned_at") if state == "spawned" else rec.get("reserved_at"))
-        stale = since is None or (now_utc() - since).total_seconds() > RESERVATION_TTL_SECONDS
+        ttl = RESERVATION_TTL_SECONDS if state == "spawned" else RESERVED_TTL_SECONDS
+        stale = since is None or (now_utc() - since).total_seconds() > ttl
         owner_alive = pid_alive(rec.get("pid"), rec.get("pid_start")) if state == "reserved" else True
         if stale or not owner_alive:
             return "lost", ("reservation never started" if state == "reserved" else "runner never reported running")
@@ -631,13 +677,20 @@ def fail_run(record, reason):
 
 
 # --------------------------------------------------------------------------- workers
-def worker_command(kind, task, cwd, last_msg_file):
+def worker_command(kind, task, cwd, last_msg_file, model=None):
     perms = permission_settings()  # validated before any argv is composed
     if kind == "claude":
         if not os.path.exists(CLAUDE_BIN):
             raise ToolError("claude binary missing at %s" % CLAUDE_BIN)
+        if not os.path.isfile(WORKER_MCP_CONFIG):
+            raise ToolError("worker MCP config missing at %s" % WORKER_MCP_CONFIG)
+        alias = resolve_model("claude", model)
         cmd = [CLAUDE_BIN, "-p", task, "--output-format", "json",
                "--permission-mode", perms["claude_mode"], "--no-session-persistence",
+               "--model", APPROVED_CLAUDE_MODELS[alias],
+               "--max-turns", str(claude_max_turns()),
+               # Token discipline: a worker loads no connectors, plugins' MCP servers or user MCP servers.
+               "--strict-mcp-config", "--mcp-config", WORKER_MCP_CONFIG,
                "--disallowedTools", " ".join(perms["claude_denied"])]
         if perms["claude_allowed"]:
             cmd += ["--allowedTools", " ".join(perms["claude_allowed"])]
@@ -819,6 +872,19 @@ def detect_quota_hit(*texts):
     return None
 
 
+def token_split(report):
+    """Where the tokens went, so savings are visible next to the accounting."""
+    u = report.get("usage") or {}
+    turns = report.get("num_turns")
+    split = {"turns": turns, "actual_tokens": report.get("actual_tokens")}
+    for key in ("input_tokens", "output_tokens", "cache_creation_input_tokens", "cache_read_input_tokens"):
+        if type(u.get(key)) is int:
+            split[key] = u[key]
+    if type(turns) is int and turns > 0 and type(u.get("cache_read_input_tokens")) is int:
+        split["standing_context_per_turn"] = round((u["cache_read_input_tokens"] + (u.get("cache_creation_input_tokens") or 0)) / turns)
+    return split
+
+
 def parse_codex_output(report, stderr, last_msg_file):
     try:
         with open(last_msg_file) as fh:
@@ -841,8 +907,9 @@ def execute_worker(spec, timeout_seconds):
         if kind == "codex":
             fd, last_msg_file = tempfile.mkstemp(prefix="codex-last-", suffix=".txt")
             os.close(fd)
-        cmd = worker_command(kind, task, cwd, last_msg_file)
+        cmd = worker_command(kind, task, cwd, last_msg_file, model=spec.get("model"))
         report["command"] = cmd
+        report["model"] = spec.get("model") or (DEFAULT_CLAUDE_MODEL if kind == "claude" else "codex-configured")
         report["git_before"] = git_snapshot(cwd)
         res = run_bounded(cmd, cwd, timeout_seconds)
         report.update(res)
@@ -850,6 +917,7 @@ def execute_worker(spec, timeout_seconds):
             parse_claude_output(report, res["stdout"])
         else:
             parse_codex_output(report, res["stderr"], last_msg_file)
+        report["token_split"] = token_split(report)
         report["git_after"] = git_snapshot(cwd)
         if res.get("stop_seen_at"):
             report["status"] = "stopped"
@@ -1067,7 +1135,7 @@ def report_from_record(rec):
 
 
 def launch(kind, task, cwd, budget_minutes, background=False, task_id=None, project=None, worktree=None,
-           branch=None, record=None):
+           branch=None, record=None, model=None):
     """Validate, verify zero cash, reserve (if not already reserved), and run or detach."""
     if not isinstance(task, str) or not task.strip():
         raise ToolError("task must be a non-empty string")
@@ -1075,7 +1143,8 @@ def launch(kind, task, cwd, budget_minutes, background=False, task_id=None, proj
         raise ToolError("cwd must be an existing absolute directory")
     budget = check_budget(budget_minutes)
     permission_settings()  # refuse widened/malformed overrides before any side effect
-    worker_command(kind, "probe", cwd, "/dev/null")  # validates kind and binary presence early
+    model = resolve_model(kind, model)
+    worker_command(kind, "probe", cwd, "/dev/null", model=model)  # validates kind, binary and model early
     containment = verify_adhoc_cwd(cwd) if task_id is None else None
     cash = zero_cash_evidence(kind, cwd)
     if not cash["zero_cash"]:
@@ -1085,7 +1154,7 @@ def launch(kind, task, cwd, budget_minutes, background=False, task_id=None, proj
     spec = {"run_id": record["run_id"], "kind": kind, "task": task, "cwd": cwd, "budget_minutes": budget,
             "task_id": task_id, "project": project, "worktree": worktree, "branch": branch,
             "background": bool(background), "zero_cash": True, "cash_evidence": cash,
-            "containment": containment, "permissions": permission_settings()}
+            "containment": containment, "permissions": permission_settings(), "model": model}
     rec = spawn_runner(spec, record)
     if background:
         return {"run_id": rec["run_id"], "state": rec["state"], "background": True,
@@ -1171,6 +1240,7 @@ def t_queue_add(args):
     entry["inputs"] = list(args.get("inputs") or [])
     entry["constraints"] = list(args.get("constraints") or entry["constraints"])
     entry["action_kind"] = args.get("action_kind", "research")
+    entry["worker_model"] = resolve_model(assignee, args.get("model"))  # None for codex (inherits)
     entry["priority"] = {"rank": 1, "reason": "Queued via %s" % SERVER_NAME}
     stored = desk_call(desk().enqueue, entry)  # canonical validation: scope, budgets, branch, ancestry
     return {"added": stored, "queue_path": QUEUE_PATH}
@@ -1281,7 +1351,7 @@ def t_git_status(args):
 
 def t_run_claude(args):
     return launch("claude", args.get("task"), args.get("cwd"), args.get("budget_minutes", 15),
-                  background=args.get("background", False))
+                  background=args.get("background", False), model=args.get("model"))
 
 
 def t_run_codex(args):
@@ -1364,7 +1434,8 @@ def t_run_task(args):
         verify_task_worktree(cwd, worktree, task_id)  # containment preflight; refused launches block below
         prompt = compose_task_prompt(task, cwd, worktree, branch)
         out = launch(kind, prompt, cwd, budget, background=background, task_id=task_id,
-                     project=task.get("project"), worktree=worktree, branch=branch, record=record)
+                     project=task.get("project"), worktree=worktree, branch=branch, record=record,
+                     model=task.get("worker_model"))
     except ToolError as exc:
         # A live-run refusal must not block the task (another run owns it). Any other refusal before the
         # runner took over leaves the task running with no worker: fail the record and block it now.
@@ -1428,6 +1499,8 @@ TOOLS = [
                                     "assignee": _s("codex or claude"),
                                     "budget_minutes": _BUDGET,
                                     "action_kind": {"type": "string", "enum": ["research", "analysis", "code", "verify", "harness", "retro"], "default": "research"},
+                                    "model": {"type": "string", "enum": ["sonnet", "haiku", "opus", "fable"], "default": "sonnet",
+                                              "description": "Claude worker model (approved set); codex assignees inherit their configured model"},
                                     "inputs": {"type": "array", "items": {"type": "string"}},
                                     "constraints": {"type": "array", "items": {"type": "string"}}}}},
     {"name": "queue_claim", "fn": t_queue_claim, "annotations": RW,
@@ -1462,7 +1535,8 @@ TOOLS = [
                     "non-git directory; requires verified zero-cash evidence; writes a run outbox note.",
      "inputSchema": {"type": "object", "required": ["task", "cwd", "budget_minutes"],
                      "properties": {"task": _s("Prompt for the worker"), "cwd": _s("Absolute working directory"),
-                                    "budget_minutes": _BUDGET, "background": _BG}}},
+                                    "budget_minutes": _BUDGET, "background": _BG,
+                                    "model": {"type": "string", "enum": ["sonnet", "haiku", "opus", "fable"], "default": "sonnet"}}}},
     {"name": "run_codex", "fn": t_run_codex, "annotations": EXEC,
      "description": "Run Codex non-interactively (codex exec, approved sandbox) in cwd with a hard timeout; same cwd "
                     "containment and zero-cash requirements as run_claude; writes a run outbox note.",
