@@ -15,6 +15,10 @@ for a in "$@"; do
     exit 0
   fi
 done
+case "$*" in *"You route a task request"*)
+  echo '{"type":"result","subtype":"success","is_error":false,"result":"{\"project\":\"trading-bot\",\"assignee\":\"claude\",\"action\":\"code\",\"model\":\"sonnet\",\"budget\":6}","num_turns":1,"usage":{"input_tokens":3,"output_tokens":30,"cache_creation_input_tokens":200,"cache_read_input_tokens":0}}'
+  exit 0;;
+esac
 case "$*" in *"HOTSPOT TRIAGE"*)
   # triage stage: name lines 20-25 of FAKE_HOTSPOT_FILE (default probe.py); single quotes keep the JSON escapes intact
   f="${FAKE_HOTSPOT_FILE:-probe.py}"

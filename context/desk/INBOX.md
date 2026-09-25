@@ -13,6 +13,11 @@ Optional lines under a heading:
   run on Fable, the rest on Sonnet unless `model:` says otherwise)
 - `model:` sonnet, haiku, opus or fable (Claude assignees only)
 - `inputs:` and `constraints:` semicolon-separated
+- `auto: no` to keep the task for the coordinator instead of the 5-minute beat (default: auto)
+- `route: auto` to let Haiku propose the missing fields; leaving `project:` out does the same
+
+A note instead of a task: `type: note` with `project:` or `scope: all`. It is appended to
+notes/<project>.md and reaches every later worker prompt for that project.
 
 Status view: BOARD.md next to this file. Evidence: the outbox folder.
 

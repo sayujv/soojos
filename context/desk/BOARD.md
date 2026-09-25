@@ -1,6 +1,6 @@
 # Desk board
 
-Generated 2026-09-25 08:45 UTC by soojos-desk 0.3.9 from queue.jsonl. Read-only view; the queue is the truth.
+Generated 2026-09-25 08:51 UTC by soojos-desk 0.4.0 from queue.jsonl. Read-only view; the queue is the truth.
 
 ## Running (0)
 

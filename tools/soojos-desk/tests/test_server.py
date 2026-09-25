@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline tests for soojos-desk 0.3.8. Fake workers under tests/fakes; the canonical Desk from the
+"""Offline tests for soojos-desk 0.4.0. Fake workers under tests/fakes; the canonical Desk from the
 approved harness (policy code_root) runs against temporary state. No real claude/codex, no network.
 
 Run:  /usr/bin/python3 -m unittest discover -s /Users/sayuj/soojos/tools/soojos-desk/tests -v
@@ -827,9 +827,9 @@ class TestTokenDiscipline035(DeskTestCase):
         self.assertEqual(argv[argv.index("--mcp-config") + 1], self.server.WORKER_MCP_CONFIG)
         self.assertEqual(json.load(open(self.server.WORKER_MCP_CONFIG)), {"mcpServers": {}})
         self.assertEqual(argv[argv.index("--max-turns") + 1], "8")     # policy claude_turns
-        self.assertEqual(argv[argv.index("--model") + 1], "claude-sonnet-5")   # default sonnet
+        self.assertEqual(argv[argv.index("--model") + 1], "sonnet")   # default sonnet (CLI alias = latest)
         argv = self.server.worker_command("claude", "x", self.tmp, None, model="opus")
-        self.assertEqual(argv[argv.index("--model") + 1], "claude-opus-5")
+        self.assertEqual(argv[argv.index("--model") + 1], "opus")
         with self.assertRaises(self.server.ToolError):
             self.server.worker_command("claude", "x", self.tmp, None, model="gpt-6")
         self.assertNotIn("--model", self.server.worker_command("codex", "x", self.tmp, "/dev/null"))
@@ -844,7 +844,7 @@ class TestTokenDiscipline035(DeskTestCase):
         self.assertEqual(self.queue()[tid]["worker_model"], "haiku")
         out = self.ok("run_task", id=tid, cwd=self.repo)
         self.assertEqual(out["model"], "haiku")
-        self.assertEqual(out["command"][out["command"].index("--model") + 1], "claude-haiku-4-5-20251001")
+        self.assertEqual(out["command"][out["command"].index("--model") + 1], "haiku")
         codex_tid = self.add("codex inherits", assignee="codex", budget=1)
         self.assertIsNone(self.queue()[codex_tid]["worker_model"])
 
@@ -1046,6 +1046,119 @@ class TestInboxAndBoard039(DeskTestCase):
         self.assertIn(tid, board)
         self.assertIn("the queue is the truth", board)
         self.assertEqual(out["board"], self.server.BOARD_PATH)
+
+
+class TestInboxNotesRoutingScope040(DeskTestCase):
+    def setUp(self):
+        super().setUp()
+        self.server.INBOX_PATH = os.path.join(self.desk_dir, "INBOX.md")
+        self.server.BOARD_PATH = os.path.join(self.desk_dir, "BOARD.md")
+        self.server.NOTES_DIR = os.path.join(self.desk_dir, "notes")
+
+    def test_inbox_add_then_sync_note_reaches_worker_prompt(self):
+        self.ok("inbox_add", kind="note", text="Prefer boring, well-tested code over clever code.", scope="all")
+        self.ok("inbox_add", kind="note", text="Never touch core/ without asking me.", project="trading-bot")
+        self.ok("inbox_add", text="Rename the helper", project="soojos", budget=3, action="code")
+        out = self.ok("inbox_sync", cwd=self.repo)
+        kinds = sorted(k for r in out["results"] for k in r if k in ("noted", "queued"))
+        self.assertEqual(kinds, ["noted", "noted", "queued"])
+        text = open(self.server.INBOX_PATH).read()
+        self.assertEqual(text.count("queued: noted in"), 2)
+        self.assertTrue(os.path.exists(os.path.join(self.server.NOTES_DIR, "all.md")))
+        self.assertTrue(os.path.exists(os.path.join(self.server.NOTES_DIR, "trading-bot.md")))
+        tid = [r["queued"] for r in out["results"] if "queued" in r][0]
+        task = self.queue()[tid]
+        self.assertTrue(task["auto_dispatch"])
+        prompt = self.server.compose_task_prompt(task, self.repo, None, None)
+        self.assertIn("boring, well-tested", prompt)          # all-projects note reaches a soojos task
+        self.assertNotIn("core/", prompt)                     # trading-bot note does not
+        tb = dict(task, project="trading-bot")
+        self.assertIn("core/", self.server.compose_task_prompt(tb, self.repo, None, None))
+
+    def test_unrouted_section_is_routed_by_haiku_and_marked(self):
+        self.ok("inbox_add", text="Make the login form remember the email address", auto=True)
+        out = self.ok("inbox_sync", cwd=self.repo)
+        r = out["results"][0]
+        self.assertEqual(r["routed_by_haiku"]["project"], "trading-bot")
+        task = self.queue()[r["queued"]]
+        self.assertEqual((task["project"], task["action_kind"], task["worker_model"], task["budget_minutes"]), ("trading-bot", "code", "sonnet", 6))
+        self.assertIn("routed by haiku", open(self.server.INBOX_PATH).read())
+
+    def test_unrouted_section_refused_when_cash_unknown(self):
+        self.no_subscription()
+        self.ok("inbox_add", text="Something vague")
+        out = self.ok("inbox_sync", cwd=self.repo)
+        self.assertIn("routing was not possible", out["results"][0]["refused"])
+        self.assertIn("queued: REFUSED", open(self.server.INBOX_PATH).read())
+
+    def test_auto_flag_defaults(self):
+        tid = self.add("manual", budget=1)
+        self.assertFalse(self.queue()[tid]["auto_dispatch"])
+        self.ok("inbox_add", text="Explicitly manual", project="soojos", auto=False)
+        out = self.ok("inbox_sync", cwd=self.repo)
+        self.assertFalse(self.queue()[out["results"][0]["queued"]]["auto_dispatch"])
+
+    def test_worker_that_changes_files_outside_its_project_folder_is_refused(self):
+        os.makedirs(os.path.join(self.repo, "projects", "alpha"))
+        os.makedirs(os.path.join(self.repo, "projects", "beta"))
+        for p in ("alpha", "beta"):
+            open(os.path.join(self.repo, "projects", p, "README.md"), "w").write(p + "\n")
+        subprocess.run(["/usr/bin/git", "-C", self.repo, "add", "."], check=True, capture_output=True)
+        subprocess.run(["/usr/bin/git", "-C", self.repo, "commit", "-q", "-m", "projects"], check=True, capture_output=True)
+        with open(self.projects_path, "w") as fh:
+            json.dump({"soojos": os.path.join(self.repo, "projects", "alpha")}, fh)
+        os.environ["FAKE_TOUCH"] = "../beta/leak.txt"          # fake writes into the sibling project
+        tid = self.add("stay in alpha", budget=1)
+        body = self.refused("run_task", id=tid)
+        self.assertIn("outside its project folder", body)
+        self.assertIn("projects/beta/leak.txt", body)
+        self.assertEqual(self.queue()[tid]["status"], "blocked")
+        os.environ["FAKE_TOUCH"] = "inside.txt"                # inside alpha: accepted
+        tid2 = self.add("stay in alpha again", budget=1)
+        self.assertEqual(self.ok("run_task", id=tid2)["status"], "done")
+
+
+class TestBeat040(DeskTestCase):
+    def setUp(self):
+        super().setUp()
+        import desk_beat, heartbeat_gate
+        self.gate = importlib.reload(heartbeat_gate); self.gate.server = self.server
+        self.gate.STATE_PATH = os.path.join(self.private, "heartbeat-gate.json")
+        self.beat = importlib.reload(desk_beat); self.beat.server = self.server; self.beat.heartbeat_gate = self.gate
+        self.beat.LOG_PATH = os.path.join(self.private, "beat.log")
+        self.server.INBOX_PATH = os.path.join(self.desk_dir, "INBOX.md")
+        self.server.BOARD_PATH = os.path.join(self.desk_dir, "BOARD.md")
+        self.server.NOTES_DIR = os.path.join(self.desk_dir, "notes")
+
+    def test_unchanged_beat_does_nothing(self):
+        self.beat.beat()
+        rec = self.beat.beat()
+        self.assertEqual(rec["gate"], "UNCHANGED")
+        self.assertNotIn("dispatch", rec)
+
+    def test_beat_dispatches_only_auto_tasks_with_fresh_evidence(self):
+        manual = self.add("for Astra", assignee="codex", budget=1)          # not auto
+        auto = self.ok("queue_add", project="soojos", task="auto me", assignee="claude", budget_minutes=1, auto=True)["added"]["id"]
+        rec = self.beat.beat()
+        self.assertEqual(rec["gate"], "ATTENTION")
+        by_id = {d["id"]: d for d in rec["dispatch"]}
+        self.assertIn("not marked for automatic dispatch", by_id[manual]["skipped"])
+        self.assertTrue(by_id[auto].get("launched"))
+        self.assertEqual(self.wait_run(by_id[auto]["launched"])["state"], "done")
+        self.assertEqual(self.queue()[manual]["status"], "queued")
+        self.write_billing(fresh=False)
+        stale = self.ok("queue_add", project="soojos", task="stale evidence", assignee="claude", budget_minutes=1, auto=True)["added"]["id"]
+        rec = self.beat.beat()
+        self.assertIn("billing evidence not fresh", {d["id"]: d for d in rec["dispatch"]}[stale]["skipped"])
+        self.assertEqual(self.queue()[stale]["status"], "queued")
+
+    def test_beat_under_stop_only_logs(self):
+        self.add("x", budget=1)
+        os.symlink("/nonexistent", os.path.join(self.home, "STOP"))
+        rec = self.beat.beat()
+        self.assertEqual(rec["gate"], "ATTENTION")
+        self.assertTrue(rec.get("stop"))
+        self.assertNotIn("dispatch", rec)
 
 
 class TestRpc(DeskTestCase):
