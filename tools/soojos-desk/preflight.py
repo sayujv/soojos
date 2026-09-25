@@ -112,6 +112,14 @@ def main():
         else:
             row("PASS", "%s billing evidence" % kind, "fresh, %d min old" % (age // 60))
 
+    obs = server.load_json(os.path.join(server.PRIVATE_DIR, "observe-status.json"), {})
+    if obs:
+        bad = [k for k, v in (obs.get("results") or {}).items() if not v.get("verified")]
+        row("WARN" if bad else "PASS", "automated observer", "last %s; %s" % (obs.get("at"), ("unverified: " + ", ".join(bad)) if bad else "all verified"))
+    else:
+        row("WARN", "automated observer", "never run; sign in once with observe_billing.py --login")
+    profile = os.path.join(server.PRIVATE_DIR, "browser-profile")
+    row("PASS" if os.path.isdir(profile) else "WARN", "observer browser profile", profile + (" present" if os.path.isdir(profile) else " missing (run observe_billing.py --login)"))
     tasks = server.read_queue()
     counts = {}
     for t in tasks:
