@@ -42,7 +42,7 @@ import traceback
 from pathlib import Path
 
 SERVER_NAME = "soojos-desk"
-SERVER_VERSION = "0.3.3"
+SERVER_VERSION = "0.3.4"
 PROTOCOL_VERSION = "2025-06-18"
 MINUTE = float(os.environ.get("SOOJOS_MINUTE_SECONDS", "60"))  # tests shrink this to exercise timeouts quickly
 
@@ -510,7 +510,11 @@ def proc_start(pid):
 
 
 def self_identity():
-    return {"pid": os.getpid(), "pid_start": proc_start(os.getpid())}
+    start = proc_start(os.getpid())
+    ident = {"pid": os.getpid(), "pid_start": start}
+    if start is None:
+        ident["pid_start_note"] = "process start time unavailable on this host (ps refused); liveness falls back to pid only"
+    return ident
 
 
 def pid_alive(pid, pid_start=None):
@@ -799,6 +803,22 @@ def parse_claude_output(report, stdout):
     report["actual_tokens"] = total if known else None
 
 
+QUOTA_PATTERNS = re.compile(r"usage limit|rate limit|out of credits|insufficient[_ ]quota|quota exceeded|"
+                            r"you.ve hit your limit|plan limit|too many requests|429", re.IGNORECASE)
+
+
+def detect_quota_hit(*texts):
+    """A worker that could not run because the subscription's limit was reached must say so, not just 'exit 1'."""
+    for text in texts:
+        if not text:
+            continue
+        m = QUOTA_PATTERNS.search(text if isinstance(text, str) else str(text))
+        if m:
+            start = max(0, m.start() - 80)
+            return text[start:m.end() + 120].replace("\n", " ").strip()
+    return None
+
+
 def parse_codex_output(report, stderr, last_msg_file):
     try:
         with open(last_msg_file) as fh:
@@ -840,6 +860,10 @@ def execute_worker(spec, timeout_seconds):
             report["status"] = "done"
         else:
             report["status"] = "failed"
+            quota = detect_quota_hit(res.get("stderr"), report.get("result"), res.get("stdout"))
+            if quota:
+                report["status"] = "quota"
+                report["error"] = "%s usage limit reached (no work was accepted): %s" % (kind, quota)
     except Exception as exc:
         report["status"] = "failed"
         report["error"] = "%s: %s" % (type(exc).__name__, exc)
@@ -1455,7 +1479,7 @@ TOOLS = [
                                     "cwd": _s("Optional absolute git repository overriding the project mapping")}}},
     {"name": "run_status", "fn": t_run_status, "annotations": RO,
      "description": "State of one run (id) or the most recent runs. States: reserved, spawned, running, done, failed, "
-                    "timeout, escaped, killed, stopped (STOP appeared mid-run), lost, corrupt.",
+                    "timeout, escaped, killed, stopped (STOP appeared mid-run), quota (usage limit hit), lost, corrupt.",
      "inputSchema": {"type": "object", "properties": {"id": _s("run id"), "limit": {"type": "integer", "default": 20}}}},
 ]
 TOOL_MAP = {t["name"]: t for t in TOOLS}
