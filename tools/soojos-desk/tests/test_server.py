@@ -1058,7 +1058,7 @@ class TestInboxNotesRoutingScope040(DeskTestCase):
     def test_inbox_add_then_sync_note_reaches_worker_prompt(self):
         self.ok("inbox_add", kind="note", text="Prefer boring, well-tested code over clever code.", scope="all")
         self.ok("inbox_add", kind="note", text="Never touch core/ without asking me.", project="trading-bot")
-        self.ok("inbox_add", text="Rename the helper", project="soojos", budget=3, action="code")
+        self.ok("inbox_add", text="Rename the helper", project="soojos", assignee="claude", budget=3, action="code")
         out = self.ok("inbox_sync", cwd=self.repo)
         kinds = sorted(k for r in out["results"] for k in r if k in ("noted", "queued"))
         self.assertEqual(kinds, ["noted", "noted", "queued"])
@@ -1076,7 +1076,7 @@ class TestInboxNotesRoutingScope040(DeskTestCase):
         self.assertIn("core/", self.server.compose_task_prompt(tb, self.repo, None, None))
 
     def test_unrouted_section_is_routed_by_haiku_and_marked(self):
-        self.ok("inbox_add", text="Make the login form remember the email address", auto=True)
+        self.ok("inbox_add", text="Make the login form remember the email address", assignee="claude", auto=True)
         out = self.ok("inbox_sync", cwd=self.repo)
         r = out["results"][0]
         self.assertEqual(r["routed_by_haiku"]["project"], "trading-bot")
@@ -1094,16 +1094,17 @@ class TestInboxNotesRoutingScope040(DeskTestCase):
     def test_auto_flag_defaults(self):
         tid = self.add("manual", budget=1)
         self.assertFalse(self.queue()[tid]["auto_dispatch"])
-        self.ok("inbox_add", text="Explicitly manual", project="soojos", auto=False)
+        self.ok("inbox_add", text="Explicitly manual", project="soojos", assignee="claude", auto=False)
         out = self.ok("inbox_sync", cwd=self.repo)
         self.assertFalse(self.queue()[out["results"][0]["queued"]]["auto_dispatch"])
 
-    def test_codex_inbox_tasks_default_to_manual_dispatch(self):
-        self.ok("inbox_add", text="Astra: review the thing", project="soojos", assignee="codex")
-        self.ok("inbox_add", text="Codex worker job", project="soojos", assignee="codex", auto=True)
+    def test_inbox_defaults_to_codex_and_auto_unless_told_otherwise(self):
+        self.ok("inbox_add", text="Do the thing", project="soojos")
+        self.ok("inbox_add", text="Keep for a coordinator", project="soojos", assignee="codex", auto=False)
+        self.ok("inbox_add", text="Claude please", project="soojos", assignee="claude")
         out = self.ok("inbox_sync", cwd=self.repo)
-        flags = [self.queue()[r["queued"]]["auto_dispatch"] for r in out["results"]]
-        self.assertEqual(flags, [False, True])
+        rows = [self.queue()[r["queued"]] for r in out["results"]]
+        self.assertEqual([(t["assignee"], t["auto_dispatch"]) for t in rows], [("codex", True), ("codex", False), ("claude", True)])
 
     def test_worker_that_changes_files_outside_its_project_folder_is_refused(self):
         os.makedirs(os.path.join(self.repo, "projects", "alpha"))
