@@ -83,6 +83,7 @@ DEFAULT_CODEX_SANDBOX = "workspace-write"
 # models only when the task names them. Codex inherits its configured model (no override).
 APPROVED_CLAUDE_MODELS = {"sonnet": "sonnet", "haiku": "haiku", "opus": "opus", "fable": "fable"}  # CLI aliases = latest of each tier
 DEFAULT_CLAUDE_MODEL = "sonnet"
+DEFAULT_INBOX_ASSIGNEE = "codex"   # Sayuj, 26 Sep 2026: leverage Astra (Codex) as much as possible; Claude only when named
 # Route by where a mistake costs the most: verdict-bearing work (reviews, verification, retrospectives)
 # defaults to the strongest model; production and research default to Sonnet. An explicit model wins.
 MODEL_BY_ACTION = {"verify": "fable", "retro": "fable"}
@@ -1757,8 +1758,8 @@ def section_is_note(section):
 ROUTING_PROMPT = ("You route a task request for a small operations desk. Reply with ONLY a JSON object with keys "
                   "project (one of %s), assignee (claude or codex), action (one of research, analysis, code, verify, "
                   "harness, retro), model (one of sonnet, haiku, opus, fable), budget (integer minutes 1-15). Rules: "
-                  "verify/retro use fable; production code uses sonnet unless the request asks for the strongest model; "
-                  "codex only if the request names Astra or Codex. If the project cannot be inferred, set project to null.\n\n"
+                  "Default assignee is codex (Astra); choose claude only if the request names Claude, Fable, Opus or Sonnet. "
+                  "For claude: verify/retro use fable, production code uses sonnet. If the project cannot be inferred, set project to null.\n\n"
                   "Request:\n%s")
 
 
@@ -1795,12 +1796,14 @@ def inbox_task_args(section, cwd=None):
             raise ToolError("project: is required and automatic routing was not possible (%s)" % why)
         routed = {k: proposal.get(k) for k in ("project", "assignee", "action", "model", "budget") if k in missing and proposal.get(k) is not None}
         f = dict(f, **{k: str(v) for k, v in routed.items()})
-    args = {"project": f.get("project"), "assignee": f.get("assignee", "claude"), "task": text,
+    args = {"project": f.get("project"), "assignee": f.get("assignee", DEFAULT_INBOX_ASSIGNEE), "task": text,
             "budget_minutes": int(f.get("budget_minutes") or f.get("budget") or 10),
             "action_kind": f.get("action_kind") or f.get("action") or "research",
             # Claude assignees run as sandboxed workers, so inbox tasks default to automatic dispatch. "codex" in the
             # inbox usually means Astra the coordinator, so those default to manual unless the section says auto: yes.
-            "auto": (f.get("auto") or ("no" if f.get("assignee", "claude") == "codex" else "yes")).lower() not in ("no", "false", "0", "off")}
+            # Automatic dispatch is the default for both assignees (Sayuj, 26 Sep: leverage Astra/Codex as much as
+            # possible while Fable is near its limit). "auto: no" keeps a task for a coordinator session.
+            "auto": (f.get("auto") or "yes").lower() not in ("no", "false", "0", "off")}
     if f.get("model"):
         args["model"] = f["model"]
     if routed:
