@@ -1,0 +1,40 @@
+#!/bin/sh
+# Fake claude for offline tests.
+#   `... auth status --json`  -> subscription metadata ($HOME/FAKE_AUTH_NONE present -> API-key login;
+#   the canonical probe scrubs the environment, so the toggle is a file under HOME)
+#   `-p ... --output-format json` -> result JSON
+# FAKE_MODE: ok (default) | fail | hang.  FAKE_TOUCH: file name to create in $PWD.
+# FAKE_COMMIT=1: commit a file in $PWD so completion evidence shows a new HEAD.
+for a in "$@"; do
+  if [ "$a" = "auth" ]; then
+    if [ -f "$HOME/FAKE_AUTH_NONE" ]; then
+      printf '{"loggedIn":true,"authMethod":"api_key","apiProvider":"firstParty","subscriptionType":null}\n'
+    else
+      printf '{"loggedIn":true,"authMethod":"claude.ai","apiProvider":"firstParty","subscriptionType":"max","orgId":"aedb04e3-c14d-4487-9917-3197efd00e95"}\n'
+    fi
+    exit 0
+  fi
+done
+case "$*" in *"You route a task request"*)
+  echo '{"type":"result","subtype":"success","is_error":false,"result":"{\"project\":\"trading-bot\",\"assignee\":\"claude\",\"action\":\"code\",\"model\":\"sonnet\",\"budget\":6}","num_turns":1,"usage":{"input_tokens":3,"output_tokens":30,"cache_creation_input_tokens":200,"cache_read_input_tokens":0}}'
+  exit 0;;
+esac
+case "$*" in *"HOTSPOT TRIAGE"*)
+  # triage stage: name lines 20-25 of FAKE_HOTSPOT_FILE (default probe.py); single quotes keep the JSON escapes intact
+  f="${FAKE_HOTSPOT_FILE:-probe.py}"
+  echo '{"type":"result","subtype":"success","is_error":false,"result":"[{\"file\":\"'"$f"'\",\"start\":20,\"end\":25,\"why\":\"lock ordering\"}]","num_turns":2,"usage":{"input_tokens":5,"output_tokens":40,"cache_creation_input_tokens":300,"cache_read_input_tokens":300}}'
+  exit 0;;
+esac
+[ -n "$FAKE_TOUCH" ] && : > "$PWD/$FAKE_TOUCH"
+# FAKE_SWITCH=1: misbehave by leaving the task branch (what a preflight cannot prevent)
+[ -n "$FAKE_SWITCH" ] && /usr/bin/git checkout -q -b escaped >/dev/null 2>&1
+if [ -n "$FAKE_COMMIT" ]; then
+  : > "$PWD/worker-output.txt"; /usr/bin/git add -A >/dev/null 2>&1; /usr/bin/git -c user.email=w@t -c user.name=w commit -q -m "worker commit" >/dev/null 2>&1
+fi
+[ -n "$FAKE_SLEEP" ] && sleep "$FAKE_SLEEP"
+case "${FAKE_MODE:-ok}" in
+  hang) sleep 300 & sleep 300 ;;
+  hang-escape) /usr/bin/python3 -c 'import os,time; os.setsid(); time.sleep(300)' & sleep 300 ;;
+  fail) printf '{"type":"result","subtype":"error","is_error":true,"result":"boom","num_turns":1}\n'; exit 1 ;;
+  *) printf '{"type":"result","subtype":"success","is_error":false,"result":"PONG","num_turns":1,"total_cost_usd":0.01,"session_id":"fake","duration_ms":5,"usage":{"input_tokens":10,"output_tokens":5,"cache_creation_input_tokens":100,"cache_read_input_tokens":0}}\n' ;;
+esac

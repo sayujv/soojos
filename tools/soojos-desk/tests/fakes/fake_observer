@@ -1,0 +1,9 @@
+#!/bin/sh
+kind=claude; prev=""; for a in "$@"; do [ "$prev" = "--only" ] && kind="$a"; prev="$a"; done
+if [ "${FAKE_OBSERVE:-ok}" = "ok" ]; then
+  f="$SOOJOS_HOME/desk/subscription-billing.json"; [ "$kind" = codex ] && f="$SOOJOS_HOME/desk/codex-billing.json"
+  /usr/bin/python3 -c "import json,datetime,sys; json.dump({'usage_credits_disabled': True, 'verified_at': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'source': 'fake observer', 'org_id': 'aedb04e3-c14d-4487-9917-3197efd00e95'}, open(sys.argv[1],'w'))" "$f"
+  echo "{\"results\": {\"$kind\": {\"verified\": true}}}"
+else
+  echo "{\"results\": {\"$kind\": {\"verified\": false, \"reason\": \"not_logged_in\"}}}"; exit 1
+fi
