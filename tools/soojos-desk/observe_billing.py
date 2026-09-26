@@ -87,14 +87,27 @@ def codex_action(out):
         weekly = (re.search(r"Weekly usage limit\s*\n*\s*(\d+%)", text) or [None, None])[1]
         autoreload = "unknown"
         try:
-            btn = page.locator("xpath=//*[contains(normalize-space(.), 'Auto-reload credits')]/following::button[normalize-space()='Settings'][1]")
-            if not btn.count():
-                btn = page.locator("button", has_text="Settings")
-            btn.first.click(timeout=8000)
-            page.wait_for_selector("[role=dialog]", timeout=8000)
-            dtext = page.locator("[role=dialog]").inner_text()
-            autoreload = "off" if "Turn on auto-reload" in dtext else ("on" if ("Turn off" in dtext or "Disable" in dtext) else "unknown")
-            page.keyboard.press("Escape")
+            # click the Settings button that belongs to the Auto-reload card (innermost card containing the heading)
+            clicked = page.evaluate("""() => {
+                const heading = [...document.querySelectorAll('*')].find(e => e.children.length === 0 && /Auto-reload credits/.test(e.textContent||''));
+                let node = heading;
+                for (let i = 0; node && i < 8; i++) {
+                    const btn = [...node.querySelectorAll('button')].find(b => /^\\s*Settings\\s*$/.test(b.textContent||''));
+                    if (btn) { btn.click(); return 'card'; }
+                    node = node.parentElement;
+                }
+                const any = [...document.querySelectorAll('button')].filter(b => /^\\s*Settings\\s*$/.test(b.textContent||'')).pop();
+                if (any) { any.click(); return 'fallback'; }
+                return null;
+            }""")
+            if clicked:
+                page.wait_for_selector("[role=dialog]", timeout=10000)
+                page.wait_for_timeout(1500)
+                dtext = page.locator("[role=dialog]").inner_text()
+                autoreload = "off" if "Turn on auto-reload" in dtext else ("on" if ("Turn off" in dtext or "Disable" in dtext) else "unknown (dialog: %s)" % dtext[:80].replace("\n", " "))
+                page.keyboard.press("Escape")
+            else:
+                autoreload = "unknown (no Settings button found)"
         except Exception as exc:
             autoreload = "unknown (%s)" % type(exc).__name__
         digits = (credits or "").replace(",", "")
@@ -142,7 +155,9 @@ def run(only=None, login=False, debug=False):
     if login:
         print("A browser window will open. Sign in to claude.ai, close that window; then chatgpt.com opens: sign in, close it.")
         with StealthySession(headless=False, user_data_dir=PROFILE, solve_cloudflare=True, timeout=TIMEOUT_MS) as s:
-            for url in (CLAUDE_URL, CODEX_URL):
+            for kind, url in (("claude", CLAUDE_URL), ("codex", CODEX_URL)):
+                if only and only != kind:
+                    continue
                 try:
                     s.fetch(url, page_action=hold_open, timeout=24 * 3600 * 1000)
                 except Exception as exc:
