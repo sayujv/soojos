@@ -1798,7 +1798,9 @@ def inbox_task_args(section, cwd=None):
     args = {"project": f.get("project"), "assignee": f.get("assignee", "claude"), "task": text,
             "budget_minutes": int(f.get("budget_minutes") or f.get("budget") or 10),
             "action_kind": f.get("action_kind") or f.get("action") or "research",
-            "auto": (f.get("auto") or "yes").lower() not in ("no", "false", "0", "off")}
+            # Claude assignees run as sandboxed workers, so inbox tasks default to automatic dispatch. "codex" in the
+            # inbox usually means Astra the coordinator, so those default to manual unless the section says auto: yes.
+            "auto": (f.get("auto") or ("no" if f.get("assignee", "claude") == "codex" else "yes")).lower() not in ("no", "false", "0", "off")}
     if f.get("model"):
         args["model"] = f["model"]
     if routed:
@@ -1823,8 +1825,8 @@ def t_inbox_add(args):
     for key in ("project", "assignee", "budget", "action", "model", "scope"):
         if args.get(key) not in (None, ""):
             lines.append("%s: %s" % (key, args[key]))
-    if kind == "task" and args.get("auto") is False:
-        lines.append("auto: no")
+    if kind == "task" and "auto" in args and args.get("auto") is not None:
+        lines.append("auto: %s" % ("yes" if args["auto"] else "no"))
     body = text.strip()
     if body.splitlines()[0][:120] == title and kind == "task":
         body = "\n".join(body.splitlines()[1:]).strip() or title
@@ -2063,7 +2065,7 @@ TOOLS = [
                                     "title": _s("Optional heading"), "project": _s("Project slug"), "assignee": _s("claude|codex"),
                                     "budget": {"type": "integer"}, "action": _s("research|analysis|code|verify|harness|retro"),
                                     "model": _s("sonnet|haiku|opus|fable"), "scope": _s("for notes: project slug or all"),
-                                    "auto": {"type": "boolean", "default": True}}}},
+                                    "auto": {"type": "boolean", "description": "Force automatic dispatch on/off (default: claude tasks auto, codex tasks manual)"}}}},
     {"name": "inbox_sync", "fn": t_inbox_sync, "annotations": RW,
      "description": "Turn new sections of context/desk/INBOX.md (plain-language tasks with project:, assignee:, budget:, "
                     "model:, action: lines) into validated queue entries through the canonical desk, writing 'queued: <id>' "
