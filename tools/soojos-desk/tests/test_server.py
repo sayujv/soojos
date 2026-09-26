@@ -1098,6 +1098,13 @@ class TestInboxNotesRoutingScope040(DeskTestCase):
         out = self.ok("inbox_sync", cwd=self.repo)
         self.assertFalse(self.queue()[out["results"][0]["queued"]]["auto_dispatch"])
 
+    def test_codex_inbox_tasks_default_to_manual_dispatch(self):
+        self.ok("inbox_add", text="Astra: review the thing", project="soojos", assignee="codex")
+        self.ok("inbox_add", text="Codex worker job", project="soojos", assignee="codex", auto=True)
+        out = self.ok("inbox_sync", cwd=self.repo)
+        flags = [self.queue()[r["queued"]]["auto_dispatch"] for r in out["results"]]
+        self.assertEqual(flags, [False, True])
+
     def test_worker_that_changes_files_outside_its_project_folder_is_refused(self):
         os.makedirs(os.path.join(self.repo, "projects", "alpha"))
         os.makedirs(os.path.join(self.repo, "projects", "beta"))
