@@ -1009,7 +1009,7 @@ class TestInboxAndBoard039(DeskTestCase):
             fh.write(text)
 
     def test_inbox_sections_become_validated_queue_entries_with_markers(self):
-        self.write_inbox("# Desk inbox\n\nintro text\n\n## Check the README\nproject: soojos\nbudget: 3\naction: verify\n"
+        self.write_inbox("# Desk inbox\n\nintro text\n\n## Check the README\nproject: soojos\nassignee: claude\nbudget: 3\naction: verify\n"
                          "Read README.md and list outdated statements.\n\n## Bad one\nproject: not-a-project\nDo something.\n\n"
                          "## Already done\nproject: soojos\nqueued: 20260101-000000-claude-x at earlier\n")
         dry = self.ok("inbox_sync", dry_run=True)
