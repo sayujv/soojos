@@ -242,8 +242,9 @@ fingerprint file.
 
 ## Automated observation of the zero-cash evidence (0.4.1)
 
-`observe_billing.py` (runs on the Playwright bundled with the local Scrapling tool) opens the two
-account pages in a dedicated, persistent Chromium profile at `~/.soojos/desk/browser-profile`
+`observe_billing.py` (Scrapling stealth browser session, local and open source; both sites answer a
+plain automated browser with a Cloudflare challenge, which the stealth session passes) opens the two
+account pages in a dedicated, persistent profile at `~/.soojos/desk/browser-profile-stealth`
 (0700), reads the "Usage credits" switch on claude.ai and the credits balance plus the
 auto-reload dialog on chatgpt.com, and writes the evidence files only when it actually sees the
 required state. It never signs in and never changes a setting. `--login` opens a visible window
