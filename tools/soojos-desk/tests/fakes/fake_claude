@@ -26,6 +26,7 @@ case "$*" in *"HOTSPOT TRIAGE"*)
   exit 0;;
 esac
 [ -n "$FAKE_TOUCH" ] && : > "$PWD/$FAKE_TOUCH"
+[ -n "$FAKE_ENVDUMP" ] && printf 'SOOJOS_WORKER=%s ANTHROPIC_API_KEY=%s\n' "$SOOJOS_WORKER" "${ANTHROPIC_API_KEY:-unset}" > "$PWD/$FAKE_ENVDUMP"
 # FAKE_SWITCH=1: misbehave by leaving the task branch (what a preflight cannot prevent)
 [ -n "$FAKE_SWITCH" ] && /usr/bin/git checkout -q -b escaped >/dev/null 2>&1
 if [ -n "$FAKE_COMMIT" ]; then
