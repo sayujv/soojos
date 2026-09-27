@@ -811,6 +811,13 @@ class TestQuotaAndHostTolerance(DeskTestCase):
         self.refused("run_task", id=tid, cwd=self.repo)
         self.assertIn("worker quota", self.queue()[tid]["blocked_reason"])
 
+    def test_workers_never_receive_the_api_key(self):
+        os.environ["FAKE_ENVDUMP"] = "env.txt"
+        os.environ["ANTHROPIC_API_KEY"] = "sk-should-not-reach-workers"
+        self.ok("run_claude", task="x", cwd=self.tmp, budget_minutes=1)
+        self.assertEqual(open(os.path.join(self.tmp, "env.txt")).read().strip(), "SOOJOS_WORKER=1 ANTHROPIC_API_KEY=unset")
+        del os.environ["FAKE_ENVDUMP"]; del os.environ["ANTHROPIC_API_KEY"]
+
     def test_missing_ps_falls_back_to_pid_only(self):
         self.server.proc_start = lambda pid: None
         ident = self.server.self_identity()

@@ -817,7 +817,9 @@ def run_bounded(cmd, cwd, timeout_seconds):
         return {"exit_code": None, "timed_out": False, "elapsed_seconds": 0.0, "stdout": "", "stderr": "",
                 "signalled": _CURRENT["signalled"], "stop_seen_at": iso() if stop_present() else None,
                 "note": "worker not started"}
-    proc = subprocess.Popen(cmd, cwd=cwd, stdin=subprocess.DEVNULL,
+    env = dict(os.environ, SOOJOS_WORKER="1")   # the API key helper returns nothing to workers: subscription only
+    env.pop("ANTHROPIC_API_KEY", None)
+    proc = subprocess.Popen(cmd, cwd=cwd, stdin=subprocess.DEVNULL, env=env,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
     _CURRENT["proc"] = proc
     if _CURRENT["signalled"]:  # the signal landed between the check and the spawn
