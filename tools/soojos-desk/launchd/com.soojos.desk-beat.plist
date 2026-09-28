@@ -17,6 +17,7 @@
   <dict>
     <key>PATH</key><string>/Users/sayuj/.local/bin:/usr/local/bin:/usr/bin:/bin</string>
     <key>HOME</key><string>/Users/sayuj</string>
+    <key>CLAUDE_CONFIG_DIR</key><string>/Users/sayuj/.claude</string>
   </dict>
 </dict>
 </plist>
