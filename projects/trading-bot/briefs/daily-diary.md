@@ -1,10 +1,15 @@
 # Build brief: Daily Desk Diary
 
-Status: proposed 2026-10-06 (revised same day), not yet built. Target: Equities Desk (IBKR Build).
+Status: proposed 2026-10-06 (revised same day), not yet built. Targets: Equities Desk (IBKR Build) and Crypto Desk (ByBit Build). Each desk writes its own diary and doctrine; the spec below applies to both.
 
 ## Why
 
-On 2026-10-05 the desk placed 0 orders through a major rally, and nothing explained why until a human read Telegram alerts by hand. The desk needs a daily diary that reads like a trader's journal, not a system self-audit.
+On 2026-10-05 neither desk placed a single order. The equities desk sat out a major rally and nothing explained why until a human read Telegram alerts by hand. The crypto desk also took no trades. A trading system that cannot place even one trade, profitable or not, is not yet a trading system. The desks need a daily diary that reads like a trader's journal, not a system self-audit, and they need a proven path from signal to filled order.
+
+### What the 5 Oct record shows for each desk
+
+- **Equities (IBKR):** no live US equity quotes until about 23:55 AWST (error 10089, missing streaming entitlement), TWS refused connections at 00:17, and the committees produced no conclusion (88 `AGENT_HALLUCINATION`, 36 `CHECKPOINT_GAP`). 0 orders in the 6-hour check.
+- **Crypto (ByBit):** per the last ByBit Build report I could read (11:38 UTC on 5 Oct), the loop was in paper mode and ran in a terminal tab, so it stops if the Mac sleeps or the app closes. Only 3 of 17 specs validated positive, and those trade 0.1 to 0.8 times per day, so a day with no signal was a likely outcome by design. I have not seen the ByBit logs after that report, so the actual cause of 0 trades is unconfirmed. The diary's first job on that desk is to find out.
 
 ## Voice and perspective
 
@@ -63,6 +68,16 @@ Always judged against these yardsticks, in this order:
 - A quiet day still gets a diary. A zero-trade day is a failure to explain in money terms: what the desk could have made, and what stopped it.
 - Say "unknown" where data is missing, and make the missing data an action.
 
+## Prove the desk can trade: execution proof and no-trade escalation
+
+Zero trades is treated as a defect to explain, not a result to report. Both desks get:
+
+1. **Pipeline self-test (daily, automatic).** Each day, before the session, the desk places and closes one minimum-size order through the real execution path in a safe venue: IBKR paper account for equities, Bybit testnet for crypto. It records signal, order, fill, and exit, and times each step. If any step fails, that is the first line of the diary and a Telegram alert. This proves the plumbing works regardless of whether the strategy found an edge that day.
+2. **Live proof is a human decision.** A minimum-size live order (1 share, or the smallest contract) is allowed only if you enable it once, and it stays inside every existing cap and the kill switch. The desk may propose it in `notes/doctrine-proposals.md`. It never turns it on itself.
+3. **No-trade accounting.** Every day with 0 live or paper strategy orders, the diary must say, with counts, at which stage the flow died: no data, no signal, no conclusion, rejected by a gate, or an order that failed. "No signal fired" is only acceptable if the diary also states how many signals the strategy is expected to fire per day (for example 0.1 to 0.8 for the validated crypto specs) and why zero was or wasn't normal.
+4. **Escalation.** 2 consecutive days with no strategy order is flagged ESCALATE and sent to Telegram. The diary then states the single most likely blocker and the fix.
+5. **Always-on.** Each diary reports whether the desk was actually running through the whole session (Mac sleep, terminal tab closed, TWS dropped, process crashed) and how many minutes of the session it was blind or stopped. A desk that wasn't running cannot be said to have declined to trade.
+
 ## The desk rewrites its own understanding and limitations
 
 The desk currently treats its caps, gates and shakedown settings as fixed facts. They are not. They are assumptions made while the desk was unproven, and the desk should now challenge them against the elite benchmark above.
@@ -101,7 +116,11 @@ The desk logged 88 `AGENT_HALLUCINATION` events in one day, so the diary must no
 - Fixture days: a profit day, a loss day, a zero-order day during a rally, and a day with TWS down. Each produces a valid note within the limits and in the first-person trader voice, with money first.
 - Validator tests: reject an invented number, a note over the limit, and an action with no dollar estimate.
 - Failure test: force the LLM step to error and confirm a metrics-only note and a Telegram alert.
-- Dry run on 2026-10-05 data. The note must say we made $0 in a rally, estimate what was left on the table, and trace it to the late live data, the 00:17 TWS drop, and the committees producing nothing.
+- Dry run on 2026-10-05 data. The equities note must say we made $0 in a rally, estimate what was left on the table, and trace it to the late live data, the 00:17 TWS drop, and the committees producing nothing. The crypto note must say why there were no trades (paper mode, loop not running, or no signals) with counts, and say whether the desk was running all session.
+- Self-test: with the venue forced to fail at each stage (data, signal, order, fill), the self-test reports the right stage. On success it leaves a closed paper/testnet trade in the record, and a failure sends a Telegram alert.
+- No-trade accounting: a fixture zero-order day produces a funnel with counts and a named blocking stage, and a second consecutive zero day triggers ESCALATE.
+- Always-on: a fixture where the process was down for part of the session shows the blind minutes in the note.
+- Both desks: the equities and crypto desks each produce their own diary and doctrine from the same code path.
 - Doctrine: first run seeds `notes/doctrine.md` with all four parts. A test confirms the desk can rewrite a belief on its own, and that an attempted change to a cap, shakedown mode, kill switch or arming switch is written to `notes/doctrine-proposals.md` and not applied.
 - Benchmark: the note reports the proxy metrics (payoff ratio, capture, drawdown, return vs SPY/QQQ). It never claims what a named trader did.
 - Idempotency: running twice for one date leaves exactly one note.
