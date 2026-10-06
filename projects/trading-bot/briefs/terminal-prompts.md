@@ -26,6 +26,8 @@ Context: on 2026-10-05 the equities desk placed 0 orders during a major rally. I
 
 Step 1, read-only, do not change anything yet: from the desk's own logs and ledger, tell me exactly why there were 0 orders. For each stage (data, signal, committee conclusion, risk gate, order) give counts and the blocker. Explain what AGENT_HALLUCINATION and CHECKPOINT_GAP are and why there were so many. Say how long TWS was down and what the desk did while it was. Tell me anything you are unsure of.
 
+Also, Telegram is far too noisy and the real alerts get buried. In the brief's "Telegram" section, implement the three-tier alerting for this desk: interrupt now, one daily digest, and silent. Stop the news/options_flow unhealthy-recovered flapping, drop the "0 orders, nothing outstanding" 6-hour check, enforce dedupe, quiet hours and the daily cap, and never suppress tier 1. Before changing anything, report last week's Telegram messages grouped by type with counts and the tier each would get, so I can check nothing important gets silenced.
+
 Step 2: after you report, build the daily diary described in the brief for this desk, with the trader's voice, the top-of-the-top benchmark, the execution proof (daily paper-account self-test and no-trade escalation), and notes/doctrine.md. Follow the brief's limits on what you may change yourself. Do not change caps, shakedown mode, the kill switch, arming switches or credentials. File any such change as a proposal for me to approve.
 
 Verify with the brief's acceptance tests before saying it's done, including a dry run on 2026-10-05 data.
@@ -45,6 +47,8 @@ Context: on 2026-10-05 the crypto desk placed no trades either. People can at le
 I have not seen logs after that report, so I don't know the real cause.
 
 Step 1, read-only, do not change anything yet: from the logs, tell me exactly why there were no trades from 5 Oct to now. Was the loop running the whole time or did the Mac sleep or the tab close? Did any signal fire? If yes, where did it die (gate, sizing, order, venue)? If no, how many signals were expected and why zero? Tell me what you are unsure of.
+
+Also, Telegram is far too noisy. In the brief's "Telegram" section, implement the three-tier alerting for this desk: interrupt now, one daily digest, and silent. Stop component flapping alerts, drop "nothing happened" checks, enforce dedupe, quiet hours and the daily cap, and never suppress tier 1. Before changing anything, report last week's Telegram messages from this desk grouped by type with counts and the tier each would get, so I can check nothing important gets silenced.
 
 Step 2: after you report, build the daily diary described in the brief for this desk, with the trader's voice, the top-of-the-top benchmark, the execution proof (daily testnet self-test that places and closes one minimum-size order, plus no-trade escalation after 2 zero days), the always-on check, and notes/doctrine.md. Follow the brief's limits on what you may change yourself. Do not change risk or capital controls, arming switches, leverage or credentials. File any such change as a proposal for me to approve.
 

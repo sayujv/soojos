@@ -38,7 +38,7 @@ Always judged against these yardsticks, in this order:
 
 - Runs inside the existing post-close pass (about 05:53 AWST). No human trigger.
 - Output: `notes/diary/YYYY-MM-DD.md`, named for the US session date, with the AWST write time in the header. One note per day, idempotent on re-run.
-- Sends the verdict and top 3 actions to Trading Bot Build Alerts on Telegram.
+- Sends the verdict and top 3 actions to Trading Bot Build Alerts on Telegram as the single daily digest. See "Telegram: far fewer messages" for the tiers and limits.
 
 ## Hard limits
 
@@ -67,6 +67,33 @@ Always judged against these yardsticks, in this order:
 - No excuses without a number. "The market was hard" must be backed by what others in the universe made.
 - A quiet day still gets a diary. A zero-trade day is a failure to explain in money terms: what the desk could have made, and what stopped it.
 - Say "unknown" where data is missing, and make the missing data an action.
+
+## Telegram: far fewer messages, only what needs a person
+
+The Trading Bot Build Alerts chat is too noisy. On 5 Oct the chat held a steady flow of "component unhealthy" and "recovered" pairs for `news` and `options_flow` (about one flap every 30 minutes, overnight), a 6-hour order check, and a post-close summary with images. The one alert that mattered, TWS refusing connections at 00:17, sat in the middle of it. Noise hides the real failure, so cutting it is part of this build, not a nicety.
+
+The diary becomes the main daily message. Everything else is exception-only.
+
+**Three tiers:**
+1. **Interrupt now** (push, immediately), only for things that need you or cost money right now:
+   - broker or exchange session down for more than 10 minutes during market hours, or while a position is open
+   - an order refused or failed, or a fill that breaches a limit
+   - kill switch fired, a loss limit hit, or a position outside plan
+   - the desk not running at all during its session (process dead, Mac asleep)
+   - an approval you must give (a doctrine or cap proposal)
+2. **Daily digest** (one message, after the close, with the diary): verdict in one line, top 3 actions, a link or path to the note. Component flaps, recoveries, health summaries, order checks, heatmaps and charts go in the note, not as separate messages.
+3. **Silent** (log only, never sent): a component that flaps and recovers within 30 minutes, an "all clear" with nothing outstanding, a repeated warning already reported.
+
+**Rules to enforce:**
+- **No flapping.** A component alert fires only after it has been unhealthy for 30 minutes, and sends one message when it recovers only if the unhealthy message was sent. If it flaps more than 3 times in a day, send one line in the digest ("news feed flapped 9 times"), not 9 pairs.
+- **Dedupe.** The same alert is never sent twice within 6 hours. Repeats are counted in the digest.
+- **No "nothing happened" messages.** The 6-hour order check with 0 orders and nothing outstanding is silent. A zero-order day is reported once, in the digest, with the cause.
+- **Quiet hours.** Between 22:00 and 07:00 AWST, only tier 1 sends. Tier 1 always sends, including through the US session, which overlaps these hours. Everything else waits for the digest.
+- **Images in the digest only,** at most 2, and only if they are referred to in the note. The heatmap, calibration and exposure charts are saved with the note.
+- **Daily cap.** At most 3 messages a day outside tier 1, excluding replies to your own messages. The cap is shown in the digest if anything was held back.
+- **Never suppress tier 1,** and the desk may not raise, lower or edit the tiers or thresholds above on its own. Changes to what counts as an interrupt go through `notes/doctrine-proposals.md` for your approval.
+
+**The noise audit.** The first diary after this ships includes a one-time table of last week's Telegram messages grouped by type, with counts and which tier each would have been under. That makes the cut visible and lets you check that nothing important would have been silenced.
 
 ## Prove the desk can trade: execution proof and no-trade escalation
 
@@ -117,6 +144,7 @@ The desk logged 88 `AGENT_HALLUCINATION` events in one day, so the diary must no
 - Validator tests: reject an invented number, a note over the limit, and an action with no dollar estimate.
 - Failure test: force the LLM step to error and confirm a metrics-only note and a Telegram alert.
 - Dry run on 2026-10-05 data. The equities note must say we made $0 in a rally, estimate what was left on the table, and trace it to the late live data, the 00:17 TWS drop, and the committees producing nothing. The crypto note must say why there were no trades (paper mode, loop not running, or no signals) with counts, and say whether the desk was running all session.
+- Telegram: replay 5 Oct's alert stream. Flapping `news` and `options_flow` pairs collapse to at most one digest line each, the 0-order 6-hour checks are silent, the 00:17 TWS drop fires as tier 1 once it passes 10 minutes, and the day's total non-tier-1 messages is 3 or fewer. A test confirms a tier 1 event is never suppressed by the cap, dedupe or quiet hours.
 - Self-test: with the venue forced to fail at each stage (data, signal, order, fill), the self-test reports the right stage. On success it leaves a closed paper/testnet trade in the record, and a failure sends a Telegram alert.
 - No-trade accounting: a fixture zero-order day produces a funnel with counts and a named blocking stage, and a second consecutive zero day triggers ESCALATE.
 - Always-on: a fixture where the process was down for part of the session shows the blind minutes in the note.
