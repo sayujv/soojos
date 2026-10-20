@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "soojos-desk": {
+      "type": "stdio",
+      "command": "/usr/bin/python3",
+      "args": ["/Users/sayuj/soojos/tools/soojos-desk/server.py"]
+    }
+  }
+}

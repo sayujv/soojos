@@ -1,0 +1,23 @@
+#!/bin/sh
+# Fake codex for offline tests.
+#   `login status` -> "Logged in using ChatGPT" ($HOME/FAKE_AUTH_NONE present -> API key)
+#   `exec ... -C dir -o file prompt` -> writes PONG to file, prints token usage on stderr
+# FAKE_MODE: ok (default) | fail | hang.  FAKE_TOUCH: file name to create in the -C directory.
+if [ "$1" = "login" ]; then
+  if [ -f "$HOME/FAKE_AUTH_NONE" ]; then echo "Logged in using an API key"; else echo "Logged in using ChatGPT"; fi
+  exit 0
+fi
+out=""; dir="$PWD"; prev=""
+for a in "$@"; do
+  [ "$prev" = "-o" ] && out="$a"
+  [ "$prev" = "-C" ] && dir="$a"
+  prev="$a"
+done
+[ -n "$FAKE_TOUCH" ] && : > "$dir/$FAKE_TOUCH"
+[ -n "$FAKE_SLEEP" ] && sleep "$FAKE_SLEEP"
+case "${FAKE_MODE:-ok}" in
+  hang) sleep 300 & sleep 300 ;;
+  fail) echo "fake codex failure" >&2; exit 1 ;;
+  quota) echo "ERROR: You've hit your usage limit. Try again at 4:37 PM or add credits." >&2; exit 1 ;;
+  *) [ -n "$out" ] && printf 'PONG' > "$out"; echo "PONG"; printf 'tokens used\n1,234\n' >&2 ;;
+esac
