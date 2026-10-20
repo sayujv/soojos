@@ -11,11 +11,11 @@ Adapted from a prompt in a post by Felix Rieseberg on being more ambitious with 
 
 ## When to run it
 
-Run it when the task is multi-step, ambiguous, or expensive to get wrong. Skip it when the request is a small, precise edit, or when the user says "just do it", "no brief" or similar. Run it once per task. Do not repeat it on follow-up messages inside the same task.
+Run it when the task is multi-step, ambiguous, or expensive to get wrong. Skip it when the request is a small, precise edit, or when the user says "just do it", "no brief" or similar. Run it once per task. Do not repeat it on follow-up messages inside the same task. If the user is asking whether to build at all, run `grill-me` instead; deepen assumes the go decision is made.
 
 ## Procedure
 
-Write the brief in 200 words or fewer. Concrete items only, no padding.
+Write the brief in 200 words or fewer. Each item is one bullet of at most two sentences, about 30 words. Open questions go inline in a single bullet. No nested lists, no heading, no word-count label, no padding.
 
 1. **Intent.** One or two sentences: the outcome the user wants and why, in your own words. This is the line the user will correct if you have misread them, so make it specific.
 2. **Deeper version.** What a top practitioner in this field would do here that the user has not asked for. Keep it to what changes the quality of the result. Do not widen scope.

@@ -1,6 +1,6 @@
 ---
 name: grill-me
-description: Interrogate a plan, idea or spec before any building starts, surfacing the assumptions and failure modes the user hasn't considered. Use this whenever the user proposes a new project, feature, build, bot, strategy or automation, says "I want to build X", asks "is this a good idea", or shares a plan for review — even if they only asked for agreement. Also use before writing the first line of code on anything new.
+description: Interrogate a plan, idea or spec before any building starts, surfacing the assumptions and failure modes the user hasn't considered. Use this whenever the user proposes a new project, feature, build, bot, strategy or automation, says "I want to build X", asks "is this a good idea", or shares a plan for review — even if they only asked for agreement. Use it when the idea itself is in question; once the user has committed to building, use `deepen` instead.
 ---
 
 # Grill Me

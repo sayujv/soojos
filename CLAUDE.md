@@ -40,6 +40,7 @@ Skills and agents are distributed to other repos through the `soojos` marketplac
 | Binding decisions, numbered | `./decisions/` |
 | Last session state | `./context/handoff.md` |
 | Past OS audits | `./audits/` |
+| Approved task briefs (intent + outside check), per repo | `./.soojos/briefs/` |
 
 Decisions are binding. If something here contradicts a decision record, the decision record wins and this file is wrong — fix it.
 

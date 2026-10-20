@@ -43,7 +43,7 @@ soojos/
 
 | Plugin | Skills | Agents | Other | Enable where |
 | --- | --- | --- | --- | --- |
-| `soojos-core` | `grill-me`, `session-handoff`, `decide`, `new-project`, `audit` | `critic` | — | everywhere |
+| `soojos-core` | `grill-me`, `deepen`, `session-handoff`, `decide`, `new-project`, `audit` | `critic` | — | everywhere |
 | `soojos-ops` | `log-run`, `standup` | — | Notion MCP | projects tracked in Notion |
 | `soojos-build` | `verify`, `lane` | `reviewer` | — | any repo with code |
 | `soojos-intel` | `research`, `distill`, `brief` | `scout`, `skeptic` | `research.py`, `claims.py` | the brain repo |
