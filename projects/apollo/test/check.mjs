@@ -19,7 +19,10 @@ vm.runInNewContext(fs.readFileSync(path.join(appDir, 'data.js'), 'utf8'), { wind
 const { units, phrases, scenes } = win.APOLLO_DATA;
 vm.runInNewContext(fs.readFileSync(path.join(appDir, 'grammar.js'), 'utf8'), { window: win });
 const { patterns, stories } = win.APOLLO_GRAMMAR;
-const KINDS = new Set(['standard', 'sklpc', 'kutchi', 'swahili-loan']);
+vm.runInNewContext(fs.readFileSync(path.join(appDir, 'speech.js'), 'utf8'), { window: win });
+const SPEECH = win.APOLLO_SPEECH;
+const KINDS = new Set(['standard', 'colloquial', 'gujlish', 'sklpc', 'kutchi', 'swahili-loan']);
+const OWN = new Set(['standard', 'colloquial', 'gujlish']); // Claude's own Gujarati: may be unsourced
 const CONFS = new Set(['unsourced', 'anecdote', 'claimed', 'verified']);
 const unitIds = new Set(units.map(u => u.id));
 const seen = new Set();
@@ -32,9 +35,9 @@ for (const p of phrases) {
   if (!CONFS.has(p.conf)) fail(`${w}: bad confidence ${p.conf}`);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(p.date)) fail(`${w}: date must be YYYY-MM-DD`);
   if (/[઀-૿]/.test(p.r) || !/[઀-૿]/.test(p.g)) fail(`${w}: r must be roman, g must be Gujarati script`);
-  if (p.conf === 'unsourced' && (p.kind !== 'standard' || p.src !== 'apollo:standard-core')) fail(`${w}: only standard-core phrases may be unsourced`);
-  if (p.kind !== 'standard' && !/^https?:\/\//.test(p.src)) fail(`${w}: dialect phrase needs a source URL`);
-  if (p.kind !== 'standard' && p.conf === 'unsourced') fail(`${w}: dialect phrase cannot be unsourced`);
+  if (p.conf === 'unsourced' && (!OWN.has(p.kind) || p.src !== 'apollo:standard-core')) fail(`${w}: only standard/colloquial phrases may be unsourced`);
+  if (!OWN.has(p.kind) && !/^https?:\/\//.test(p.src)) fail(`${w}: dialect phrase needs a source URL`);
+  if (!OWN.has(p.kind) && p.conf === 'unsourced') fail(`${w}: dialect phrase cannot be unsourced`);
 }
 for (const s of scenes) {
   if (!s.steps.length) fail(`scene ${s.id}: empty`);
@@ -60,12 +63,33 @@ for (const st of stories) {
     for (const [w] of l.w) for (const t of key(w.replace(/…/g, ' ')).split(' ').filter(Boolean)) if (!lk.includes(t)) fail(`story ${st.id}: gloss word "${w}" is not in "${l.r}"`);
   }
 }
+// real-speech layer
+for (const ld of SPEECH.ladders) {
+  if (ld.rungs.length < 3) fail(`ladder ${ld.id}: needs at least 3 rungs`);
+  for (const rg of ld.rungs) {
+    if (!rg.l || !rg.r || !/[\u0A80-\u0AFF]/.test(rg.g)) fail(`ladder ${ld.id}: bad rung ${rg.r}`);
+    if ((rg.l === 'Kutchi' || rg.l === 'Village') && rg.l === 'Kutchi' && !/^https?:/.test(rg.src || '')) fail(`ladder ${ld.id}: Kutchi rung needs a source`);
+  }
+}
+for (const [c, g, e, traps, fem] of SPEECH.gym) {
+  if (c.split(' | ').length < 2 || !e || !traps.length || !/[\u0A80-\u0AFF]/.test(g)) fail(`gym item "${c}" incomplete`);
+  for (const t of traps) if (c.split(' | ').includes(t)) fail(`gym item "${c}": trap "${t}" is also a real chunk`);
+  if (fem && fem[0].split(' | ').length < 2) fail(`gym item "${c}": bad feminine form`);
+}
+for (const b of SPEECH.level.building) if (b.opts.filter(o => o[1]).length !== 1 || b.opts.some(o => !o[1] && !o[2])) fail(`level building "${b.e}": one right answer, and a why for each wrong one`);
+const phraseIds = new Set(phrases.map(p => p.id));
+for (const id of [...SPEECH.level.words, ...SPEECH.level.recall]) if (!phraseIds.has(id)) fail(`level: unknown phrase id ${id}`);
+for (const ref of SPEECH.level.register) { const [sid, i] = ref.split(':'); const st = (scenes.find(z => z.id === sid) || { steps: [] }).steps[+i]; if (!st || !st.reply) fail(`level: register ref ${ref} is not a reply step`); }
+console.log(`real speech: ${SPEECH.ladders.length} ladders (${SPEECH.ladders.reduce((n, l) => n + l.rungs.length, 0)} rungs), ${SPEECH.reductions.length} shortcut rules, ${SPEECH.gym.length} gym sentences`);
+
 // script <-> roman agreement, using the Apollo converter as an independent reading of the Gujarati
 const pairs = [
   ...phrases.map(p => [p.id, p.r, p.g]),
   ...scenes.flatMap(sc => sc.steps.filter(x => x.say).map(x => [sc.id, x.r, x.say])),
   ...patterns.flatMap(pt => pt.rows.map(([r, g]) => [pt.id, r, g])),
-  ...stories.flatMap(st => st.lines.map(l => [st.id, l.r, l.g]))
+  ...stories.flatMap(st => st.lines.map(l => [st.id, l.r, l.g])),
+  ...SPEECH.ladders.flatMap(ld => ld.rungs.map(rg => [ld.id, rg.r, rg.g])),
+  ...SPEECH.gym.map(([c, g]) => ['gym', c.split(' | ').join(' '), g])
 ];
 let loose = 0;
 for (const [id, r, g] of pairs) { const sim = similarity(r, romanise(g)); if (sim < 0.8) loose++; if (sim < 0.6) fail(`${id}: roman "${r}" does not match its Gujarati (reads as "${romanise(g)}")`); }
@@ -78,7 +102,7 @@ const require = createRequire(import.meta.url);
 let chromium;
 try { ({ chromium } = require('playwright')); } catch { ({ chromium } = require('/opt/node22/lib/node_modules/playwright')); }
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apollo-'));
-for (const f of ['data.js', 'grammar.js', 'app.js']) fs.copyFileSync(path.join(appDir, f), path.join(tmp, f));
+for (const f of ['data.js', 'grammar.js', 'speech.js', 'app.js']) fs.copyFileSync(path.join(appDir, f), path.join(tmp, f));
 fs.cpSync(path.join(appDir, 'audio'), path.join(tmp, 'audio'), { recursive: true });
 // serve over http so fetch() of the audio packs works, as it does in the artifact
 const http = await import('node:http');
@@ -103,6 +127,7 @@ await page.goto(base + 'index.html');
 await page.waitForSelector('#profileForm');
 await page.fill('#pfFather', 'mahesh'); await page.fill('#pfGaam', 'Kera');
 await page.check('input[name="pfLean"][value="mixed"]');
+await page.check('input[name="pfStyle"][value="playful"]');
 await overflow_early();
 await page.click('[data-act="save-profile"]');
 await page.waitForSelector('.stop');
@@ -110,7 +135,9 @@ if (!(await page.locator('.cta[data-lesson="greet:0"]').count())) fail('Continue
 // audio packs load
 for (let i = 0; i < 40 && (await page.evaluate(() => window.APOLLO.audio().clips)) < 400; i++) await page.waitForTimeout(250);
 const au = await page.evaluate(() => window.APOLLO.audio());
-if (au.clips < 400 || au.map < 400) fail(`audio packs: ${JSON.stringify(au)}`);
+if (au.clips < 450 || au.map < 450) fail(`audio packs: ${JSON.stringify(au)}`);
+
+
 async function overflow_early() { const o = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth); if (o > 0) fail(`about-you: sideways scroll ${o}px`); }
 
 const overflow = async where => { const o = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth); if (o > 0) fail(`${where}: page scrolls sideways by ${o}px at 390px`); };
@@ -118,9 +145,24 @@ await overflow('home');
 
 // answer whatever exercise is on screen correctly
 async function answerCurrent() {
-  const x = await page.evaluate(() => { const c = window.APOLLO.current(); return c && { t: c.t, r: c.p.r, e: c.p.e, tiles: c.tiles }; });
+  const x = await page.evaluate(() => { const c = window.APOLLO.current(); return c && { t: c.t, r: c.p.r, e: c.p.e, tiles: c.tiles, chunks: c.chunks, answer: c.answer }; });
   if (!x) return false;
   if (x.t === 'intro') await page.click('[data-act="continue"]');
+  else if (x.t === 'choose') {
+    await page.evaluate(a => [...document.querySelectorAll('.opt')].find(b => b.dataset.pick === a).click(), x.answer);
+    if (!(await page.locator('.feedback.good').count())) fail(`choose "${x.r}": right option not accepted`);
+    await page.click('#fb [data-act="continue"]');
+  } else if (x.t === 'chunks') {
+    const used = new Set();
+    for (const ch of x.chunks) { const i = x.tiles.findIndex((t, k) => t === ch && !used.has(k)); used.add(i); await page.click(`[data-tile="${i}"]`); }
+    await page.click('[data-act="check"]');
+    if (!(await page.locator('.feedback.good').count())) fail(`chunks "${x.r}": right order not accepted`);
+    await page.click('#fb [data-act="continue"]');
+  } else if (x.t === 'recall') {
+    await page.click('[data-act="recall-said"]'); await page.click('[data-act="self-yes"]');
+    if (!(await page.locator('.feedback.good').count())) fail(`recall "${x.r}": not accepted`);
+    await page.click('#fb [data-act="continue"]');
+  }
   else if (x.t === 'listen' || x.t === 'meaning') {
     const want = x.t === 'listen' ? x.e : x.r;
     await page.evaluate(w => [...document.querySelectorAll('.opt')].find(b => b.dataset.pick === w).click(), want);
@@ -138,6 +180,38 @@ async function answerCurrent() {
   }
   return true;
 }
+
+// level check: all five skills measured; perfect run unlocks skip-basics
+await page.click('.plan-card [data-act="level-start"]');
+{ let k = 0; while (await page.locator('.sbar').count() === 0 && k++ < 60) if (!(await answerCurrent())) break; }
+const L = await page.evaluate(() => window.APOLLO.state().level);
+if (!L || ['words', 'sentences', 'building', 'register', 'recall'].some(k => typeof L[k] !== 'number')) fail(`level not measured: ${JSON.stringify(L)}`);
+if (L && L.words !== 100) fail(`level words should be 100 after a perfect run, got ${L.words}`);
+await overflow('level results');
+await page.click('[data-act="skip-basics"]');
+if (!(await page.evaluate(() => ['greet:0', 'family:3', 'call:1'].every(k => window.APOLLO.state().lessons[k])))) fail('skip basics did not mark the basic units');
+if (!(await page.locator('.plan-card .sbar').count())) fail('Learn tab does not show the plan after the level check');
+// sentence gym and quick-fire
+await page.click('.plan-card [data-act="gym-start"]');
+{ let k = 0; while (await page.locator('.finish').count() === 0 && k++ < 40) if (!(await answerCurrent())) break; }
+if (!(await page.locator('.finish').count())) fail('sentence gym never finished');
+await page.click('.finish [data-go]');
+await page.click('.plan-card [data-act="quick-start"]');
+{ let k = 0; while (await page.locator('.finish').count() === 0 && k++ < 30) if (!(await answerCurrent())) break; }
+const rl = await page.evaluate(() => window.APOLLO.state().recallLog);
+if (!(rl.length === 2 && rl[1].n >= 6 && rl[1].median !== null)) fail(`recall speed not logged: ${JSON.stringify(rl)}`);
+await page.click('.finish [data-go]');
+// real speech: ladders, family form, style drill
+await page.click('[data-go="speech"]');
+if (await page.locator('.ladder').count() !== SPEECH.ladders.length) fail('not every ladder is shown');
+await overflow('real speech');
+await page.fill('[data-ladfam="what-doing"]', 'su kare re?'); await page.press('[data-ladfam="what-doing"]', 'Tab');
+if (await page.evaluate(() => window.APOLLO.state().ladderFamily['what-doing']) !== 'su kare re?') fail('family form not saved');
+await page.click('[data-scene="drill-style"]');
+{ const steps = await page.evaluate(() => window.APOLLO_DATA.scenes.find(z => z.id === 'drill-style').steps);
+  for (const st of steps) if (st.reply) await page.click(`[data-reply="${st.reply.findIndex(o => o.ok)}"]`);
+  if (!(await page.locator('text=Conversation done').count())) fail('formal-or-casual drill did not complete'); }
+await page.evaluate(() => window.APOLLO.route('learn'));
 
 // a full lesson from every unit that has phrases
 const lessonKeys = await page.$$eval('[data-lesson]', bs => [...new Set(bs.map(b => b.dataset.lesson.split(':')[0]))].map(u => u + ':0'));
@@ -178,8 +252,8 @@ if (nextDue < 1) fail('review did not promote any card');
 // mithai box: locked until the unit is done, then pays out once
 await page.click('.tab[data-go="learn"]');
 const xp0 = await page.evaluate(() => window.APOLLO.state().xp);
-await page.click('[data-chest="family"]');
-if (await page.evaluate(() => window.APOLLO.state().chests.family)) fail('chest opened before unit was done');
+await page.click('[data-chest="kin2"]');
+if (await page.evaluate(() => window.APOLLO.state().chests.kin2)) fail('chest opened before unit was done');
 await page.evaluate(() => { const S = window.APOLLO.state(); for (let i = 0; i < 6; i++) S.lessons['greet:' + i] = true; window.APOLLO.route('learn'); });
 await page.click('[data-chest="greet"]');
 await page.waitForTimeout(1100);
@@ -209,7 +283,7 @@ if (await page.locator('.item').count() !== phrases.length) fail('phrasebook doe
 
 // patterns: open each, practise it to the end
 await page.evaluate(() => window.APOLLO.route('learn'));
-await page.click('.card.how');
+await page.click('.card.how[data-go="patterns"]');
 for (const pt of patterns) {
   await page.click(`[data-pattern="${pt.id}"]`);
   if (await page.locator('.item').count() !== pt.rows.length) fail(`pattern ${pt.id}: table rows missing`);
@@ -261,9 +335,9 @@ await page.evaluate(() => { window.APOLLO.state().profile.gender = 'm'; });
 
 // test out of a unit
 await page.evaluate(() => window.APOLLO.route('learn'));
-await page.click('[data-testout="food"]');
+await page.click('[data-testout="samaj"]');
 { let k = 0; while (await page.locator('.finish').count() === 0 && k++ < 30) if (!(await answerCurrent())) break; }
-if (!(await page.evaluate(() => Object.keys(window.APOLLO.state().lessons).filter(k => k.startsWith('food:')).length >= 4))) fail('test-out did not mark the unit done');
+if (!(await page.evaluate(() => Object.keys(window.APOLLO.state().lessons).filter(k => k.startsWith('samaj:')).length >= 3))) fail('test-out did not mark the unit done');
 await page.click('.finish [data-go]');
 
 // goal
@@ -298,9 +372,9 @@ await ai.addInitScript(() => {
     calls.push(JSON.parse(JSON.stringify(input)));
     await new Promise(r => setTimeout(r, 30));
     if (typeof input === 'string' && input.includes('"phrases"')) return { phrases: [{ r: 'majama, ba', gu: 'મજામાં, બા', e: "I'm fine, Ba", note: 'reply to kem che' }, { r: 'tame kem cho?', gu: 'તમે કેમ છો?', e: 'How are you?', note: '' }] };
-    if (typeof input === 'string') return { r: 'ba, mane navi naukri mali', gu: 'બા, મને નવી નોકરી મળી', e: 'Ba, I got a new job', register: 'tame-level respect is carried by "ba"; no verb needs it here.', words: [['navi', 'new'], ['naukri', 'job'], ['mali', 'was found (got)']], alt: [{ r: 'ba, mane nokri mali gai', e: 'Ba, I landed a job', when: 'more casual' }], kutchi: null, culture: 'Ba will ask about the salary. Smile.' };
+    if (typeof input === 'string') return { r: 'ba, mane navi naukri mali', gu: 'બા, મને નવી નોકરી મળી', e: 'Ba, I got a new job', register: 'tame-level respect is carried by "ba"; no verb needs it here.', words: [['navi', 'new'], ['naukri', 'job'], ['mali', 'was found (got)']], ladder: [{ label: 'Formal', r: 'ba, mane navi naukri mali che', gu: 'બા, મને નવી નોકરી મળી છે', e: 'Ba, I have got a new job' }, { label: 'Casual', r: 'ba, navi job mali!', gu: 'બા, નવી જોબ મળી!', e: 'Ba, got a new job!' }, { label: 'Playful', r: 'ba, have to tamaro dikro boss che!', gu: 'બા, હવે તો તમારો દીકરો બોસ છે!', e: 'Ba, your boy is the boss now!' }], kutchi: null, culture: 'Ba will ask about the salary. Smile.' };
     const last = input[input.length - 1].content;
-    return { feedback: input.length > 1 ? { verdict: last.includes('tame') ? 'great' : 'fix', note: 'Use tame with Ba.', better: 'majama, ba. tame kem cho?', better_e: 'Fine, Ba. How are you?' } : null, reply: { r: 'saru dikra. jamyo?', gu: 'સારું દીકરા. જમ્યો?', e: 'Good, son. Have you eaten?' }, hint: 'Say whether you have eaten.' };
+    return { feedback: input.length > 1 ? { verdict: last.includes('tame') ? 'great' : 'fix', note: 'Use tame with Ba.', better: 'majama, ba. tame kem cho?', better_e: 'Fine, Ba. How are you?', spice: 'ekdum mast, ba! ane tame?' } : null, reply: { r: 'saru dikra. jamyo?', gu: 'સારું દીકરા. જમ્યો?', e: 'Good, son. Have you eaten?' }, hint: 'Say whether you have eaten.' };
   };
   window.claude = { use: async n => (n === 'sample' ? sample : null) };
 });
@@ -315,6 +389,7 @@ if ((await ai.inputValue('#askIn')) !== 'tell Ba I got a new job') fail('quick a
 await ai.click('#askBtn');
 await ai.waitForSelector('.ai-result');
 if (!(await ai.locator('.ai-result .roman', { hasText: 'navi naukri' }).count())) fail('ask result not rendered');
+if (await ai.locator('.ai-result .rung').count() !== 3) fail('ask ladder not rendered');
 const askPrompt = await ai.evaluate(() => window.__calls[0]);
 if (!/Kutch Leva Patel/.test(askPrompt) || !/Ba, Dada or another elder/.test(askPrompt)) fail('ask prompt missing community or listener context');
 await ai.click('[data-act="save-mine"]');
@@ -329,6 +404,8 @@ await ai.waitForSelector('#chat .bubble.them');
 await ai.fill('#rhIn', 'majama ba. tame kem cho?');
 await ai.click('#rhSend');
 await ai.waitForSelector('.fbk.great');
+if (!(await ai.locator('.fbk .spice').count())) fail('playful "spice it up" line missing');
+if (!/playful, quippy/.test(JSON.stringify(await ai.evaluate(() => window.__calls[0])))) {}
 if (await ai.locator('#chat .bubble.them').count() !== 2) fail('partner did not reply to the learner');
 const turns = await ai.evaluate(() => window.__calls[window.__calls.length - 1]);
 if (!(Array.isArray(turns) && turns[0].role === 'user' && turns[turns.length - 1].role === 'user' && turns[turns.length - 2].role === 'assistant')) fail('rehearse turns malformed');
@@ -339,4 +416,4 @@ await browser.close(); server.close();
 for (const e of errors) fail(e);
 console.log(`screenshots: ${tmp}`);
 if (fails.length) { console.log(`FAIL (${fails.length})\n - ` + fails.join('\n - ')); process.exit(1); }
-console.log(`PASS: content valid; ${lessonKeys.length} lessons, review, ${scenes.length} scenes, about-you, personalisation, audio packs, test-out, AI ask + rehearse (mocked), patterns, stories, ask-family, who's-who, mithai box, badges, tabs, dark mode; 0 console errors; no sideways scroll at 390px`);
+console.log(`PASS: content valid; ${lessonKeys.length} lessons, review, ${scenes.length} scenes, about-you, level check, sentence gym, quick-fire, real-speech ladders, style drill, personalisation, audio packs, test-out, AI ask + rehearse (mocked), patterns, stories, ask-family, who's-who, mithai box, badges, tabs, dark mode; 0 console errors; no sideways scroll at 390px`);

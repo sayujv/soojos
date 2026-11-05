@@ -29,7 +29,7 @@
   --shadow: 0 1px 0 rgba(23,27,54,.06), 0 6px 18px -8px rgba(23,27,54,.25);
   --u-greet: #2A3990; --u-family: #B8312A; --u-food: #C77A0A; --u-daily: #2E7D4F;
   --u-feel: #A03070; --u-call: #1F6F8B; --u-kutch: #3B2A6E;
-  --u-respect: #8C4A14; --u-kin2: #5E35B1; --u-learner: #00796B; --u-banter: #C4501A; --u-care: #4F6573; --u-samaj: #9E3D22; --u-occasions: #8F6400;
+  --u-flow: #00695C; --u-wit: #B5367A; --u-respect: #8C4A14; --u-kin2: #5E35B1; --u-learner: #00796B; --u-banter: #C4501A; --u-care: #4F6573; --u-samaj: #9E3D22; --u-occasions: #8F6400;
   --display: "Baloo Bhai 2", "Hind Vadodara", ui-rounded, system-ui, sans-serif;
   --body: "Hind Vadodara", system-ui, -apple-system, "Segoe UI", sans-serif;
   --r: 18px;
@@ -284,6 +284,35 @@ body.focus .tabs { display: none; }
 .radio:has(input:checked) { border-color: var(--indigo); }
 .radio input { accent-color: var(--indigo); width: 18px; height: 18px; }
 .profile .guide .speech b { font-size: 20px; }
+.tag.casual { background: var(--turmeric); color: #3A2600; }
+.rung { display: grid; grid-template-columns: 78px auto minmax(0,1fr); gap: 2px 8px; align-items: center; padding-block: 7px; border-top: 1px solid var(--line); }
+.rung:first-of-type { border-top: 0; }
+.rung .tag { justify-self: start; }
+.rung b { font: 700 17px/1.3 var(--display); color: var(--indigo); min-width: 0; overflow-wrap: anywhere; }
+.rung .rn { grid-column: 2 / -1; font-size: 13px; }
+.rung .rn a { color: inherit; }
+.tag.rung-formal { background: var(--indigo); color: var(--on-indigo); }
+.tag.rung-everyday { background: var(--sunk); color: var(--ink); }
+.tag.rung-casual, .tag.rung-playful { background: var(--turmeric); color: #3A2600; }
+.tag.rung-gujlish { background: var(--u-call); color: #fff; }
+.tag.rung-village, .tag.rung-kutchi { background: var(--madder); color: #fff; }
+.tag.rung-family { background: var(--ok); color: #fff; }
+.famin { width: 100%; margin-top: 4px; padding: 9px 12px; border-radius: 12px; border: 2px dashed var(--line); background: var(--bg); color: var(--ink); font: inherit; font-size: 14px; }
+.rule { gap: 4px; }
+.ex-pair { font-size: 15px; }
+.ex-pair .from { color: var(--muted); text-decoration: line-through; text-decoration-color: rgba(127,127,127,.5); }
+.ex-pair .to { font: 700 16px/1.3 var(--display); color: var(--indigo); }
+.plan { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.plan-card .strength { gap: 6px; }
+.spark { display: flex; gap: 6px; align-items: flex-end; height: 90px; }
+.spark span { flex: 1; display: grid; grid-template-rows: 1fr auto; height: 100%; text-align: center; min-width: 0; }
+.spark i { align-self: end; display: block; background: var(--u-flow); border-radius: 6px 6px 2px 2px; }
+.spark small { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.recall-timer { height: 6px; border-radius: 3px; background: var(--sunk); overflow: hidden; }
+.recall-timer i { display: block; height: 100%; width: 100%; background: var(--turmeric); transform-origin: left; animation: drain 4s linear forwards; }
+@keyframes drain { to { transform: scaleX(0); } }
+.tile.chunk { font-family: var(--display); font-weight: 700; }
+.better.spice { color: var(--gold); }
 .bubble.cue { justify-self: center; max-width: 100%; text-align: center; background: var(--sunk); border: 2px dashed var(--line); }
 .seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--sunk); border-radius: 14px; padding: 4px; gap: 4px; }
 .seg button { border: 0; background: none; border-radius: 10px; padding: 9px 8px; font: 700 15px/1 var(--display); color: var(--muted); }
@@ -349,4 +378,5 @@ body.focus .tabs { display: none; }
 
 <script src="data.js"></script>
 <script src="grammar.js"></script>
+<script src="speech.js"></script>
 <script src="app.js"></script>

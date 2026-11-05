@@ -8,6 +8,24 @@
   const CORE_META = { kind: 'standard', conf: 'unsourced', src: 'apollo:standard-core', date: '2026-11-05' };
   G.patterns.forEach(pt => { pt.items = pt.rows.map(([r, g, e], i) => (byId['pat-' + pt.id + '-' + i] = Object.assign({ id: 'pat-' + pt.id + '-' + i, unit: 'learner', r, g, e }, CORE_META, pt.dialect ? { kind: 'kutchi' } : {}))); });
   G.stories.forEach(st => { st.items = st.lines.map((l, i) => (byId['sty-' + st.id + '-' + i] = Object.assign({ id: 'sty-' + st.id + '-' + i, unit: 'samaj', r: l.r, g: l.g, e: l.e }, CORE_META))); });
+  const SP = window.APOLLO_SPEECH || { ladders: [], reductions: [], gym: [], level: null };
+  SP.ladders.forEach(ld => { ld.items = ld.rungs.map((rg, i) => (byId['lad-' + ld.id + '-' + i] = { id: 'lad-' + ld.id + '-' + i, unit: 'flow', r: rg.r, g: rg.g, e: ld.e + ' (' + rg.l.toLowerCase() + ')', kind: rg.l === 'Kutchi' ? 'kutchi' : 'colloquial', conf: rg.conf || 'unsourced', src: rg.src || 'apollo:standard-core', date: '2026-11-05', note: rg.n || '' })); });
+  SP.gym.forEach(([c, g, e, traps, fem], i) => { byId['gym-' + i] = Object.assign({ id: 'gym-' + i, unit: 'flow', r: c.split(' | ').join(' '), g, e, chunks: c.split(' | '), traps }, CORE_META, fem ? { f: { r: fem[0].split(' | ').join(' '), g: fem[1], chunks: fem[0].split(' | '), traps: fem[2] } } : {}); });
+  // "Formal or casual?" drill, generated from the ladders: elders get the formal rung, cousins the casual one.
+  (function () {
+    const steps = []; let n = 0;
+    for (const ld of SP.ladders) {
+      const formal = ld.rungs.find(x => x.l === 'Formal') || ld.rungs.find(x => x.l === 'Everyday');
+      const casual = ld.rungs.find(x => x.l === 'Casual') || ld.rungs.find(x => x.l === 'Playful');
+      if (!formal || !casual || formal === casual || n >= 12) continue;
+      const toElder = n % 2 === 0; n++;
+      steps.push({ cue: toElder ? `Say "${ld.e}" to Kaka, at a family function.` : `Say "${ld.e}" to your cousin, quickly.` });
+      steps.push({ reply: toElder
+        ? [{ r: formal.r, e: 'the respectful form', ok: true }, { r: casual.r, e: 'the clipped form', why: 'Too casual for Kaka. Save the short form for cousins and friends.' }]
+        : [{ r: casual.r, e: 'the clipped form', ok: true }, { r: formal.r, e: 'the formal form', why: 'Correct, but stiff. With a cousin the short form sounds natural.' }] });
+    }
+    if (steps.length) D.scenes.push({ id: 'drill-style', title: 'Drill: formal or casual?', who: 'Drill', where: 'Same sentence, different person. Pick the version that fits.', drill: true, steps });
+  })();
   const LESSON_SIZE = 5;
   const BOX_DAYS = [0, 1, 3, 7, 14, 30, 60];
   const MAX_BOX = BOX_DAYS.length - 1;
@@ -54,7 +72,7 @@
 
   // ── state (localStorage now, artifact db when available) ───
   const KEY = 'apollo.v1';
-  const blank = () => ({ xp: 0, streak: 0, lastDay: '', days: [], day: { date: today(), xp: 0 }, cards: {}, lessons: {}, scenes: {}, chests: {}, patterns: {}, stories: {}, verdicts: {}, badges: {}, bestCombo: 0, perfect: 0, profile: null, goal: 30, mine: [], speakFirst: true, updated: 0 });
+  const blank = () => ({ xp: 0, streak: 0, lastDay: '', days: [], day: { date: today(), xp: 0 }, cards: {}, lessons: {}, scenes: {}, chests: {}, patterns: {}, stories: {}, verdicts: {}, badges: {}, bestCombo: 0, perfect: 0, profile: null, goal: 30, mine: [], speakFirst: true, level: null, levelHistory: [], recallLog: [], ladderFamily: {}, gymCount: 0, updated: 0 });
   const migrate = s => {
     s = Object.assign(blank(), s);
     for (const k of Object.keys(s.scenes)) if (s.scenes[k] === true) s.scenes[k] = 1;
@@ -109,6 +127,8 @@
     { id: 'stories', name: 'Story time', desc: 'Finish 3 stories', icon: 'talk', c: '--u-samaj', test: s => Object.keys(s.stories || {}).length >= 3 },
     { id: 'rehearse', name: 'Brave talker', desc: 'Rehearse 3 conversations', icon: 'talk', c: '--u-family', test: s => (s.rehearsals || 0) >= 3 },
     { id: 'mine', name: 'My own words', desc: 'Save 5 of your own phrases', icon: 'book', c: '--u-kin2', test: s => (s.mine || []).length >= 5 },
+    { id: 'gym', name: 'Gym regular', desc: 'Do 5 sentence gym sessions', icon: 'bolt', c: '--u-flow', test: s => (s.gymCount || 0) >= 5 },
+    { id: 'quickdraw', name: 'Quick on the draw', desc: 'Median recall under 3 seconds', icon: 'flame', c: '--u-wit', test: s => (s.recallLog || []).some(z => z.median && z.median < 3000 && z.n >= 6) },
     { id: 'bigday', name: 'Big day', desc: 'Earn 60 XP in one day', icon: 'trophy', c: '--u-feel', test: s => s.day.xp >= 60 }
   ];
   const icon = (name, cls) => name === 'star' ? I.star(cls || 'star-on') : I[name];
@@ -263,8 +283,8 @@
   }
 
   // ── badges & source ────────────────────────────────────
-  const KIND_LABEL = { standard: 'Standard', sklpc: 'SKLPC', kutchi: 'Kutchi', 'swahili-loan': 'Swahili loan' };
-  const tag = p => `<span class="tag ${p.kind === 'standard' ? '' : 'dialect'}">${KIND_LABEL[p.kind] || p.kind}</span>`;
+  const KIND_LABEL = { standard: 'Standard', colloquial: 'Casual', gujlish: 'Gujlish', sklpc: 'SKLPC', kutchi: 'Kutchi', 'swahili-loan': 'Swahili loan' };
+  const tag = p => `<span class="tag ${['standard', 'colloquial', 'gujlish'].includes(p.kind) ? (p.kind === 'standard' ? '' : 'casual') : 'dialect'}">${KIND_LABEL[p.kind] || p.kind}</span>`;
   function srcLine(p) {
     if (p.src === 'apollo:standard-core') return '<p class="src">Standard Gujarati · not yet checked by family</p>';
     if (p.src === 'apollo:ai') return `<p class="src">Your phrase · made with Claude for ${esc(p.to || 'you')} · not yet checked by family</p>`;
@@ -277,7 +297,7 @@
   function paintTabs() {
     const due = dueCards().length;
     document.getElementById('tabs').replaceChildren(h(TABS.map(([id, label, ic]) =>
-      `<button class="tab" data-go="${id}" ${(current === id || (current === 'book' && id === 'me') || (current === 'guide' && id === 'family') || (current === 'patterns' && id === 'learn') || ((current === 'ask' || current === 'rehearse') && id === 'talk') || (current === 'profile' && id === 'me')) ? 'aria-current="page"' : ''}>${I[ic]}${label}${id === 'review' && due ? `<span class="dot">${due}</span>` : ''}</button>`).join('')));
+      `<button class="tab" data-go="${id}" ${(current === id || (current === 'book' && id === 'me') || (current === 'guide' && id === 'family') || (current === 'patterns' && id === 'learn') || ((current === 'ask' || current === 'rehearse') && id === 'talk') || (current === 'profile' && id === 'me') || (current === 'levelres' && id === 'me') || (current === 'speech' && id === 'learn')) ? 'aria-current="page"' : ''}>${I[ic]}${label}${id === 'review' && due ? `<span class="dot">${due}</span>` : ''}</button>`).join('')));
   }
   function setFocus(on) { document.body.classList.toggle('focus', on); document.querySelector('main').classList.toggle('focus', on); }
   function route(to) {
@@ -285,9 +305,9 @@
     run = null; scene = null; setFocus(false);
     story = null;
     if (chat && chat.ctl) chat.ctl.abort(); chat = null;
-    current = ['learn', 'talk', 'review', 'family', 'guide', 'me', 'book', 'patterns', 'ask', 'rehearse', 'profile'].includes(to) ? to : 'learn';
+    current = ['learn', 'talk', 'review', 'family', 'guide', 'me', 'book', 'patterns', 'ask', 'rehearse', 'profile', 'levelres', 'speech'].includes(to) ? to : 'learn';
     try { if (location.hash.slice(1) !== current) history.replaceState(null, '', '#' + current); } catch (e) { /* */ }
-    ({ learn: viewLearn, talk: viewTalk, review: viewReview, family: () => viewBook(true), guide: viewGuide, patterns: viewPatterns, me: viewMe, ask: viewAsk, rehearse: viewRehearse, profile: viewProfile, book: () => viewBook(false) })[current]();
+    ({ learn: viewLearn, talk: viewTalk, review: viewReview, family: () => viewBook(true), guide: viewGuide, patterns: viewPatterns, me: viewMe, ask: viewAsk, rehearse: viewRehearse, profile: viewProfile, levelres: viewLevel, speech: viewSpeech, book: () => viewBook(false) })[current]();
     paintTabs(); paintBar(); window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', () => { const t = location.hash.slice(1); if (t && t !== current && !run && !scene) route(t); });
@@ -353,6 +373,14 @@
         ${ring(S.day.xp / goal(), 64, 8, 'var(--turmeric)', `<text x="32" y="37" text-anchor="middle" font-family="Baloo Bhai 2, sans-serif" font-weight="800" font-size="15" fill="currentColor">${Math.min(100, Math.round(100 * S.day.xp / goal()))}%</text>`)}
         <div><h3>${esc(status)}</h3><div class="week" aria-label="This week">${week}</div></div>
       </div>
+      ${S.level ? `<div class="card plan-card"><div class="row" style="justify-content:space-between"><span class="eyebrow">Your plan</span><button class="chip" data-go="levelres">Details</button></div>${levelBars(S.level)}
+        <div class="pair"><button class="primary go" data-act="gym-start">Sentence gym</button><button class="primary" data-act="quick-start">Quick-fire</button></div></div>`
+      : `<div class="card plan-card"><span class="eyebrow">5 minutes</span><h3>Find your level</h3><p class="muted">Words, sentences, sentence-building, tu/tame and recall speed, measured separately. If you already know the words, you skip the basics and go straight to conversation.</p><button class="primary go" data-act="level-start">Find my level</button></div>`}
+      <button class="card how" data-go="speech" style="border-left-color:var(--u-wit)">
+        <span class="eyebrow">Real speech</span>
+        <span class="row" style="justify-content:space-between;width:100%"><h3>How it's really said</h3><span class="tag casual">${SP.ladders.length} sentences</span></span>
+        <span class="muted">Formal → everyday → clipped → Gujlish → Kutchi. "su kare?", "kidhu tu ne!", "tension na le".</span>
+      </button>
       <button class="card how" data-go="patterns">
         <span class="eyebrow">How Gujarati works</span>
         <span class="row" style="justify-content:space-between;width:100%"><h3>${G.patterns.length} patterns behind every sentence</h3><span class="tag">${Object.keys(S.patterns).length}/${G.patterns.length}</span></span>
@@ -435,6 +463,8 @@
         <div class="bigstat"><b>${S.xp}</b><span>total XP</span></div>
         <div class="bigstat"><b>${Object.keys(S.cards).length}</b><span>phrases known</span></div>
       </div>
+      <div class="card"><div class="row" style="justify-content:space-between"><h3>Your level</h3><button class="chip" data-act="level-start">${S.level ? 'Retake' : 'Take it'}</button></div>${S.level ? levelBars(S.level) : '<p class="muted">Not measured yet.</p>'}</div>
+      ${(S.recallLog || []).length ? `<div class="card"><h3>Recall speed</h3><p class="muted">Median time to say it, per session. Lower is better.</p><div class="spark">${S.recallLog.slice(-10).map(z => { const v = z.median ? Math.min(100, Math.round(z.median / 80)) : 0; return `<span title="${z.date}: ${z.median ? (z.median / 1000).toFixed(1) + ' s' : 'n/a'}"><i style="height:${Math.max(6, v)}%"></i><small>${z.median ? (z.median / 1000).toFixed(1) : '–'}</small></span>`; }).join('')}</div></div>` : ''}
       <div class="card"><h3>This week</h3><div class="week">${days.map(d => `<i class="${S.days.includes(d) ? 'on' : ''} ${d === today() ? 'now' : ''}">${'SMTWTFS'[new Date(d + 'T00:00:00').getDay()]}</i>`).join('')}</div></div>
       <div class="card"><h3>Badges · ${Object.keys(S.badges).length}/${BADGES.length}</h3>
         <div class="badges">${BADGES.map(b => `<div class="badge ${S.badges[b.id] ? '' : 'locked'}">${medal(b, !S.badges[b.id])}<b>${esc(b.name)}</b><span class="muted">${esc(b.desc)}</span></div>`).join('')}</div>
@@ -462,7 +492,7 @@
     reviewIds.forEach(id => mix.push({ t: shuffle(['listen', 'meaning', 'say'])[0], p: byId[id], review: true }));
     return newOnes.map(p => ({ t: 'intro', p })).concat(shuffle(mix));
   }
-  const backOf = k => ({ review: 'review', pattern: 'patterns', story: 'talk' })[k] || 'learn';
+  const backOf = k => ({ review: 'review', pattern: 'patterns', story: 'talk', })[k] || 'learn';
   function startPattern(pid) {
     const pt = G.patterns.find(z => z.id === pid);
     const q = []; pt.items.forEach(p => { q.push({ t: 'meaning', p, pool: pt.items }); q.push({ t: 'listen', p, pool: pt.items }); });
@@ -477,7 +507,31 @@
     const ps = shuffle(unitPhrases(uid)).slice(0, 10);
     startRun({ kind: 'testout', uid, queue: ps.map((p, i) => ({ t: i % 2 ? 'listen' : 'meaning', p })) });
   }
-  function startRun(r) { run = Object.assign({ done: 0, right: 0, wrong: 0, combo: 0, best: 0, xp: 0, wrongOnce: new Set() }, r); run.total = run.queue.length; setFocus(true); next(); }
+  function startLevel() {
+    const L = SP.level, q = [];
+    L.words.forEach(id => byId[id] && q.push({ t: 'listen', p: byId[id], sec: 'words' }));
+    const sentPool = L.sentences.map(id => byId[id]).filter(Boolean);
+    sentPool.forEach(p => q.push({ t: 'listen', p, pool: [...sentPool, ...G.stories.flatMap(s => s.items)], sec: 'sentences' }));
+    L.building.forEach(b => q.push({ t: 'choose', p: { id: 'lvl-b', r: b.opts[0][0], g: '', e: b.e }, prompt: b.e, label: 'Which is right?', opts: b.opts.map(([r, ok, why]) => ({ r, ok, why })), sec: 'building' }));
+    L.register.forEach(ref => {
+      const [sid, idx] = ref.split(':'), sc = D.scenes.find(z => z.id === sid); if (!sc) return;
+      const st = sc.steps[+idx], cue = sc.steps[+idx - 1];
+      q.push({ t: 'choose', p: { id: 'lvl-r', r: st.reply.find(o => o.ok).r, g: '', e: cue.cue }, prompt: cue.cue, label: 'What do you say?', opts: st.reply.map(o => ({ r: o.r, ok: !!o.ok, why: o.why })), sec: 'register' });
+    });
+    L.recall.forEach(id => byId[id] && q.push({ t: 'recall', p: byId[id], sec: 'recall' }));
+    startRun({ kind: 'level', queue: q, noRequeue: true });
+  }
+  function startGym() {
+    const items = shuffle(SP.gym.map((_, i) => byId['gym-' + i]));
+    const q = [...items.slice(0, 8).map(p => ({ t: 'chunks', p })), ...items.slice(8, 14).map(p => ({ t: 'recall', p }))];
+    startRun({ kind: 'gym', queue: q });
+  }
+  function startQuick() {
+    const known = Object.keys(S.cards).map(id => byId[id]).filter(p => p && p.unit !== 'mine' && p.r.split(' ').length >= 2);
+    const pool = shuffle([...SP.gym.map((_, i) => byId['gym-' + i]), ...known]).slice(0, 12);
+    startRun({ kind: 'quick', queue: pool.map(p => ({ t: 'recall', p })) });
+  }
+  function startRun(r) { run = Object.assign({ done: 0, right: 0, wrong: 0, combo: 0, best: 0, xp: 0, wrongOnce: new Set(), sec: {}, recall: [] }, r); run.total = run.queue.length; setFocus(true); next(); }
   function startLesson(key) {
     const [uid, idx] = key.split(':');
     const ps = lessonsOf(uid)[+idx];
@@ -519,12 +573,30 @@
       $view.replaceChildren(frame(`<span class="eyebrow">Build it</span><p class="prompt">${esc(p.e)}</p><div class="answer-line" id="line"></div><div class="tiles">${x.tiles.map((w, i) => `<button class="tile" data-tile="${i}">${esc(w)}</button>`).join('')}</div><button class="primary" data-act="check">Check</button>`));
       return;
     }
+    if (x.t === 'choose') {
+      x.answer = x.opts.find(o => o.ok).r;
+      $view.replaceChildren(frame(`<span class="eyebrow">${esc(x.label || 'Which one is right?')}</span><p class="prompt">${esc(x.prompt || p.e)}</p><div class="opts">${shuffle(x.opts).map(o => `<button class="opt" data-pick="${esc(o.r)}">${esc(o.r)}</button>`).join('')}</div>`));
+      return;
+    }
+    if (x.t === 'chunks') {
+      x.chunks = p.chunks || p.r.split(' '); x.picked = [];
+      x.tiles = shuffle([...x.chunks, ...(p.traps || [])]);
+      $view.replaceChildren(frame(`<span class="eyebrow">Build it from chunks</span><p class="prompt">${esc(p.e)}</p><p class="muted" style="margin-top:-8px">Grab whole pieces, not single words. Watch for the traps.</p><div class="answer-line" id="line"></div><div class="tiles">${x.tiles.map((w, i) => `<button class="tile chunk" data-tile="${i}">${esc(w)}</button>`).join('')}</div><button class="primary" data-act="check">Check</button>`));
+      return;
+    }
+    if (x.t === 'recall') {
+      x.t0 = performance.now(); x.ms = null;
+      $view.replaceChildren(frame(`<span class="eyebrow">Quick recall · say it the moment it comes</span><p class="prompt">${esc(p.e)}</p><div class="recall-timer" aria-hidden="true"><i></i></div><div class="pair"><button class="secondary" data-act="recall-blank">Blank</button><button class="primary go" data-act="recall-said">Said it</button></div>`));
+      return;
+    }
     $view.replaceChildren(frame(`<span class="eyebrow">Say it out loud</span><p class="prompt">${esc(p.e)}</p><p class="muted">Say it in Gujarati, out loud, then reveal and be honest.</p><button class="primary" data-act="reveal">Reveal</button>`));
   }
   const CHEERS = [['Saras!', 'Nice!'], ['Shabash!', 'Well done!'], ['Waah!', 'Wow!'], ['Bahu saras!', 'Very good!'], ['Ekdum barabar!', 'Spot on!']];
-  function feedback(ok, anchor) {
+  function feedback(ok, anchor, extraNote) {
     const x = run.cur, p = x.v || x.p;
     if (x.review || run.kind === 'review') grade(p.id, ok);
+    if (x.sec) { const sc = run.sec[x.sec] = run.sec[x.sec] || { n: 0, score: 0 }; sc.n++; sc.score += ok ? (x.t === 'recall' ? (x.ms !== null && x.ms < 4000 ? 1 : 0.6) : 1) : 0; }
+    if (x.t === 'recall') run.recall.push({ ms: x.ms, ok });
     let gain = 0;
     if (ok) {
       run.right++; run.combo++; run.best = Math.max(run.best, run.combo);
@@ -532,7 +604,7 @@
       sfx.right(run.combo); xpPop(gain, anchor);
     } else {
       run.wrong++; run.combo = 0; sfx.wrong();
-      if (!run.wrongOnce.has(p.id + x.t)) { run.wrongOnce.add(p.id + x.t); run.queue.push(Object.assign({}, x)); run.total++; }
+      if (!run.noRequeue && !run.wrongOnce.has(p.id + x.t)) { run.wrongOnce.add(p.id + x.t); run.queue.push(Object.assign({}, x)); run.total++; }
     }
     run.done++;
     const bar = document.querySelector('.progress'); bar.querySelector('i').style.width = Math.round(100 * run.done / run.total) + '%'; bar.setAttribute('aria-valuenow', Math.round(100 * run.done / run.total));
@@ -542,14 +614,28 @@
     const comboNote = ok && run.combo >= 5 ? ` · ${run.combo} in a row, double XP` : '';
     document.getElementById('fb').replaceChildren(h(`<div class="sheet feedback ${ok ? 'good' : 'bad'}"><div class="col gut">
       <div class="cheer">${ok ? I.check : ''}${gu} <small>${en}${comboNote}</small></div>
-      <div class="ans"><b>${esc(p.r)}</b> · ${esc(p.e)}</div>
+      <div class="ans"><b>${esc(x.t === 'choose' ? x.answer : p.r)}</b> · ${esc(x.prompt || p.e)}</div>${extraNote ? `<div class="ans">${esc(extraNote)}</div>` : ''}
       <button class="hear" data-say="${p.id}">▶ hear it</button>
       <button class="primary ${ok ? 'go' : 'warn'}" data-act="continue">Continue</button></div></div>`));
     document.querySelector('#fb [data-act="continue"]').focus({ preventScroll: true });
     if (!ok) speak(p.g, p.r, p.personalised);
   }
+  const median = a => { const b = a.slice().sort((x, y) => x - y); return b.length ? b[Math.floor(b.length / 2)] : null; };
   function finish() {
     const r = run;
+    if (r.kind === 'level') {
+      const pct = k => r.sec[k] ? Math.round(100 * r.sec[k].score / r.sec[k].n) : null;
+      const ms = r.recall.filter(z => z.ok && z.ms !== null).map(z => z.ms);
+      S.level = { words: pct('words'), sentences: pct('sentences'), building: pct('building'), register: pct('register'), recall: pct('recall'), recallMs: median(ms), at: today() };
+      S.levelHistory = [...(S.levelHistory || []), S.level].slice(-12);
+      run = null; award(20); celebrate(checkBadges(), false); confetti(120);
+      return route('levelres');
+    }
+    if (r.recall.length) {
+      const ms = r.recall.filter(z => z.ok && z.ms !== null).map(z => z.ms);
+      S.recallLog = [...(S.recallLog || []), { date: today(), median: median(ms), n: r.recall.length, instant: r.recall.filter(z => z.ok && z.ms !== null && z.ms < 3000).length }].slice(-30);
+    }
+    if (r.kind === 'gym') S.gymCount = (S.gymCount || 0) + 1;
     let bonus = 0;
     if (r.kind === 'lesson') {
       r.newIds.forEach(learn);
@@ -562,6 +648,8 @@
       if (passed) { lessonsOf(r.uid).forEach((ps, i) => { S.lessons[r.uid + ':' + i] = true; ps.forEach(p => { learn(p.id); S.cards[p.id].box = Math.max(S.cards[p.id].box, 2); }); }); bonus = 15; }
       testoutMsg = passed ? `You know this one. ${esc(D.units.find(u => u.id === r.uid).title)} is marked done and its phrases go into review.` : `${r.wrong} slips. Test out needs 8 of 10. Do the lessons and it will stick.`;
     }
+    if (r.kind === 'gym') bonus = 10;
+    if (r.kind === 'quick') bonus = 5;
     if (r.kind === 'pattern') { bonus = S.patterns[r.pid] ? 3 : 8; S.patterns[r.pid] = true; }
     if (r.kind === 'story') { bonus = S.stories[r.sid] ? 3 : 10; S.stories[r.sid] = true; }
     const perfect = r.wrong === 0 && r.kind === 'lesson';
@@ -574,7 +662,8 @@
     run = null;
     $view.replaceChildren(h(`<div class="finish">
       <div class="trophy">${perfect ? I.star('star-on').replace('class="star-on"', 'fill="#3A2600"') : I.trophy}</div>
-      <span class="eyebrow">${r.kind === 'lesson' ? (perfect ? 'Flawless lesson' : 'Lesson complete') : ({ review: 'Review complete', pattern: 'Pattern practised', story: 'Story understood', testout: 'Test out' })[r.kind]}</span>
+      <span class="eyebrow">${r.kind === 'lesson' ? (perfect ? 'Flawless lesson' : 'Lesson complete') : ({ review: 'Review complete', pattern: 'Pattern practised', story: 'Story understood', testout: 'Test out', gym: 'Sentence gym', quick: 'Quick-fire' })[r.kind]}</span>
+      ${r.recall.length ? (() => { const L = S.recallLog[S.recallLog.length - 1]; return `<p class="meaning">Recall: ${L.median !== null ? (L.median / 1000).toFixed(1) + ' s median' : 'no hits yet'} · ${L.instant}/${L.n} under 3 s</p>`; })() : ''}
       ${testoutMsg ? `<p class="meaning">${testoutMsg}</p>` : ''}
       <h2>${perfect ? 'Ekdum barabar!' : 'Shabash!'}</h2>
       <div class="bigstats">
@@ -749,6 +838,64 @@
       : `<button class="primary" data-act="next-line">Next line · ${story.i}/${st.lines.length}</button>`));
   }
 
+  // ── level check results ────────────────────────────────
+  const SKILLS = [['words', 'Words', 'Knowing what single words mean'], ['sentences', 'Sentences', 'Following whole sentences by ear'], ['building', 'Building', 'Putting a sentence together correctly'], ['register', 'Register', 'Picking tu or tame, formal or casual'], ['recall', 'Recall', 'Getting it out fast, in the moment']];
+  const BASICS = ['greet', 'family', 'food', 'daily', 'feel', 'call'];
+  function levelBars(L) {
+    return `<div class="strength">${SKILLS.map(([k, label]) => { const v = L[k] == null ? 0 : L[k]; return `<div class="sbar"><span>${label}</span><span class="meter"><i style="width:${v}%;background:${v >= 75 ? 'var(--ok)' : v >= 50 ? 'var(--turmeric)' : 'var(--madder)'}"></i></span><span>${v}%</span></div>`; }).join('')}</div>`;
+  }
+  function levelPlan(L) {
+    const weak = SKILLS.filter(([k]) => L[k] != null && L[k] < 70).map(([k]) => k);
+    const lines = [];
+    if (L.words >= 70 && (L.building < 70 || L.recall < 70)) lines.push('You know the words. The gap is putting them together on the spot, so skip the basics and train sentences.');
+    if (weak.includes('building')) lines.push('Daily Sentence gym: build sentences from ready-made chunks, so the shapes come pre-assembled.');
+    if (weak.includes('recall')) lines.push('Quick-fire recall: say it before you think. Your speed is tracked under Me.');
+    if (weak.includes('register')) lines.push('Do the "tu or tame?" and "formal or casual?" drills until they feel automatic.');
+    if (weak.includes('sentences')) lines.push('Listen to the stories with English hidden, then turn it on to check.');
+    if (!weak.length) lines.push('Strong all round. Spend your time in Rehearse and the stories, and capture your family\'s own forms.');
+    lines.push('Keep the "Keep talking" fillers handy: "ek minit, yaad karu" buys you time without switching to English.');
+    return lines;
+  }
+  function viewLevel() {
+    const L = S.level;
+    if (!L) { $view.replaceChildren(h(`<div class="card"><h3>No level check yet</h3><button class="primary go" data-act="level-start">Find my level</button></div>`)); return; }
+    const basicsLeft = BASICS.some(u => lessonsOf(u).some((_, i) => !S.lessons[u + ':' + i]));
+    $view.replaceChildren(h(`<div class="ex">
+      <div class="exbar"><button class="x" data-go="learn" aria-label="Close">×</button><div><span class="eyebrow">Level check · ${esc(L.at)}</span><h2>Your Gujarati, skill by skill</h2></div></div>
+      <div class="card">${levelBars(L)}${L.recallMs ? `<p class="muted">Median recall time: ${(L.recallMs / 1000).toFixed(1)} s</p>` : ''}</div>
+      <div class="card"><h3>Your plan</h3><ul class="plan">${levelPlan(L).map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>
+      ${L.words >= 70 && basicsLeft ? `<div class="card"><h3>Skip the basics?</h3><p class="muted">Greetings, family, food, everyday talk, feelings and the phone call get marked as known. Their phrases move into review, so you keep them fresh without re-learning them.</p><button class="primary go" data-act="skip-basics">Skip the basics</button></div>` : ''}
+      <div class="pair"><button class="secondary" data-act="gym-start">Sentence gym</button><button class="primary" data-act="quick-start">Quick-fire</button></div>
+    </div>`));
+  }
+  function skipBasics() {
+    BASICS.forEach(u => lessonsOf(u).forEach((ps, i) => { S.lessons[u + ':' + i] = true; ps.forEach(p => { learn(p.id); S.cards[p.id].box = Math.max(S.cards[p.id].box, 2); }); }));
+    save(); toast('Basics marked as known. They\'ll come back in review.'); route('learn');
+  }
+
+  // ── how it's really said (ladders) ─────────────────────
+  function viewSpeech() {
+    const fam = S.ladderFamily || {};
+    $view.replaceChildren(h(`<div class="ex">
+      <div class="exbar"><button class="x" data-go="learn" aria-label="Back">×</button><h2>How it's really said</h2></div>
+      <p class="muted">Nobody at a family dinner talks like a textbook. Each sentence below runs from formal to how it actually comes out: clipped, Gujlish, village or Kutchi. Add how YOUR family says it, and it shows up as its own line.</p>
+      <button class="primary go" data-scene="drill-style">Practise: formal or casual?</button>
+      <h3>The shortcuts</h3>
+      <div class="list">${SP.reductions.map(rd => `<div class="card rule"><b>${esc(rd.rule)}</b>${rd.ex.map(([a, b]) => `<span class="ex-pair"><span class="from">${esc(a)}</span> → <span class="to">${esc(b)}</span></span>`).join('')}${rd.n ? `<span class="muted">${esc(rd.n)}${rd.src ? ` · <a href="${esc(rd.src)}" target="_blank" rel="noopener">source</a>` : ''}</span>` : ''}</div>`).join('')}</div>
+      <h3>One sentence, many ways</h3>
+      <div class="list">${SP.ladders.map(ld => `<section class="card ladder"><h3>${esc(ld.e)}</h3>
+        ${ld.items.map((p, i) => { const rg = ld.rungs[i]; return `<div class="rung"><span class="tag rung-${rg.l.toLowerCase()}">${esc(rg.l)}</span><button class="hear chipbtn" data-say="${p.id}" aria-label="Play">▶</button><b>${esc(rg.r)}</b>${rg.n ? `<span class="muted rn">${esc(rg.n)}${rg.src ? ` · <a href="${esc(rg.src)}" target="_blank" rel="noopener">${esc(rg.conf || 'source')}</a>` : ''}</span>` : ''}</div>`; }).join('')}
+        ${fam[ld.id] ? `<div class="rung"><span class="tag rung-family">Your family</span><b>${esc(fam[ld.id])}</b></div>` : ''}
+        <input class="famin" data-ladfam="${ld.id}" value="${esc(fam[ld.id] || '')}" placeholder="Your family says it like…" aria-label="How your family says: ${esc(ld.e)}">
+      </section>`).join('')}</div></div>`));
+    $view.addEventListener('change', e => {
+      const inp = e.target.closest('[data-ladfam]'); if (!inp) return;
+      S.ladderFamily = Object.assign({}, S.ladderFamily, { [inp.dataset.ladfam]: inp.value.trim() });
+      if (!inp.value.trim()) delete S.ladderFamily[inp.dataset.ladfam];
+      save(); toast('Saved as your family\'s form.');
+    });
+  }
+
   // ── about you (profile) ────────────────────────────────
   const GAAM_HINTS = ['Madhapar', 'Kera', 'Baladia', 'Kodki', 'Bharasar', 'Samatra', 'Sukhpar', 'Mankuva', 'Naranpar', 'Rampar', 'Mirjapar', 'Meghpar', 'Kundanpur'];
   function viewProfile(first) {
@@ -762,6 +909,7 @@
       <label class="field"><span>Your father's first name</span><input id="pfFather" value="${esc(pr.father || '')}" placeholder="e.g. Ramesh"><small class="muted">So you can answer "kono dikro?" with his name + bhai.</small></label>
       <label class="field"><span>Your family's gaam</span><input id="pfGaam" list="gaamList" value="${esc(pr.gaam || '')}" placeholder="Ask your parents if you're not sure"><datalist id="gaamList">${GAAM_HINTS.map(g => `<option value="${g}">`).join('')}</datalist><small class="muted">Suggestions are villages linked to the community in public sources, not a verified list.</small></label>
       <div class="field"><span>At home, your family speaks</span>${radio('pfLean', [['gujarati', 'Mostly Gujarati'], ['mixed', 'Gujarati with Kutchi words'], ['kutchi', 'Mostly Kutchi'], ['unsure', 'Not sure']], pr.lean || 'unsure')}</div>
+      <div class="field"><span>Your style when you talk</span>${radio('pfStyle', [['playful', 'Playful and quippy'], ['easy', 'Easygoing'], ['polite', 'Polite and gentle']], pr.style || 'playful')}<small class="muted">The AI partner and "How do I say…?" match your tone.</small></div>
       <div class="field"><span>Right now you</span>${radio('pfLevel', [['understand', 'Understand most things but freeze when speaking'], ['some', 'Understand some'], ['new', 'Are starting out']], pr.level || 'understand')}</div>
       <button class="primary go" type="button" data-act="save-profile">${first ? 'Start learning' : 'Save'}</button>
       ${first ? '<button class="secondary" type="button" data-act="skip-profile">Skip for now</button>' : ''}
@@ -770,7 +918,7 @@
   function saveProfile() {
     const val = id => (document.getElementById(id).value || '').trim();
     const pick = n => (document.querySelector(`input[name="${n}"]:checked`) || {}).value;
-    S.profile = { name: val('pfName') || 'Sayuj', gender: pick('pfGender') || 'm', father: val('pfFather'), gaam: val('pfGaam'), lean: pick('pfLean') || 'unsure', level: pick('pfLevel') || 'some' };
+    S.profile = { name: val('pfName') || 'Sayuj', gender: pick('pfGender') || 'm', father: val('pfFather'), gaam: val('pfGaam'), lean: pick('pfLean') || 'unsure', level: pick('pfLevel') || 'some', style: pick('pfStyle') || 'playful' };
     save(); route('learn');
     toast(S.profile.level === 'understand' ? 'Saved. Tip: use "Test out" on any stop you already know.' : 'Saved. Your phrases now use your name, gaam and forms.');
   }
@@ -790,7 +938,7 @@
     const pr = prof();
     const lean = { gujarati: 'mostly Gujarati', mixed: 'Gujarati with Kutchi words mixed in', kutchi: 'mostly Kutchi (Kachchhi)' }[pr.lean] || 'not sure, probably Gujarati with some Kutchi words';
     const level = { understand: 'understands a lot but freezes when speaking', some: 'understands some everyday Gujarati', new: 'is a beginner' }[pr.level] || 'understands some everyday Gujarati';
-    return `The learner is ${cap(pr.name) || 'a heritage learner'}, ${pr.gender === 'f' ? 'a woman (use feminine first-person verb forms for her: gai, boli, dikri)' : 'a man (use masculine first-person verb forms for him: gayo, bolyo, dikro)'}, living in Perth. The family belongs to the Shree Kutchi Leva Patel Community (SKLPC): Hindu Leva Patel farming families from the 24 villages around Bhuj, Kutch, with diaspora in East Africa and the UK; many are Swaminarayan followers.${pr.gaam ? ' Family gaam: ' + cap(pr.gaam) + '.' : ''}${pr.father ? " Father's name: " + cap(pr.father) + '.' : ''} Home speech: ${lean}. The learner ${level}. Goal: confident everyday conversation with family; reading and writing are not goals.`;
+    return `The learner is ${cap(pr.name) || 'a heritage learner'}, ${pr.gender === 'f' ? 'a woman (use feminine first-person verb forms for her: gai, boli, dikri)' : 'a man (use masculine first-person verb forms for him: gayo, bolyo, dikro)'}, living in Perth. The family belongs to the Shree Kutchi Leva Patel Community (SKLPC): Hindu Leva Patel farming families from the 24 villages around Bhuj, Kutch, with diaspora in East Africa and the UK; many are Swaminarayan followers.${pr.gaam ? ' Family gaam: ' + cap(pr.gaam) + '.' : ''}${pr.father ? " Father's name: " + cap(pr.father) + '.' : ''} Home speech: ${lean}. The learner ${level}. Goal: confident everyday conversation with family; reading and writing are not goals. ${({ playful: 'Personality: playful, quippy and teasing; loves banter and idioms. Where it fits, show the witty, casual way a young person would really say it, clipped forms included (su for shu, nai for nahi, kidhu tu), and natural Gujlish where diaspora families use it.', easy: 'Personality: easygoing and casual; prefers everyday clipped speech over formal Gujarati.', polite: 'Personality: polite and gentle; prefers respectful forms.' })[pr.style || 'playful']}${S.level ? ` Measured skills (0-100): words ${S.level.words}, sentences ${S.level.sentences}, building ${S.level.building}, register ${S.level.register}, recall ${S.level.recall}. Do not explain basic vocabulary they already know; focus on how sentences are put together.` : ''}`;
   }
   const ROMAN_RULES = 'Romanise for an English reader, no diacritics: "aa" for long a, "ch" for both ચ and છ, "sh" for શ and ષ, plain i and u, e.g. "tame kya jaao cho?", "mane bhukh lagi che". The Gujarati script must say exactly the same thing as the roman.';
   const aiOff = () => `<div class="card"><h3>Needs the Claude app</h3><p class="muted">This part uses Claude, so it only works when Apollo is opened inside the Claude app or claude.ai, signed in.</p><button class="secondary" data-go="talk">Back</button></div>`;
@@ -821,7 +969,7 @@ They are saying it to: ${toLabel}.
 Give what a Kutch Leva Patel family member would naturally say: everyday spoken Gujarati, short, not textbook or Sanskritised. Get the register right for this listener: tu or tame, verb endings (-o for respect), plural agreement when talking about elders, -bhai / -ben after names, and the learner's own gender in first-person verbs.
 ${ROMAN_RULES}
 If you know a common Kutchi (Kachchhi) way to say it, give it; if unsure, use null. Never invent Kutchi.
-Reply with only JSON: {"r":"roman","gu":"Gujarati script","e":"close English back-translation","register":"one sentence: why this form fits this listener","words":[["roman word","meaning"]],"alt":[{"r":"roman","e":"English","when":"when to use this instead"}],"kutchi":{"r":"roman","note":"short note"} or null,"culture":"one short practical tip, or empty string"}. At most 2 alt entries.`;
+Reply with only JSON: {"r":"roman","gu":"Gujarati script","e":"close English back-translation","register":"one sentence: why this form fits this listener","words":[["roman word","meaning"]],"ladder":[{"label":"Formal"|"Everyday"|"Casual"|"Playful"|"Gujlish","r":"roman","gu":"Gujarati script","e":"English"}],"kutchi":{"r":"roman","note":"short note"} or null,"culture":"one short practical tip, or empty string"}. "ladder" gives the same message 3-5 ways, from formal down to how it is really said between young family members: clipped forms (su, nai, kidhu tu, dropping che), a playful or idiomatic version, and Gujlish if families really say it that way. Mark which rung suits this listener by putting it in "r" as well.`;
     try {
       const a = await sampler.json(prompt, { modelTier: 'default' });
       if (!a || typeof a.r !== 'string' || typeof a.gu !== 'string') throw { code: 'invalid_json' };
@@ -833,7 +981,7 @@ Reply with only JSON: {"r":"roman","gu":"Gujarati script","e":"close English bac
         <div class="row"><button class="hear chipbtn" data-sayg="${esc(a.gu)}" data-sayr="${esc(a.r)}">▶ hear it</button><span class="gu-small" lang="gu">${esc(a.gu)}</span></div>
         ${a.register ? `<p class="note">${esc(a.register)}</p>` : ''}
         ${wordsHtml(a.words)}
-        ${Array.isArray(a.alt) && a.alt.length ? `<div class="alts">${a.alt.slice(0, 2).map(x => `<p><b>${esc(x.r)}</b> · ${esc(x.e || '')} <span class="muted">${esc(x.when || '')}</span></p>`).join('')}</div>` : ''}
+        ${Array.isArray(a.ladder) && a.ladder.length ? `<div class="ladder ai-ladder"><span class="eyebrow">Other ways to say it</span>${a.ladder.slice(0, 5).map(x => `<div class="rung"><span class="tag rung-${esc(String(x.label || '').toLowerCase())}">${esc(x.label || '')}</span><button class="hear chipbtn" data-sayg="${esc(x.gu || '')}" data-sayr="${esc(x.r || '')}" aria-label="Play">▶</button><b>${esc(x.r || '')}</b><span class="muted rn">${esc(x.e || '')}</span></div>`).join('')}</div>` : ''}
         ${a.kutchi && a.kutchi.r ? `<p class="kx"><span class="tag dialect">Kutchi</span> <b>${esc(a.kutchi.r)}</b> <span class="muted">${esc(a.kutchi.note || '')} · unverified</span></p>` : ''}
         ${a.culture ? `<p class="src">${esc(a.culture)}</p>` : ''}
         <p class="src">Made by Claude for you. Standard spoken Gujarati, not yet checked by family.</p>
@@ -893,7 +1041,7 @@ Role-play: you are ${partner.name}, ${partner.who}, in a Kutch Leva Patel (SKLPC
 Situation: ${sit}
 The learner is practising SPOKEN Gujarati. They write romanised Gujarati, sometimes with English words when stuck.
 Every reply you give is ONLY one JSON object:
-{"feedback": null or {"verdict":"great"|"ok"|"fix","note":"one or two short sentences: what was good, or what to fix (grammar, tu/tame register, verb endings, gender forms, word choice). Warm and specific.","better":"the natural roman Gujarati for what they meant, or empty string if already great","better_e":"English of better, or empty string"},
+{"feedback": null or {"verdict":"great"|"ok"|"fix","note":"one or two short sentences: what was good, or what to fix (grammar, tu/tame register, verb endings, gender forms, word choice). Warm and specific.","better":"the natural roman Gujarati for what they meant, or empty string if already great","better_e":"English of better, or empty string","spice":"a more playful, quippy or clipped way to say it (only if the learner\'s style is playful; otherwise empty string)"},
  "reply":{"r":"your next line in romanised spoken Gujarati, 1-2 short sentences","gu":"the same line in Gujarati script","e":"English translation"},
  "hint":"a short English suggestion of what the learner could say next"}
 Speak like a real ${partner.name}: warm, everyday Kutch Leva Patel Gujarati, simple words, the register ${partner.name} would really use. React to what the learner actually said and keep the conversation moving naturally. If they write English, give the Gujarati in "better" and carry on in Gujarati.
@@ -928,7 +1076,7 @@ ${ROMAN_RULES}`;
       const youAll = document.querySelectorAll('#chat .bubble.you'), youB = youAll[youAll.length - 1];
       if (a.feedback && youB && !youB.querySelector('.fbk')) {
         const f = a.feedback, v = ['great', 'ok', 'fix'].includes(f.verdict) ? f.verdict : 'ok';
-        youB.insertAdjacentHTML('afterend', `<div class="fbk ${v}"><b>${{ great: 'Shabash!', ok: 'Good', fix: 'Try this' }[v]}</b> ${esc(f.note || '')}${f.better ? `<div class="better"><b>${esc(f.better)}</b>${f.better_e ? ` · ${esc(f.better_e)}` : ''}</div>` : ''}</div>`);
+        youB.insertAdjacentHTML('afterend', `<div class="fbk ${v}"><b>${{ great: 'Shabash!', ok: 'Good', fix: 'Try this' }[v]}</b> ${esc(f.note || '')}${f.better ? `<div class="better"><b>${esc(f.better)}</b>${f.better_e ? ` · ${esc(f.better_e)}` : ''}</div>` : ''}${f.spice ? `<div class="better spice">Spice it up: <b>${esc(f.spice)}</b></div>` : ''}</div>`);
         if (chat.n) { const lv = award(v === 'great' ? 3 : 2); celebrate(checkBadges(), lv); }
       }
       const hide = document.getElementById('hideEn').getAttribute('aria-pressed') === 'true';
@@ -980,6 +1128,10 @@ ${ROMAN_RULES}`;
     if (t.dataset.scene) return startScene(t.dataset.scene);
     if (t.dataset.act === 'start-review') return startReview();
     if (t.dataset.testout) return startTestOut(t.dataset.testout);
+    if (t.dataset.act === 'level-start') return startLevel();
+    if (t.dataset.act === 'gym-start') return startGym();
+    if (t.dataset.act === 'quick-start') return startQuick();
+    if (t.dataset.act === 'skip-basics') return skipBasics();
     if (t.dataset.goal) { S.goal = +t.dataset.goal; save(); return route('me'); }
     if (t.id === 'speakFirst') { S.speakFirst = !S.speakFirst; save(); t.setAttribute('aria-pressed', S.speakFirst); return; }
     if (t.dataset.act === 'show-choices') { scene.shown = true; return sceneStep(); }
@@ -1015,6 +1167,18 @@ ${ROMAN_RULES}`;
     if (!run) return;
     const x = run.cur;
     if (t.dataset.act === 'continue') return next();
+    if (t.dataset.pick !== undefined && x.t === 'choose') {
+      const o = x.opts.find(z => z.r === t.dataset.pick), ok = !!(o && o.ok); t.classList.add(ok ? 'right' : 'wrong');
+      if (!ok) document.querySelectorAll('.opt').forEach(b => { if (b.dataset.pick === x.answer) b.classList.add('right'); });
+      return feedback(ok, t, ok ? '' : (o && o.why) || '');
+    }
+    if (t.dataset.act === 'recall-said' || t.dataset.act === 'recall-blank') {
+      x.ms = t.dataset.act === 'recall-said' ? Math.round(performance.now() - x.t0) : null;
+      document.querySelectorAll('[data-act^="recall-"]').forEach(b => { b.disabled = true; });
+      if (x.ms === null) return feedback(false, t);
+      t.closest('.pair').insertAdjacentElement('afterend', h(`<div class="card" id="revealCard"><span class="eyebrow">${(x.ms / 1000).toFixed(1)} s</span><div class="roman">${esc(x.v.r)}</div><p class="muted">Is that what you said?</p><div class="pair"><button class="secondary" data-act="self-no">Not quite</button><button class="primary go" data-act="self-yes">Yes</button></div></div>`).firstChild);
+      speak(x.v.g, x.v.r, x.v.personalised); return;
+    }
     if (t.dataset.pick !== undefined) {
       const ok = t.dataset.pick === x.answer; t.classList.add(ok ? 'right' : 'wrong');
       if (!ok) document.querySelectorAll('.opt').forEach(b => { if (b.dataset.pick === x.answer) b.classList.add('right'); });
@@ -1022,7 +1186,7 @@ ${ROMAN_RULES}`;
     }
     if (t.dataset.tile !== undefined) { const i = +t.dataset.tile; x.picked.push(i); t.classList.add('used'); document.getElementById('line').append(h(`<button class="tile" data-untile="${i}">${esc(x.tiles[i])}</button>`)); return; }
     if (t.dataset.untile !== undefined) { const i = +t.dataset.untile; x.picked = x.picked.filter(z => z !== i); t.remove(); document.querySelector(`[data-tile="${i}"]`).classList.remove('used'); return; }
-    if (t.dataset.act === 'check') return feedback(norm(x.picked.map(i => x.tiles[i]).join(' ')) === norm(x.v.r), t);
+    if (t.dataset.act === 'check') return feedback(norm(x.picked.map(i => x.tiles[i]).join(' ')) === norm(x.t === 'chunks' ? x.chunks.join(' ') : x.v.r), t);
     if (t.dataset.act === 'reveal') {
       t.disabled = true;
       t.insertAdjacentElement('afterend', h(`<div class="card" id="revealCard"><div class="roman">${esc(x.v.r)}</div><button class="hear slow" style="width:auto;height:auto;padding:6px 12px" data-say="${x.v.id}">▶ hear it</button><p class="muted">Did you say it?</p><div class="pair"><button class="secondary" data-act="self-no">Not quite</button><button class="primary go" data-act="self-yes">I said it</button></div></div>`).firstChild);

@@ -21,6 +21,14 @@
   - Speak-first in conversations, test-out per unit, Continue button, goal setting, Kutchi cross-links.
   - Artifact capabilities: db, user, sample.
 
+- v6 (real speech + level):
+  - `app/speech.js`: 20 register ladders (formal → everyday → casual → playful/Gujlish → village/Kutchi), 9 shortcut rules, 24 chunked gym sentences, and the level-check spec.
+  - Level check measures 5 skills separately (words, sentences, building, register, recall), offers skip-basics, and shapes the plan and AI context.
+  - Sentence gym (chunks + traps) and Quick-fire recall, with recall speed logged in `S.recallLog`.
+  - New units: Keep talking (fillers) and Wit & teasing.
+  - Style setting (playful / easygoing / polite) feeds the AI: Ask returns a ladder of registers; Rehearse adds "spice it up".
+  - "Your family says it like…" on each ladder is stored in `S.ladderFamily`. Read it to fold real SKLPC forms into the ladders.
+
 ## Next
 1. Sayuj uses the Ask-family tab with a parent. Then read the verdicts with ArtifactData `list progress`, fold them into data.js and republish.
 2. Re-run research with network access, or on the Mac: panjokutch.com, cal.org PDF, freelang, sklpc.com, YouTube Kutchi Patel comedy.

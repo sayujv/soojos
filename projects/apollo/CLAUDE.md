@@ -15,7 +15,7 @@ Stage: building
 - The family verdict (Ask family tab, stored in the artifact's `progress` db doc) outranks every web source.
 
 ## This project specifically
-- Static app in `app/`: `index.html` (page), `app.js` (logic), `data.js` (phrases, units, scenes, who's-who), `grammar.js` (patterns, glossed stories). No build step.
+- Static app in `app/`: `index.html` (page), `app.js` (logic), `data.js` (phrases, units, scenes, who's-who), `grammar.js` (patterns, glossed stories), `speech.js` (register ladders, shortcut rules, gym sentences, level check). No build step.
 - New dialogue: write the Gujarati script first, then roman and English, then word glosses. `tools/translit.mjs` checks script against roman, and the check fails if they diverge.
 - Published as a private claude.ai Artifact so it works on the phone. `db` + `user` hold progress, family verdicts and saved phrases; `sample` powers Ask and Rehearse. Publish with `root` = `projects/apollo/app` and include `audio/*`.
 - After any content change: `node projects/apollo/tools/build_audio.mjs`, then the check.
