@@ -61,7 +61,7 @@ page.on('pageerror', e => errors.push('pageerror: ' + e.message));
 page.on('console', m => { if (m.type() === 'error' && !/fonts\.g|ERR_|net::/.test(m.text())) errors.push('console: ' + m.text()); });
 await page.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
 await page.goto('file://' + path.join(tmp, 'index.html'));
-await page.waitForSelector('.unit');
+await page.waitForSelector('.stop');
 
 const overflow = async where => { const o = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth); if (o > 0) fail(`${where}: page scrolls sideways by ${o}px at 390px`); };
 await overflow('home');
@@ -94,10 +94,10 @@ const lessonKeys = await page.$$eval('[data-lesson]', bs => [...new Set(bs.map(b
 for (const key of lessonKeys) {
   await page.click(`[data-lesson="${key}"]`);
   let guard = 0;
-  while (await page.locator('.done-hero').count() === 0 && guard++ < 80) if (!(await answerCurrent())) break;
-  if (!(await page.locator('.done-hero').count())) fail(`lesson ${key}: never reached the end`);
+  while (await page.locator('.finish').count() === 0 && guard++ < 80) if (!(await answerCurrent())) break;
+  if (!(await page.locator('.finish').count())) fail(`lesson ${key}: never reached the end`);
   await overflow(`lesson ${key}`);
-  await page.click('[data-go="home"]');
+  await page.click('.finish [data-go]');
 }
 const st1 = await page.evaluate(() => window.APOLLO.state());
 if (!(st1.xp > 0 && Object.keys(st1.cards).length >= 5 && st1.streak === 1)) fail(`progress not recorded: xp=${st1.xp} cards=${Object.keys(st1.cards).length} streak=${st1.streak}`);
@@ -109,43 +109,67 @@ const answer = await page.evaluate(() => { const c = window.APOLLO.current(); re
 const opts = await page.$$eval('.opt', bs => bs.map(b => b.dataset.pick));
 await page.click(`.opt[data-pick="${opts.find(o => o !== answer).replace(/"/g, '\\"')}"]`);
 if (!(await page.locator('.feedback.bad').count())) fail('wrong answer not marked wrong');
-await page.click('[data-go="home"]');
+if (await page.evaluate(() => window.APOLLO.state().xp) < 1) fail('xp lost');
+await page.click('.exbar [data-go]');
 
 // review: force everything due today
-await page.evaluate(() => { const S = window.APOLLO.state(); const t = new Date(); const iso = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); for (const c of Object.values(S.cards)) c.due = iso; window.APOLLO.route('home'); });
-const due = Number(await page.textContent('[data-go="review"] strong'));
-if (due < 5) fail(`review count ${due} after forcing due`);
-await page.click('[data-go="review"]');
-let g = 0; while (await page.locator('.done-hero').count() === 0 && g++ < 60) if (!(await answerCurrent())) break;
-if (!(await page.locator('.done-hero').count())) fail('review never finished');
-await page.click('[data-go="home"]');
+await page.evaluate(() => { const S = window.APOLLO.state(); const t = new Date(); const iso = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); for (const c of Object.values(S.cards)) c.due = iso; });
+await page.click('.tab[data-go="review"]');
+const due = Number(await page.textContent('.tab[data-go="review"] .dot'));
+if (due < 5) fail(`review badge shows ${due} after forcing due`);
+await overflow('review tab');
+await page.click('[data-act="start-review"]');
+let g = 0; while (await page.locator('.finish').count() === 0 && g++ < 60) if (!(await answerCurrent())) break;
+if (!(await page.locator('.finish').count())) fail('review never finished');
+await page.click('.finish [data-go]');
 const nextDue = await page.evaluate(() => Object.values(window.APOLLO.state().cards).filter(c => c.box >= 2).length);
 if (nextDue < 1) fail('review did not promote any card');
 
+// mithai box: locked until the unit is done, then pays out once
+await page.click('.tab[data-go="learn"]');
+const xp0 = await page.evaluate(() => window.APOLLO.state().xp);
+await page.click('[data-chest="family"]');
+if (await page.evaluate(() => window.APOLLO.state().chests.family)) fail('chest opened before unit was done');
+await page.evaluate(() => { const S = window.APOLLO.state(); for (let i = 0; i < 6; i++) S.lessons['greet:' + i] = true; window.APOLLO.route('learn'); });
+await page.click('[data-chest="greet"]');
+await page.waitForTimeout(1100);
+const st2 = await page.evaluate(() => window.APOLLO.state());
+if (!(st2.chests.greet && st2.xp >= xp0 + 25)) fail('mithai box did not pay out');
+if (!(st2.badges.first && st2.badges.mithai && st2.badges.kutchi)) fail(`badges missing: ${JSON.stringify(st2.badges)}`);
+
 // every scene, choosing the right reply
+await page.click('.tab[data-go="talk"]');
+await overflow('talk tab');
 for (const s of scenes) {
   await page.click(`[data-scene="${s.id}"]`);
   for (const st of s.steps) if (st.reply) { const k = st.reply.findIndex(o => o.ok); await page.click(`[data-reply="${k}"]`); }
   if (!(await page.locator('text=Conversation done').count())) fail(`scene ${s.id}: did not complete`);
   await overflow(`scene ${s.id}`);
-  await page.click('#choices [data-go="home"]');
+  await page.click('#choices [data-go="talk"]');
 }
+if (await page.evaluate(() => Math.min(...Object.values(window.APOLLO.state().scenes))) !== 3) fail('perfect scenes did not earn 3 stars');
+await page.click('.tab[data-go="me"]');
+if (await page.locator('.badge:not(.locked)').count() < 4) fail('Me tab shows too few unlocked badges');
+await overflow('me tab');
+await page.click('[data-go="book"]');
+if (await page.locator('.item').count() !== phrases.length) fail('phrasebook does not list every phrase');
 
 // ask-family: verdict + note persist through a reload
-await page.click('[data-go="family"]');
+await page.click('.tab[data-go="family"]');
 const firstId = phrases[0].id;
 await page.click(`[data-v="${firstId}:yes"]`);
 await page.fill(`[data-note="${firstId}"]`, 'test note');
 await page.press(`[data-note="${firstId}"]`, 'Tab');
 await overflow('family');
-await page.reload(); await page.waitForSelector('.unit');
+await page.reload(); await page.waitForSelector('.tab');
 const v = await page.evaluate(id => window.APOLLO.state().verdicts[id], firstId);
 if (!(v && v.v === 'yes' && v.note === 'test note')) fail(`family verdict not persisted: ${JSON.stringify(v)}`);
 
 // dark mode renders with a dark background
+await page.evaluate(() => window.APOLLO.route('learn'));
 await page.emulateMedia({ colorScheme: 'dark' });
 const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-if (bg !== 'rgb(14, 17, 36)') fail(`dark mode background is ${bg}`);
+if (bg !== 'rgb(13, 16, 34)') fail(`dark mode background is ${bg}`);
 await page.screenshot({ path: path.join(tmp, 'home-dark.png'), fullPage: false });
 await page.emulateMedia({ colorScheme: 'light' });
 await page.screenshot({ path: path.join(tmp, 'home-light.png'), fullPage: false });
@@ -154,4 +178,4 @@ await browser.close();
 for (const e of errors) fail(e);
 console.log(`screenshots: ${tmp}`);
 if (fails.length) { console.log(`FAIL (${fails.length})\n - ` + fails.join('\n - ')); process.exit(1); }
-console.log(`PASS: content valid; ${lessonKeys.length} lessons, review, ${scenes.length} scenes, ask-family, dark mode; 0 console errors; no sideways scroll at 390px`);
+console.log(`PASS: content valid; ${lessonKeys.length} lessons, review, ${scenes.length} scenes, ask-family, mithai box, badges, tabs, dark mode; 0 console errors; no sideways scroll at 390px`);
