@@ -753,7 +753,8 @@
       ${family ? `<div class="card" style="grid-template-columns:auto minmax(0,1fr);align-items:center">
           <div style="color:var(--ok)">${ring(checked / Math.max(1, dialect.length), 64, 8, 'var(--ok)', `<text x="32" y="37" text-anchor="middle" font-family="Baloo Bhai 2, sans-serif" font-weight="800" font-size="14" fill="currentColor">${checked}/${dialect.length}</text>`)}</div>
           <div><h2>Ask family</h2><p class="muted">Say each phrase to a parent or grandparent. Mark ✓ if that's how your family says it, ✗ if not, and write what they say instead. This outranks every source in the app.</p></div>
-        </div><button class="secondary" id="copyVerdicts">Copy results</button>`
+        </div><button class="secondary" id="copyVerdicts">Copy results</button>
+        <a class="card famlink" href="https://claude.ai/artifact/N3E4x1Z5TArJvfA3mddZjp" target="_blank" rel="noopener"><span class="eyebrow">For Mum, Dad or Ba</span><b>Family check: 650+ sentences to mark</b><span class="muted">Share this page with them (Share → give access). They tap ✓ / ✗ and type how they'd say it. Claude reads their answers and fixes the app.</span></a>`
       : `<div class="exbar"><button class="x" data-go="me" aria-label="Back">×</button><h2>Phrasebook</h2></div>`}
       <input class="search" id="q" type="search" placeholder="Search English or Gujarati…" aria-label="Search phrases">
       <div class="toolbar">${chips}</div>

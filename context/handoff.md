@@ -29,7 +29,10 @@
   - Style setting (playful / easygoing / polite) feeds the AI: Ask returns a ladder of registers; Rehearse adds "spice it up".
   - "Your family says it like…" on each ladder is stored in `S.ladderFamily`. Read it to fold real SKLPC forms into the ladders.
 
+- Family check page (`review/`, artifact N3E4x1Z5TArJvfA3mddZjp): 654 items in 10 sections (28 family questions first), with Yes/Nearly/No/Not sure, a "how would you say it" box, and a yes/no on every note. Answers go to db `answers`; there is a copy fallback. Linked from the app's Family tab.
+
 ## Next
+0. When Mum has answered: `ArtifactData list answers` on the Family check artifact, then fold her forms into the content.
 1. Sayuj uses the Ask-family tab with a parent. Then read the verdicts with ArtifactData `list progress`, fold them into data.js and republish.
 2. Re-run research with network access, or on the Mac: panjokutch.com, cal.org PDF, freelang, sklpc.com, YouTube Kutchi Patel comedy.
 3. Grow the standard core to about 300 phrases and add scenes (wedding, mandir, shopping in Bhuj).

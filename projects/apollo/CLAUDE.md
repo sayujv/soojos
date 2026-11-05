@@ -14,6 +14,12 @@ Stage: building
 - Every non-standard phrase carries a source URL, a date and a confidence. Standard Gujarati from general knowledge is labelled `unsourced` — never relabel it as dialect.
 - The family verdict (Ask family tab, stored in the artifact's `progress` db doc) outranks every web source.
 
+## Family check (native-speaker review)
+- Page: `review/` → https://claude.ai/artifact/N3E4x1Z5TArJvfA3mddZjp (db: `answers`, one doc per item per reviewer: item, by, name, v, c, say).
+- Read answers with ArtifactData `list` on `answers`. Item ids map back: `phrase:<id>`, `scene:<id>:<step>`, `lad:<ladder>:<rung>`, `story:<id>:<line>`, `pat:<id>:<row|why>`, `guide:<g>:<r>`, `rule:<i>`, `q:<question>`.
+- v = yes/close/no/unsure (questions: yes/some/no/unsure); c = verdict on the note; say = how they'd say it. Their "say" outranks everything: fold it into data.js / speech.js as the family form, then rebuild audio and run both checks.
+- Check: `node projects/apollo/test/review_check.mjs`.
+
 ## This project specifically
 - Static app in `app/`: `index.html` (page), `app.js` (logic), `data.js` (phrases, units, scenes, who's-who), `grammar.js` (patterns, glossed stories), `speech.js` (register ladders, shortcut rules, gym sentences, level check). No build step.
 - New dialogue: write the Gujarati script first, then roman and English, then word glosses. `tools/translit.mjs` checks script against roman, and the check fails if they diverge.
