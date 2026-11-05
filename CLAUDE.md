@@ -48,7 +48,7 @@ Decisions are binding. If something here contradicts a decision record, the deci
 
 Project brains live in `./projects/<name>/CLAUDE.md`. Repos that need their own git history stay external and subscribe to this marketplace instead; `./projects/<name>/CLAUDE.md` still holds the context and points at the repo.
 
-Active: Claude Platform, Trading Bot, Travel, PKF, Prediction Betting, Personal.
+Active: Claude Platform, Trading Bot, Travel, PKF, Prediction Betting, Personal, Apollo.
 
 ## Standing rules
 

@@ -6,10 +6,11 @@ Last verified: never
 
 | Store | Path | Covers | Count | Fresh through |
 | --- | --- | --- | --- | --- |
-| Claims ledger | `claims.jsonl` | Every claim the OS believes, machine-queryable | 3 | 2026-08-09 |
-| Reports | `reports/` | One per research question, human-readable | 0 | — |
+| Claims ledger | `claims.jsonl` | Every claim the OS believes, machine-queryable | 11 | 2026-11-05 |
+| Reports | `reports/` | One per research question, human-readable | 1 | 2026-11-05 |
 | YouTube raw | `wikis/youtube/raw/` | Transcripts, fetched per question | 1 | 2026-08-09 |
 | Reddit raw | `wikis/reddit/raw/` | Threads, fetched per question | 0 | — |
+| Web raw | `wikis/web/raw/` | Search-snippet sweeps, per question | 3 | 2026-11-05 |
 
 Query the ledger, don't read the reports, unless a specific claim needs its
 context:

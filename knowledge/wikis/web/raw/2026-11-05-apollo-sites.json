@@ -1,0 +1,430 @@
+{
+ "orgs": [
+  {
+   "name": "Shree Kutch Leva Patel Community (UK) - SKLPC (UK)",
+   "url": "https://sklpc.com",
+   "country": "UK",
+   "note": "Charity 1001623, reg. 1991, Sports and Community Centre, West End Road, Northolt UB5 6RE. Objects include advancing Hindu religion, tradition and culture among the community from Kutch. Hosts the annual Chovis Gaam Ujamni and runs a cricket club. A new CIO under the same name (charity 1217948) was registered 2026-05-07. Sources: https://register-of-charities.charitycommission.gov.uk/en/charity-search/-/charity-details/1001623/full-print ; https://opencharities.uk/ew/1217948. sklpc.com itself could not be fetched."
+  },
+  {
+   "name": "The Shree Kutch Leva Patel Community (Bolton) - SKLPC Bolton",
+   "url": "https://register-of-charities.charitycommission.gov.uk/en/charity-search/-/charity-details/1048492",
+   "country": "UK",
+   "note": "Charity 1048492, serves North West England. No own website found."
+  },
+  {
+   "name": "The Shree Kutchi Leva Patel Samaj (UK charity 513920)",
+   "url": "https://register-of-charities.charitycommission.gov.uk/en/charity-search/-/charity-details/513920/charity-overview",
+   "country": "UK",
+   "note": "Registered 1983-05-24. Its relationship to SKLPC (UK) was not established; location details not retrieved."
+  },
+  {
+   "name": "Kutch Madhapar Karyalay (London)",
+   "url": "https://openthemagazine.com/features/india/the-affluent-society",
+   "country": "UK",
+   "note": "Founded in London in 1968 to bring together the UK Madhapar community, per Open magazine. Gaam-level association; no website found."
+  },
+  {
+   "name": "Shree Kutchi (Cutchi) Leva Patel Samaj, Nairobi",
+   "url": "https://narendramodi.in/pm-modi-addresses-the-shree-cutchi-leva-patel-samaj-in-nairobi-via-video-conference",
+   "country": "Kenya",
+   "note": "PM Modi addressed the Silver Jubilee of its Nairobi-West Complex by video in March 2018. No official samaj website was found. Also reported at https://dailypioneer.com/2018/india/pm-hails-role-of-kutchi-leva-patel-community.html"
+  },
+  {
+   "name": "Shree Kutchi Leva Patel Samaj, Bhuj",
+   "url": "https://narendramodi.in/prime-minister-narendra-modi-dedicates-to-the-nation-k-k-super-speciality-hospital-in-bhuj-gujarat",
+   "country": "India",
+   "note": "Built the 200-bed K.K. Patel Super Speciality Hospital in Bhuj, dedicated 2022-04-15 and described as the first charitable super-speciality hospital in Kutch. No samaj website found."
+  },
+  {
+   "name": "Shree Kutch Satsang Swaminarayan Temple (Harrow / South East London / Bolton branches)",
+   "url": "https://opencharities.uk/ew/292934",
+   "country": "UK",
+   "note": "Temples affiliated with Bhuj (Nar Narayan Dev Gadi), not samaj organisations. Harrow was est. 1966 and its pipe band led the 2025 Ujamni procession. The SE London charity was registered 1985-10-31."
+  }
+ ],
+ "gaams": [
+  {
+   "name": "Kodki",
+   "note": "Described as one of 24 gaams occupied by the Shree Kutch Leva Patel Community; about 11 km west of Bhuj. Nothing found on how people there speak.",
+   "source": "https://en.wikipedia.org/wiki/Kodki",
+   "date": "2026-11-05 (accessed)"
+  },
+  {
+   "name": "Bharasar",
+   "note": "Described as one of the 24 villages that formed SKLPC. The same page lists Manukwa (Mankuva), Naranpur, Sukhpur and Samatra as nearby villages, but not explicitly as part of the 24.",
+   "source": "https://en.wikipedia.org/wiki/Bharasar",
+   "date": "2026-11-05 (accessed)"
+  },
+  {
+   "name": "Samatra",
+   "note": "Described as one of 24 main villages of the Leva Patel Samaj in Kutch, about 12 miles west of Bhuj. Source is a Wikipedia mirror.",
+   "source": "https://kiwix.lema.org/wikipedia_en_all_mini_2024-02/A/Samatra",
+   "date": "2026-11-05 (accessed)"
+  },
+  {
+   "name": "Madhapar",
+   "note": "3-4 km from Bhuj, population about 32,000, mostly Patel. Most NRI deposits come from Leva Patels in Africa and the UK. Migration to Zanzibar and Africa began in the late 19th century, with a second wave in the 1950s after a drought. Wikipedia says Patel Kanbis moved in around 1576 AD but the village was founded by Mistris. Not confirmed as one of the 24.",
+   "source": "https://openthemagazine.com/features/india/the-affluent-society",
+   "date": "2026-11-05 (accessed)"
+  },
+  {
+   "name": "Baladia",
+   "note": "Named with Kera as a nearby village sharing Madhapar's NRI-deposit pattern (Open magazine). Has a Swaminarayan Abjibapa chhatedi (Wikipedia, Kera page). Not confirmed as one of the 24.",
+   "source": "https://en.wikipedia.org/wiki/Kera,_Kutch",
+   "date": "2026-11-05 (accessed)"
+  },
+  {
+   "name": "Kera",
+   "note": "Village in Bhuj taluka near Baladia. Named in Open magazine alongside Madhapar and Baladia for NRI deposits. Not confirmed as one of the 24.",
+   "source": "https://en.wikipedia.org/wiki/Kera,_Kutch",
+   "date": "2026-11-05 (accessed)"
+  },
+  {
+   "name": "Meghpar / Meghpur (Bhuj)",
+   "note": "Its Wikipedia page links to SKLPC, which suggests a Leva Patel connection. Weak evidence.",
+   "source": "https://en.wikipedia.org/wiki/Meghpur,_Bhuj",
+   "date": "2026-11-05 (accessed)"
+  },
+  {
+   "name": "Mankuva (Manukwa), Naranpar (Naranpur), Sukhpar (Sukhpur)",
+   "note": "Appear only as villages near Bharasar. Leva Patel or 24-gaam membership is not confirmed.",
+   "source": "https://en.wikipedia.org/wiki/Bharasar",
+   "date": "2026-11-05 (accessed)"
+  },
+  {
+   "name": "Mirjapar, Rampar, Kera, Baladia, Dahinsara",
+   "note": "Mirjapar, Sukhpar and Dahinsara appear in the Bhuj Assembly constituency village list, which is not sorted by community. No source tied Rampar, Mirjapar or Dahinsara to the 24 gaams.",
+   "source": "https://en.wikipedia.org/wiki/Bhuj_Assembly_constituency",
+   "date": "2026-11-05 (accessed)"
+  }
+ ],
+ "phrases": [
+  {
+   "roman": "chovis gaam",
+   "gujarati_script_if_known": null,
+   "english": "the twenty-four villages (the community's home villages around Bhuj)",
+   "standard_gujarati_roman": null,
+   "kind": "sklpc",
+   "category": "community/identity",
+   "confidence": "claimed",
+   "source": "https://www.asian-voice.com/News/UK/Chovis-Gaam-Ujamni-2025-draws-over-9,000-attendees",
+   "date": "2025-09 (event 2025-09-21)",
+   "note": "Used as the community's name for itself. The '24 villages' idea is also on the Wikipedia pages for Kodki, Bharasar and Samatra, but the exact phrase 'chovis gaam' has only this one source."
+  },
+  {
+   "roman": "gaam",
+   "gujarati_script_if_known": null,
+   "english": "village / home village",
+   "standard_gujarati_roman": null,
+   "kind": "standard",
+   "category": "community/identity",
+   "confidence": "verified",
+   "source": "https://en.wikipedia.org/wiki/Kodki",
+   "date": "2026-11-05 (accessed)",
+   "note": "Also in the Asian Voice Ujamni headline. A standard Gujarati word that is central to how the community describes its origins."
+  },
+  {
+   "roman": "ujamni",
+   "gujarati_script_if_known": null,
+   "english": "annual community celebration/gathering (SKLPC UK, Northolt)",
+   "standard_gujarati_roman": null,
+   "kind": "sklpc",
+   "category": "festival/event",
+   "confidence": "verified",
+   "source": "https://www.asian-voice.com/News/UK/Chovis-Gaam-Ujamni-2025-draws-over-9,000-attendees",
+   "date": "2025-09 (event 2025-09-21)",
+   "note": "Second source: the SKLPC (UK) 2024 trustees' report (https://opencharities.uk/ew/1001623/files/2024-12-31-accounts.md), via search snippet. Over 9,000 attended in 2025. Its exact meaning (perhaps 'celebration', from ujavvu) was not given by any source."
+  },
+  {
+   "roman": "satsang",
+   "gujarati_script_if_known": null,
+   "english": "religious fellowship; used in 'Shree Kutch Satsang Swaminarayan Temple'",
+   "standard_gujarati_roman": null,
+   "kind": "standard",
+   "category": "religion",
+   "confidence": "verified",
+   "source": "https://opencharities.uk/ew/292934",
+   "date": "2026-11-05 (accessed)",
+   "note": "Appears in temple names in Harrow, SE London and Bolton (https://en.wikipedia.org/wiki/Shree_Kutch_Satsang_Swaminarayan_Temple)."
+  },
+  {
+   "roman": "Ashadhi Bij",
+   "gujarati_script_if_known": null,
+   "english": "Kutchi New Year (2nd day of Ashadh month)",
+   "standard_gujarati_roman": null,
+   "kind": "kutchi",
+   "category": "festival",
+   "confidence": "claimed",
+   "source": "https://ianslive.in/pm-modi-extends-ashadhi-bij-greetings-to-kutchi-community-worldwide--20250627102437",
+   "date": "2025-06-27",
+   "note": "Shared across Kutch communities, not specific to SKLPC."
+  },
+  {
+   "roman": "kien ayo",
+   "gujarati_script_if_known": null,
+   "english": "how are you? (polite)",
+   "standard_gujarati_roman": "kem cho",
+   "kind": "kutchi",
+   "category": "greeting",
+   "confidence": "claimed",
+   "source": "https://www.memeraki.com/blogs/news/the-language-of-kutch",
+   "date": "2026-11-05 (accessed)",
+   "note": "From a general Kutchi guide (an arts retailer blog), not an SKLPC source. Whether Leva Patels use this or Gujarati 'kem cho' is unverified."
+  },
+  {
+   "roman": "achija",
+   "gujarati_script_if_known": null,
+   "english": "goodbye (lit. 'do come again')",
+   "standard_gujarati_roman": "aavjo",
+   "kind": "kutchi",
+   "category": "greeting",
+   "confidence": "claimed",
+   "source": "https://www.memeraki.com/blogs/news/the-language-of-kutch",
+   "date": "2026-11-05 (accessed)",
+   "note": "General Kutchi."
+  },
+  {
+   "roman": "koro thiyo",
+   "gujarati_script_if_known": null,
+   "english": "what happened?",
+   "standard_gujarati_roman": "shu thayu",
+   "kind": "kutchi",
+   "category": "everyday",
+   "confidence": "claimed",
+   "source": "https://www.memeraki.com/blogs/news/the-language-of-kutch",
+   "date": "2026-11-05 (accessed)",
+   "note": "Source spells it 'koro thiyoh'. General Kutchi."
+  },
+  {
+   "roman": "aain achota",
+   "gujarati_script_if_known": null,
+   "english": "are you coming? (polite)",
+   "standard_gujarati_roman": "tame aavo cho?",
+   "kind": "kutchi",
+   "category": "everyday",
+   "confidence": "claimed",
+   "source": "https://www.memeraki.com/blogs/news/the-language-of-kutch",
+   "date": "2026-11-05 (accessed)",
+   "note": "General Kutchi."
+  },
+  {
+   "roman": "koro nihaareto",
+   "gujarati_script_if_known": null,
+   "english": "what are you looking at?",
+   "standard_gujarati_roman": "shu juve che?",
+   "kind": "kutchi",
+   "category": "everyday",
+   "confidence": "claimed",
+   "source": "https://www.memeraki.com/blogs/news/the-language-of-kutch",
+   "date": "2026-11-05 (accessed)",
+   "note": "General Kutchi."
+  },
+  {
+   "roman": "kuro karyota / koro kareyeinto",
+   "gujarati_script_if_known": null,
+   "english": "what are you doing? (one form is polite)",
+   "standard_gujarati_roman": "shu kare che?",
+   "kind": "kutchi",
+   "category": "everyday",
+   "confidence": "claimed",
+   "source": "https://www.memeraki.com/blogs/news/the-language-of-kutch",
+   "date": "2026-11-05 (accessed)",
+   "note": "The page layout does not show which form is the polite one."
+  },
+  {
+   "roman": "chokro",
+   "gujarati_script_if_known": null,
+   "english": "boy",
+   "standard_gujarati_roman": "chhokro",
+   "kind": "kutchi",
+   "category": "people",
+   "confidence": "claimed",
+   "source": "https://en.wikipedia.org/wiki/Kutchi_language",
+   "date": "2026-11-05 (accessed)",
+   "note": "Close to the Gujarati word."
+  },
+  {
+   "roman": "ba",
+   "gujarati_script_if_known": null,
+   "english": "mother (common term)",
+   "standard_gujarati_roman": null,
+   "kind": "standard",
+   "category": "kinship",
+   "confidence": "claimed",
+   "source": "https://kwx.liehendr.com/content/wikibooks_en_all_maxi_2021-03/A/Gujarati/Family_relations",
+   "date": "2026-11-05 (accessed)",
+   "note": "Wikibooks mirror, standard Gujarati. In many families 'ba' means grandmother; this was not verified for SKLPC."
+  },
+  {
+   "roman": "bapa",
+   "gujarati_script_if_known": null,
+   "english": "father's eldest brother (per Wikibooks)",
+   "standard_gujarati_roman": null,
+   "kind": "standard",
+   "category": "kinship",
+   "confidence": "claimed",
+   "source": "https://kwx.liehendr.com/content/wikibooks_en_all_maxi_2021-03/A/Gujarati/Family_relations",
+   "date": "2026-11-05 (accessed)",
+   "note": "Standard Gujarati source. SKLPC usage (e.g. for father or grandfather) is unverified."
+  },
+  {
+   "roman": "kaki",
+   "gujarati_script_if_known": null,
+   "english": "father's younger brother's wife",
+   "standard_gujarati_roman": null,
+   "kind": "standard",
+   "category": "kinship",
+   "confidence": "claimed",
+   "source": "https://kwx.liehendr.com/content/wikibooks_en_all_maxi_2021-03/A/Gujarati/Family_relations",
+   "date": "2026-11-05 (accessed)",
+   "note": "Standard Gujarati."
+  },
+  {
+   "roman": "bhabhi",
+   "gujarati_script_if_known": null,
+   "english": "brother's wife",
+   "standard_gujarati_roman": null,
+   "kind": "standard",
+   "category": "kinship",
+   "confidence": "claimed",
+   "source": "https://kwx.liehendr.com/content/wikibooks_en_all_maxi_2021-03/A/Gujarati/Family_relations",
+   "date": "2026-11-05 (accessed)",
+   "note": "Standard Gujarati."
+  },
+  {
+   "roman": "saani",
+   "gujarati_script_if_known": null,
+   "english": "plate (from Swahili sahani)",
+   "standard_gujarati_roman": null,
+   "kind": "swahili-loan",
+   "category": "food/household",
+   "confidence": "claimed",
+   "source": "https://en.wikipedia.org/wiki/Kutchi-Swahili",
+   "date": "2026-11-05 (accessed)",
+   "note": "Documented in Kutchi-Swahili, a creole of mainly Kutchi Muslim communities in Kenya and Tanzania, not Leva Patel Gujarati. Use with caution."
+  },
+  {
+   "roman": "boga",
+   "gujarati_script_if_known": null,
+   "english": "vegetable (from Swahili mboga)",
+   "standard_gujarati_roman": null,
+   "kind": "swahili-loan",
+   "category": "food",
+   "confidence": "claimed",
+   "source": "https://en.wikipedia.org/wiki/Kutchi-Swahili",
+   "date": "2026-11-05 (accessed)",
+   "note": "Same caveat as saani."
+  },
+  {
+   "roman": "dizi",
+   "gujarati_script_if_known": null,
+   "english": "banana (from Swahili ndizi)",
+   "standard_gujarati_roman": null,
+   "kind": "swahili-loan",
+   "category": "food",
+   "confidence": "claimed",
+   "source": "https://en.wikipedia.org/wiki/Kutchi-Swahili",
+   "date": "2026-11-05 (accessed)",
+   "note": "Same caveat as saani."
+  },
+  {
+   "roman": "duka",
+   "gujarati_script_if_known": null,
+   "english": "shop (Swahili; origin of the East African 'dukawalla')",
+   "standard_gujarati_roman": null,
+   "kind": "swahili-loan",
+   "category": "everyday",
+   "confidence": "claimed",
+   "source": "https://Www.Wikipedia.org/wiki/Indian_diaspora_in_East_Africa",
+   "date": "2026-11-05 (accessed)",
+   "note": "No source shows SKLPC families using it in Gujarati."
+  }
+ ],
+ "facts": [
+  {
+   "text": "SKLPC (UK) is a registered charity (1001623, since 1991) based at West End Road, Northolt. Its objects include advancing Hindu religion, tradition and culture among the community originating from Kutch.",
+   "confidence": "verified",
+   "source": "https://register-of-charities.charitycommission.gov.uk/en/charity-search/-/charity-details/1001623/full-print",
+   "date": "2026-11-05 (accessed)"
+  },
+  {
+   "text": "The 2025 Chovis Gaam Ujamni at Northolt (21 Sep 2025) drew over 9,000 people from the 24 villages. It opened with aarti at the Hanumanji and Ganesh mandirs and a procession led by the Shree Kutch Satsang Swaminarayan Temple Harrow pipe band.",
+   "confidence": "claimed",
+   "source": "https://www.asian-voice.com/News/UK/Chovis-Gaam-Ujamni-2025-draws-over-9,000-attendees",
+   "date": "2025-09"
+  },
+  {
+   "text": "SKLPC (UK) broke ground on a self-funded GBP 20m 'India Gardens' project at Northolt on 17 May 2023.",
+   "confidence": "verified",
+   "source": "https://easterneye.biz/sklpc-uk-initiates-construction-of-20-million-india-gardens-project-in-northolt",
+   "date": "2023-05"
+  },
+  {
+   "text": "The Shree Kutchi Leva Patel Samaj in Nairobi held its Nairobi-West Complex Silver Jubilee in March 2018, addressed by PM Modi by video.",
+   "confidence": "verified",
+   "source": "https://narendramodi.in/pm-modi-addresses-the-shree-cutchi-leva-patel-samaj-in-nairobi-via-video-conference",
+   "date": "2018-03"
+  },
+  {
+   "text": "Shree Kutchi Leva Patel Samaj, Bhuj built the K.K. Patel Super Speciality Hospital, dedicated on 15 April 2022.",
+   "confidence": "verified",
+   "source": "https://narendramodi.in/prime-minister-narendra-modi-dedicates-to-the-nation-k-k-super-speciality-hospital-in-bhuj-gujarat",
+   "date": "2022-04-15"
+  },
+  {
+   "text": "The Swaminarayan link appears institutionally: the Nairobi Swaminarayan temple is described as the first international temple of Shree Swaminarayan Temple Bhuj, and Leva Patel arrival at Mombasa is dated 1890-1930.",
+   "confidence": "claimed",
+   "source": "https://swaminarayan.in/mandirs/africa/shree-swaminarayan-mandir-nairobi-langata",
+   "date": "2026-11-05 (accessed)"
+  },
+  {
+   "text": "A Willesden (London) Swaminarayan temple history says most of the Kutchi women involved in its 1975 construction were from SKLPC.",
+   "confidence": "claimed",
+   "source": "https://eltemple.uk/?p=20",
+   "date": "2026-11-05 (accessed)"
+  },
+  {
+   "text": "A Kutch tourism blog says Kutch's Leva Patels and farmers are followers of the Swaminarayan sampraday. Together with the temple sources above, the Swaminarayan affiliation is consistent across sources but rests on community and religious sites.",
+   "confidence": "claimed",
+   "source": "https://kutchitour.blogspot.com/2011/02/about-kutch.html",
+   "date": "2011-02"
+  },
+  {
+   "text": "One source on East African Asian language contrasts Gujarati-speaking Patels with Kutchi-speaking Lohanas. This suggests Kutch Patels in East Africa used Gujarati, not full Kutchi, at home. The source was not read in full.",
+   "confidence": "anecdote",
+   "source": "https://www.ismaili.net/Source/1316b.html",
+   "date": "2026-11-05 (accessed)"
+  },
+  {
+   "text": "A 1965 article, R.B. Patel, 'The borrowing of Swahili words in spoken Gujarati' (Swahili vol. 35), exists and is the most relevant academic source for Swahili loans in diaspora Gujarati. Only its bibliographic record was found.",
+   "confidence": "claimed",
+   "source": "https://glottolog.org/resource/reference/id/32158",
+   "date": "2026-11-05 (accessed)"
+  },
+  {
+   "text": "Kutchi is classified variously as a Sindhi or a Gujarati dialect. Kutchi speakers customarily write in Gujarati script.",
+   "confidence": "claimed",
+   "source": "https://en.wikipedia.org/wiki/Kutchi_language",
+   "date": "2026-11-05 (accessed)"
+  },
+  {
+   "text": "Wikipedia's Leva Patel article is internally inconsistent: it places the origin both in Kutch (Bhachau) and in Kheda/Charotar. Kutch Leva Patels may be a distinct group from Charotar Leuva Patidars.",
+   "confidence": "claimed",
+   "source": "https://en.wikipedia.org/wiki/Leva_Patel",
+   "date": "2026-11-05 (accessed)"
+  }
+ ],
+ "gaps": [
+  "Gathered via WebSearch result snippets only; WebFetch and curl were blocked by the session network allowlist for every host tried, so no page was read in full.",
+  "No authoritative list of the 24 gaams was found. Only Kodki, Bharasar and Samatra are explicitly described as part of the 24. Madhapar, Kera and Baladia are linked to Leva Patel NRI wealth but not to the 24-list. Mankuva, Naranpar and Sukhpar appear only as villages near Bharasar. Rampar and Mirjapar are not tied to the community by any source found. Check sklpc.com or the samaj directory once the network allows it.",
+  "No SKLPC or Kutch Leva Patel samaj was found in the USA, Canada, Australia, Uganda (Kampala) or Tanzania (Dar es Salaam). No Mombasa samaj website was found either; Mombasa appears only in temple history. Community presence there is likely but undocumented online in the sources reached.",
+  "Nothing was found on how people in any specific gaam speak (accent, dialect features).",
+  "No SKLPC-specific kinship terms were found. The terms listed are standard Gujarati (Wikibooks). What SKLPC families call a grandmother, father's brother's wife and so on still needs native-speaker interviews.",
+  "No SKLPC-specific greetings were found. The 'Jay Swaminarayan' greeting was searched for and not found on any community page reached, so it is unverified for this community despite the clear Swaminarayan affiliation.",
+  "No food words specific to the community were found.",
+  "No source documents Swahili loanwords in Leva Patel Gujarati. The listed loans come from Kutchi-Swahili (a different, mainly Muslim, community creole) and general East African usage.",
+  "The Kutchi phrases come from general Kutchi guides (memeraki.com, Wikipedia), not SKLPC sources. thelandofwanderlust.com entries such as 'shukar che' and 'aapru ghar' look like Gujarati mislabelled as Kutchi and were excluded.",
+  "Hosts to allow in network settings to finish this: sklpc.com, en.wikipedia.org, opencharities.uk, swaminarayan.in, swaminarayan.faith, asian-voice.com, memeraki.com."
+ ]
+}

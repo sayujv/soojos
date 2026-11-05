@@ -1,0 +1,403 @@
+{
+ "summary": "Best-evidenced answer to 'Kutchi or Gujarati at home?': contested, most likely a Kutchi-Gujarati continuum. For: one East Africa language survey (AwaaZ/ResearchGate, drawing on Neale 1974) lists 'Cutchi-speaking Leva Patel (Hindu)'. Against: Wikipedia says Hindu Kutchi groups in East Africa use Gujarati, and that Hindus of rural-Kutch descent 'reject Kutchi' and speak Gujaratised Kutchi (e.g. 'chhado hane' for 'chhodo have'). The SKLPC diaspora school teaches Gujarati. Kutch district (2011) is 55% Gujarati and 34% Kutchi, and eastern Kutchi is converging on Gujarati. Practical read: grammar varies by speaker and generation, but Kutchi words and verb forms (achanto/vinanto 'coming/going', aaun 'I', aain polite 'you', koro 'what', kien 'how', achija 'bye') carry the community flavour. Every Kutchi form here is 'claimed' or thinly 'verified' from snippets, because page fetches were blocked, and much grammar comes from Khoja or Memon sources. Confirm with SKLPC native speakers before teaching.",
+ "features": [
+  {
+   "feature": "Language classification",
+   "standard": "Gujarati (Indo-Aryan, Western group)",
+   "dialect": "Kutchi/Kachchi (ISO kfr): Sindhic. Some call it a Sindhi dialect, others a Gujarati dialect; lexically close to both and partly mutually intelligible",
+   "english": "Kutchi is its own language near Sindhi, not just accented Gujarati",
+   "confidence": "verified",
+   "source": "https://en.wikipedia.org/wiki/Kutchi_language ; https://www.cal.org/heritage/pdfs/heritage-voice-language-kutchi.pdf ; https://en.wikipedia.org/wiki/Kutch_district",
+   "date": "accessed 2026-11-05",
+   "note": "The Kutch district article calls 'dialect of Gujarati' a common misconception; CAL and Wikipedia record the split view. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "feature": "East-west gradient inside Kutch",
+   "standard": "-",
+   "dialect": "Banni/Sindh Kutchi is closer to Lari Sindhi; eastern Kutch Kutchi has more Gujarati influence and is 'slowly becoming more similar to Gujarati'",
+   "english": "The nearer to mainland Gujarat, the more Gujarati-like the Kutchi",
+   "confidence": "claimed",
+   "source": "https://en.wikipedia.org/wiki/Kutchi_language",
+   "date": "accessed 2026-11-05",
+   "note": "Wikiwand mirrors the same text (not independent). Bhuj and the 24 SKLPC villages are in central Kutch, between the poles. No source places Leva Patel speech on this gradient. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "feature": "Home language of Kutch Leva Patels",
+   "standard": "Gujarati",
+   "dialect": "Disputed: (a) listed as 'Cutchi-speaking Leva Patel (Hindu)' in East Africa; (b) Hindu groups in East Africa 'use Gujarati instead'; (c) Hindus of rural-Kutch descent, esp. in East Africa, 'reject Kutchi' and use Gujaratised Kutchi forms",
+   "english": "Evidence conflicts; most likely a Kutchi-Gujarati continuum that varies by generation",
+   "confidence": "claimed",
+   "source": "https://awaazmagazine.com/component/k2/item/776-south-asians-and-their-languages-in-eastern-africa ; https://www.researchgate.net/publication/259982661_Indians_and_Indic_languages_in_Eastern_Africa ; https://en.wikipedia.org/wiki/Kutchi-Swahili ; https://en.wikipedia.org/wiki/Kutchi_language",
+   "date": "accessed 2026-11-05",
+   "note": "(a) is one author-line in two venues (AwaaZ article and ResearchGate compilation, which cites Neale 1974). (b) and (c) are Wikipedia; (c) is in a section tagged 'citation needed'. Bharati (1972, cited in search results) contrasts Gujarati-speaking Patels with Kutchi-speaking Lohanas, but likely means Charotar Patels. The 2011 Kutch district census gives Gujarati 54.9% and Kutchi 33.5% (via Wikipedia snippet). [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "feature": "Diaspora institutional language",
+   "standard": "Gujarati",
+   "dialect": "SKLPC Saturday School (Kenton) teaches Gujarati up to GCSE; no Kutchi classes found",
+   "english": "The community formally teaches Gujarati, not Kutchi",
+   "confidence": "claimed",
+   "source": "https://www.brent.gov.uk/neighbourhoods-and-communities/community-directory/shree-kutch-leva-patel-community-sklpc-saturday-school",
+   "date": "accessed 2026-11-05",
+   "note": "This is evidence about formal teaching, not home speech. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "feature": "Pronoun: I",
+   "standard": "hun",
+   "dialect": "aaun",
+   "english": "I",
+   "confidence": "verified",
+   "source": "https://en.wikipedia.org/wiki/Memoni_language ; https://khojawiki.org/Kutchi",
+   "date": "accessed 2026-11-05",
+   "note": "The Memoni table gives Kutchi aaun vs Gujarati hun; the Khoja Wiki conjugation table uses 'Aaun' for I. One garbled snippet of the Memoni table read aaun as 'we', so treat with care. FLAG: Khoja Wiki documents Khoja (Ismaili/Shia Muslim) Kutchi, which may differ from Hindu Leva Patel speech. FLAG: from the Memoni-language article; the Kutchi column is generic, but the page's focus is Memon (Muslim) speech. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "feature": "Pronoun: we",
+   "standard": "ame",
+   "dialect": "asaan",
+   "english": "we",
+   "confidence": "claimed",
+   "source": "https://en.wikipedia.org/wiki/Memoni_language",
+   "date": "accessed 2026-11-05",
+   "note": "Single table; its sourcing is not stated. FLAG: from the Memoni-language article; the Kutchi column is generic, but the page's focus is Memon (Muslim) speech. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "feature": "Pronoun: you (informal / respectful)",
+   "standard": "tu / tame",
+   "dialect": "tu (tun, tũː) / aain (aien, aĩː)",
+   "english": "you (to a peer or younger) / you (to an elder)",
+   "confidence": "verified",
+   "source": "https://khojawiki.org/Kutchi ; https://kutchimaadu.com/general/kutchi-language/ ; https://www.memeraki.com/blogs/posts/the-language-of-kutch",
+   "date": "accessed 2026-11-05",
+   "note": "Respectful aain takes the same verb agreement as plural 'aĩː loka' (Khoja Wiki only). Memeraki's 'Aain achota' shows aain in use. The Gujarati tame/tu pair comes from Omniglot ('tame kem chho'). FLAG: Khoja Wiki documents Khoja (Ismaili/Shia Muslim) Kutchi, which may differ from Hindu Leva Patel speech. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "feature": "No gender in pronouns; gender marked on verbs",
+   "standard": "Gujarati verbs also mark gender",
+   "dialect": "Kutchi pronouns do not mark gender, but verbs do in 1st, 2nd and 3rd person in several tenses",
+   "english": "-",
+   "confidence": "claimed",
+   "source": "https://khojawiki.org/Kutchi",
+   "date": "accessed 2026-11-05",
+   "note": "FLAG: Khoja Wiki documents Khoja (Ismaili/Shia Muslim) Kutchi, which may differ from Hindu Leva Patel speech. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "feature": "Present progressive 'I am coming / going'",
+   "standard": "aavun chhun / jaaun chhun",
+   "dialect": "achanto / vinanto",
+   "english": "I am coming / I am going",
+   "confidence": "verified",
+   "source": "https://en.wikipedia.org/wiki/Kutchi_language ; https://www.memeraki.com/blogs/posts/the-language-of-kutch",
+   "date": "accessed 2026-11-05",
+   "note": "The Wikipedia table gives both columns (tagged 'citation needed'). Memeraki independently supports the stems ach- (come) and van- (go): 'Aain achota' = are you coming, 'Kada vanota' = where are you going. The Kutchi form has no separate 'chhun'-type auxiliary; the -nto/-ota ending carries tense. That last point is an observation from these examples, not a sourced rule. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "feature": "Copula 'is/am/are'",
+   "standard": "chhe / chhun / chho",
+   "dialect": "NOT FOUND",
+   "english": "is / am / are",
+   "confidence": "claimed",
+   "source": "https://khojawiki.org/Kutchi",
+   "date": "accessed 2026-11-05",
+   "note": "No source gave a Kutchi copula paradigm. The Khoja Wiki has a conjugation table (present, progressive, past, past perfect, future; 'I' present begins 'khyan…') but snippets did not show it in full. Gap. FLAG: Khoja Wiki documents Khoja (Ismaili/Shia Muslim) Kutchi, which may differ from Hindu Leva Patel speech. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "feature": "Question word: what",
+   "standard": "shun",
+   "dialect": "koro / kuro",
+   "english": "what",
+   "confidence": "verified",
+   "source": "https://www.memeraki.com/blogs/posts/the-language-of-kutch ; https://kutchimaadu.com/general/kutchi-language/",
+   "date": "accessed 2026-11-05",
+   "note": "'Koro nihaareto', 'Kuro karyota' (Memeraki); 'Koro thiyoh' (kutchimaadu). Spellings vary. Standard-Gujarati form is the common textbook form; not separately source-checked this session. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "feature": "Question word: where",
+   "standard": "kyaan",
+   "dialect": "kada (also kidaa / kadaa)",
+   "english": "where",
+   "confidence": "claimed",
+   "source": "https://www.memeraki.com/blogs/posts/the-language-of-kutch",
+   "date": "accessed 2026-11-05",
+   "note": "'Kada vanota' = where are you going (Memeraki). A second, unnamed result in the same search gave 'Kadaa (contrast Sindhi kithe)', but it could not be pinned to a URL. Standard-Gujarati form is the common textbook form; not separately source-checked this session. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "feature": "Question word: how",
+   "standard": "kem",
+   "dialect": "kien / kin / kii / kiy",
+   "english": "how",
+   "confidence": "verified",
+   "source": "https://kutchimaadu.com/general/kutchi-language/ ; https://www.quora.com/How-do-you-translate-how-are-you-to-Kutchi ; https://grand3d.in/?page_id=136 ; https://khojawiki.org/Kutchi",
+   "date": "accessed 2026-11-05",
+   "note": "Four sources, four spellings: 'Kien ayo', 'Kin ayo', 'Kii Ayo' (glossed against Gujarati 'Kem Chho'), 'Tu kiy ayen'. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "feature": "Question word: why",
+   "standard": "kem / shaa maate",
+   "dialect": "NOT FOUND",
+   "english": "why",
+   "confidence": "claimed",
+   "source": "-",
+   "date": "accessed 2026-11-05",
+   "note": "Gap: no source found."
+  },
+  {
+   "feature": "Negation",
+   "standard": "nathi / na",
+   "dialect": "NOT FOUND",
+   "english": "not / no",
+   "confidence": "claimed",
+   "source": "-",
+   "date": "accessed 2026-11-05",
+   "note": "Gap: no Kutchi negation source found. Standard 'Naa' for no comes from a Gujarati learning PDF in the search results."
+  },
+  {
+   "feature": "Adverb 'now'",
+   "standard": "have",
+   "dialect": "hane",
+   "english": "now",
+   "confidence": "claimed",
+   "source": "https://www.wikiwand.com/en/Kutchi_language ; https://en.bharatpedia.org/wiki/Kutchi_language",
+   "date": "accessed 2026-11-05",
+   "note": "From the row 'Chhodo have' (Guj) vs 'Chhado hane' (Kutchi) = drop it now. Both pages mirror Wikipedia, so they are not independent. Wikipedia frames this table as colloquial Gujarati used in Kutchi-dominant villages: 'Gujaratisized versions of Kutchi words'. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "feature": "Vowel o→a in 'leave'",
+   "standard": "chhodo",
+   "dialect": "chhado",
+   "english": "leave (it)",
+   "confidence": "claimed",
+   "source": "https://www.wikiwand.com/en/Kutchi_language",
+   "date": "accessed 2026-11-05",
+   "note": "Same single row. Do not generalise to a rule. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "feature": "Implosive consonants",
+   "standard": "none in standard Gujarati",
+   "dialect": "up to four implosives (ɓ ɗ ʄ ɠ); one thesis-based account says only bilabial and retroflex contrast",
+   "english": "Sindhi-type 'swallowed' b/d/j/g sounds",
+   "confidence": "verified",
+   "source": "https://www.cal.org/heritage/pdfs/heritage-voice-language-kutchi.pdf ; https://en.wikipedia.org/wiki/Kutchi_language ; https://khojawiki.org/Kutchi",
+   "date": "accessed 2026-11-05",
+   "note": "Varieties closer to Gujarati have fewer implosives, which likely applies to eastern/central Kutch. Low priority for a conversation app. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "feature": "Dialect chain shift ch→s, s→h, h→zero",
+   "standard": "standard keeps ch / s / h",
+   "dialect": "Kathiawadi, Surti, Charotari and Pattani colloquial Gujarati show c/ch→s (before front vowels), s→h, h→murmur/zero",
+   "english": "e.g. the standard s-sound heard as h in village speech",
+   "confidence": "claimed",
+   "source": "https://scielo.org.za/scielo.php?script=sci_arttext&pid=S2224-33802023000300012 ; https://brill.com/view/journals/ldc/12/1/article-p124_4.xml?language=en",
+   "date": "2023 (SciELO); 2022 (Language Dynamics and Change 12(1))",
+   "note": "Same research line, so not independent. Kutch is NOT covered. Charotari matters if Leva Patel speech keeps Charotar traits, but that is unverified. The author notes many counter-examples. No word pairs were captured. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "feature": "Water",
+   "standard": "paani",
+   "dialect": "paani / jal",
+   "english": "water",
+   "confidence": "claimed",
+   "source": "https://en.wikipedia.org/wiki/Sindhi_language",
+   "date": "accessed 2026-11-05",
+   "note": "From a Sindhi-varieties comparison that includes Kutchi. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "feature": "Want / need",
+   "standard": "joie (joiye)",
+   "dialect": "khapey",
+   "english": "want",
+   "confidence": "claimed",
+   "source": "https://kutchimaadu.com/general/kutchi-language/",
+   "date": "accessed 2026-11-05",
+   "note": "Snippet: 'Khapey – ખપે – Want'. The source attribution among the search's results is probable, not certain. Standard-Gujarati form is the common textbook form; not separately source-checked this session. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  }
+ ],
+ "phrases": [
+  {
+   "roman": "kien aayo? (also kin ayo / kii ayo)",
+   "english": "How are you?",
+   "standard_gujarati_roman": "kem chho?",
+   "kind": "kutchi",
+   "category": "greetings",
+   "confidence": "verified",
+   "source": "https://kutchimaadu.com/general/kutchi-language/ ; https://www.quora.com/How-do-you-translate-how-are-you-to-Kutchi ; https://grand3d.in/?page_id=136",
+   "date": "accessed 2026-11-05",
+   "note": "Spelling varies by source. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "roman": "tu kiy ayen?",
+   "english": "How are you? (informal)",
+   "standard_gujarati_roman": "tu kem chhe?",
+   "kind": "kutchi",
+   "category": "greetings",
+   "confidence": "claimed",
+   "source": "https://khojawiki.org/Kutchi",
+   "date": "accessed 2026-11-05",
+   "note": "FLAG: Khoja Wiki documents Khoja (Ismaili/Shia Muslim) Kutchi, which may differ from Hindu Leva Patel speech. The Gujarati gloss here is mine, not the source's. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "roman": "kem chho?",
+   "english": "How are you?",
+   "standard_gujarati_roman": "kem chho?",
+   "kind": "standard",
+   "category": "greetings",
+   "confidence": "verified",
+   "source": "https://www.omniglot.com/language/phrases/gujarati.php ; https://preply.com/en/blog/basic-words-in-gujarati-beginners-guide",
+   "date": "accessed 2026-11-05",
+   "note": "Reply 'majaama' = I'm fine (Preply). [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "roman": "achija",
+   "english": "Bye (literally 'do come again')",
+   "standard_gujarati_roman": "aavjo",
+   "kind": "kutchi",
+   "category": "greetings",
+   "confidence": "verified",
+   "source": "https://www.memeraki.com/blogs/posts/the-language-of-kutch ; https://kutchimaadu.com/general/kutchi-language/",
+   "date": "accessed 2026-11-05",
+   "note": "Standard 'aavjo' is the common textbook form; not source-checked this session. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "roman": "shukar che",
+   "english": "Thank you",
+   "standard_gujarati_roman": "aabhaar",
+   "kind": "kutchi",
+   "category": "courtesy",
+   "confidence": "claimed",
+   "source": "https://thelandofwanderlust.com/10-vital-must-know-kutchi-words/",
+   "date": "accessed 2026-11-05",
+   "note": "Travel blog, low reliability. Standard-Gujarati form is the common textbook form; not separately source-checked this session. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "roman": "ha merbani",
+   "english": "Yes please",
+   "standard_gujarati_roman": "haa, maherbaani",
+   "kind": "kutchi",
+   "category": "courtesy",
+   "confidence": "claimed",
+   "source": "https://utalk.com/en/store/kachchi",
+   "date": "accessed 2026-11-05",
+   "note": "App store listing. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "roman": "haa / naa",
+   "english": "yes / no",
+   "standard_gujarati_roman": "haa / naa",
+   "kind": "standard",
+   "category": "basics",
+   "confidence": "claimed",
+   "source": "https://apps.lmtmag.com/Download_PDFS/mL56C3/602639/Learn Gujarati.pdf",
+   "date": "accessed 2026-11-05",
+   "note": "Kutchi yes/no not found; 'ha' appears in uTalk's 'Ha merbani'. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "roman": "achanto / vinanto",
+   "english": "I am coming / I am going",
+   "standard_gujarati_roman": "aavun chhun / jaaun chhun",
+   "kind": "kutchi",
+   "category": "verbs-present",
+   "confidence": "verified",
+   "source": "https://en.wikipedia.org/wiki/Kutchi_language ; https://www.memeraki.com/blogs/posts/the-language-of-kutch",
+   "date": "accessed 2026-11-05",
+   "note": "Table tagged 'citation needed'; Memeraki supports the stems. Sindhi column: 'maan achan-tho / va(n)a-tho'. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "roman": "aain achota?",
+   "english": "Are you coming? (polite)",
+   "standard_gujarati_roman": "tame aavo chho?",
+   "kind": "kutchi",
+   "category": "verbs-present",
+   "confidence": "claimed",
+   "source": "https://www.memeraki.com/blogs/posts/the-language-of-kutch",
+   "date": "accessed 2026-11-05",
+   "note": "The Gujarati gloss here is mine. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "roman": "kada vanota?",
+   "english": "Where are you going? (polite)",
+   "standard_gujarati_roman": "tame kyaan jaao chho?",
+   "kind": "kutchi",
+   "category": "questions",
+   "confidence": "claimed",
+   "source": "https://www.memeraki.com/blogs/posts/the-language-of-kutch",
+   "date": "accessed 2026-11-05",
+   "note": "The Gujarati gloss here is mine. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "roman": "kuro karyota? / koro kareyeinto?",
+   "english": "What are you doing?",
+   "standard_gujarati_roman": "shun karo chho?",
+   "kind": "kutchi",
+   "category": "questions",
+   "confidence": "claimed",
+   "source": "https://www.memeraki.com/blogs/posts/the-language-of-kutch",
+   "date": "accessed 2026-11-05",
+   "note": "Two variants on one page. The Gujarati gloss here is mine. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "roman": "koro nihaareto?",
+   "english": "What are you looking at? (polite)",
+   "standard_gujarati_roman": "shun juo chho?",
+   "kind": "kutchi",
+   "category": "questions",
+   "confidence": "claimed",
+   "source": "https://www.memeraki.com/blogs/posts/the-language-of-kutch",
+   "date": "accessed 2026-11-05",
+   "note": "The Gujarati gloss here is mine. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "roman": "koro thiyo?",
+   "english": "What happened?",
+   "standard_gujarati_roman": "shun thayun?",
+   "kind": "kutchi",
+   "category": "questions",
+   "confidence": "claimed",
+   "source": "https://kutchimaadu.com/general/kutchi-language/",
+   "date": "accessed 2026-11-05",
+   "note": "Spelled 'Koro thiyoh' / 'Koro thyoh' in the results. The Gujarati gloss here is mine. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "roman": "chhado hane",
+   "english": "Leave it now / drop it now",
+   "standard_gujarati_roman": "chhodo have",
+   "kind": "kutchi",
+   "category": "everyday",
+   "confidence": "claimed",
+   "source": "https://www.wikiwand.com/en/Kutchi_language ; https://en.bharatpedia.org/wiki/Kutchi_language",
+   "date": "accessed 2026-11-05",
+   "note": "Mirrors of one Wikipedia table. Wikipedia presents these as Gujaratised Kutchi forms used in Kutchi-dominant villages and by Hindus of rural-Kutch descent. That is the closest documented match to likely SKLPC speech, but Leva Patels are not named. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "roman": "kharchu?",
+   "english": "How much?",
+   "standard_gujarati_roman": "ketlaa?",
+   "kind": "kutchi",
+   "category": "shopping",
+   "confidence": "claimed",
+   "source": "https://thelandofwanderlust.com/10-vital-must-know-kutchi-words/",
+   "date": "accessed 2026-11-05",
+   "note": "Travel blog; gloss unclear (kharchu = cost/expense in Gujarati). Standard-Gujarati form is the common textbook form; not separately source-checked this session. [Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  },
+  {
+   "roman": "khapey",
+   "english": "(I) want / need",
+   "standard_gujarati_roman": "joie",
+   "kind": "kutchi",
+   "category": "everyday",
+   "confidence": "claimed",
+   "source": "https://kutchimaadu.com/general/kutchi-language/",
+   "date": "accessed 2026-11-05",
+   "note": "[Method: read via search-engine snippets only; WebFetch was blocked for every host this session, so the full page was not opened.]"
+  }
+ ],
+ "gaps": [
+  "No source names the home language of Kutch Leva Patels in Kutch itself. East African evidence conflicts (AwaaZ/ResearchGate: Cutchi-speaking Leva Patels; Wikipedia: Hindus use Gujarati / 'reject Kutchi'). Native-speaker confirmation from SKLPC members is required.",
+  "WebFetch was blocked by the session network policy for every host tried (cal.org, wikipedia.org, freelang.net, glottolog.org, archive.org, panjokutch.com). The CAL heritage PDF, FreeLang Kutchi dictionary, Glottolog and Grierson LSI vol. VIII pt. I (Sindhi incl. Kachchhi, 1919) were therefore NOT read; all evidence comes from search snippets. Allow these domains and re-run.",
+  "Grierson LSI: Kachchhi specimens are in vol. VIII pt. I (archive.org/details/in.gov.ignca.23432; dsal.uchicago.edu/books/lsi/); Kathiawadi is in the Gujarati volume (IX pt. II). Neither was read.",
+  "Not found in Kutchi: copula paradigm, negation, past and future tense, 'why', and everyday words eat, drink, food, home, good, today, tomorrow. 'maani' = roti is attested for Sindhi only, not confirmed for Kutchi.",
+  "No academic thesis on Kutch-variety Gujarati phonology or morphology surfaced. The Gujarati dialect chain-shift papers (2022/2023) cover Kathiawadi, Surti, Charotari and Pattani, not Kutch.",
+  "Most Kutchi grammar evidence comes from Khoja (Ismaili Muslim) or Memon sources; Hindu-farming-caste Kutchi is undocumented.",
+  "Neale (1974) 'Language use among the Asian communities' (Kenya) and Bharati (1972) on Patels and Lohanas are primary sources worth obtaining.",
+  "Standard-Gujarati glosses marked 'mine' in phrase notes are textbook forms supplied for pairing and were not source-checked this session."
+ ]
+}

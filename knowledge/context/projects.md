@@ -8,3 +8,4 @@ One paragraph each. Stage lives in Notion Mission Control; this file holds the *
 - **Travel** — _to fill in._
 - **PKF** — _to fill in._
 - **Personal** — _to fill in._
+- **Apollo** (personal) — app to gain conversational confidence in spoken Gujarati as the SKLPC (Kutch Leva Patel) community speaks it. Listening and speaking only. Brain: `projects/apollo/CLAUDE.md`.
