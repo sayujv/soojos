@@ -2,7 +2,12 @@
 (function () {
   'use strict';
   const D = window.APOLLO_DATA;
+  const G = window.APOLLO_GRAMMAR || { patterns: [], stories: [] };
   const byId = Object.fromEntries(D.phrases.map(p => [p.id, p]));
+  // Pattern rows and story lines become phrase-like items so the exercise engine and audio can use them.
+  const CORE_META = { kind: 'standard', conf: 'unsourced', src: 'apollo:standard-core', date: '2026-11-05' };
+  G.patterns.forEach(pt => { pt.items = pt.rows.map(([r, g, e], i) => (byId['pat-' + pt.id + '-' + i] = Object.assign({ id: 'pat-' + pt.id + '-' + i, unit: 'learner', r, g, e }, CORE_META, pt.dialect ? { kind: 'kutchi' } : {}))); });
+  G.stories.forEach(st => { st.items = st.lines.map((l, i) => (byId['sty-' + st.id + '-' + i] = Object.assign({ id: 'sty-' + st.id + '-' + i, unit: 'samaj', r: l.r, g: l.g, e: l.e }, CORE_META))); });
   const LESSON_SIZE = 5;
   const DAILY_GOAL = 30;
   const BOX_DAYS = [0, 1, 3, 7, 14, 30, 60];
@@ -50,7 +55,7 @@
 
   // ── state (localStorage now, artifact db when available) ───
   const KEY = 'apollo.v1';
-  const blank = () => ({ xp: 0, streak: 0, lastDay: '', days: [], day: { date: today(), xp: 0 }, cards: {}, lessons: {}, scenes: {}, chests: {}, verdicts: {}, badges: {}, bestCombo: 0, perfect: 0, updated: 0 });
+  const blank = () => ({ xp: 0, streak: 0, lastDay: '', days: [], day: { date: today(), xp: 0 }, cards: {}, lessons: {}, scenes: {}, chests: {}, patterns: {}, stories: {}, verdicts: {}, badges: {}, bestCombo: 0, perfect: 0, updated: 0 });
   const migrate = s => {
     s = Object.assign(blank(), s);
     for (const k of Object.keys(s.scenes)) if (s.scenes[k] === true) s.scenes[k] = 1;
@@ -98,6 +103,8 @@
     { id: 'kutchi', name: 'Kutchi flavour', desc: 'Finish a Kutchi lesson', icon: 'map', c: '--u-kutch', test: s => Object.keys(s.lessons).some(k => k.startsWith('kutch:')) },
     { id: 'family5', name: 'Family approved', desc: 'Check 5 phrases with family', icon: 'family', c: '--u-family', test: s => Object.keys(s.verdicts).length >= 5 },
     { id: 'mithai', name: 'Sweet tooth', desc: 'Open a mithai box', icon: 'gift', c: '--u-food', test: s => Object.keys(s.chests).length >= 1 },
+    { id: 'grammar', name: 'Grammar geek', desc: 'Practise 5 patterns', icon: 'book', c: '--u-learner', test: s => Object.keys(s.patterns || {}).length >= 5 },
+    { id: 'stories', name: 'Story time', desc: 'Finish 3 stories', icon: 'talk', c: '--u-samaj', test: s => Object.keys(s.stories || {}).length >= 3 },
     { id: 'bigday', name: 'Big day', desc: 'Earn 60 XP in one day', icon: 'trophy', c: '--u-feel', test: s => s.day.xp >= 60 }
   ];
   const icon = (name, cls) => name === 'star' ? I.star(cls || 'star-on') : I[name];
@@ -225,15 +232,16 @@
   function paintTabs() {
     const due = dueCards().length;
     document.getElementById('tabs').replaceChildren(h(TABS.map(([id, label, ic]) =>
-      `<button class="tab" data-go="${id}" ${(current === id || (current === 'book' && id === 'me') || (current === 'guide' && id === 'family')) ? 'aria-current="page"' : ''}>${I[ic]}${label}${id === 'review' && due ? `<span class="dot">${due}</span>` : ''}</button>`).join('')));
+      `<button class="tab" data-go="${id}" ${(current === id || (current === 'book' && id === 'me') || (current === 'guide' && id === 'family') || (current === 'patterns' && id === 'learn')) ? 'aria-current="page"' : ''}>${I[ic]}${label}${id === 'review' && due ? `<span class="dot">${due}</span>` : ''}</button>`).join('')));
   }
   function setFocus(on) { document.body.classList.toggle('focus', on); document.querySelector('main').classList.toggle('focus', on); }
   function route(to) {
     try { synth && synth.cancel(); } catch (e) { /* */ }
     run = null; scene = null; setFocus(false);
-    current = ['learn', 'talk', 'review', 'family', 'guide', 'me', 'book'].includes(to) ? to : 'learn';
+    story = null;
+    current = ['learn', 'talk', 'review', 'family', 'guide', 'me', 'book', 'patterns'].includes(to) ? to : 'learn';
     try { if (location.hash.slice(1) !== current) history.replaceState(null, '', '#' + current); } catch (e) { /* */ }
-    ({ learn: viewLearn, talk: viewTalk, review: viewReview, family: () => viewBook(true), guide: viewGuide, me: viewMe, book: () => viewBook(false) })[current]();
+    ({ learn: viewLearn, talk: viewTalk, review: viewReview, family: () => viewBook(true), guide: viewGuide, patterns: viewPatterns, me: viewMe, book: () => viewBook(false) })[current]();
     paintTabs(); paintBar(); window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', () => { const t = location.hash.slice(1); if (t && t !== current && !run && !scene) route(t); });
@@ -290,6 +298,11 @@
         ${ring(S.day.xp / DAILY_GOAL, 64, 8, 'var(--turmeric)', `<text x="32" y="37" text-anchor="middle" font-family="Baloo Bhai 2, sans-serif" font-weight="800" font-size="15" fill="currentColor">${Math.min(100, Math.round(100 * S.day.xp / DAILY_GOAL))}%</text>`)}
         <div><h3>${esc(status)}</h3><div class="week" aria-label="This week">${week}</div></div>
       </div>
+      <button class="card how" data-go="patterns">
+        <span class="eyebrow">How Gujarati works</span>
+        <span class="row" style="justify-content:space-between;width:100%"><h3>${G.patterns.length} patterns behind every sentence</h3><span class="tag">${Object.keys(S.patterns).length}/${G.patterns.length}</span></span>
+        <span class="muted">tu vs tame endings, the "me" past, why it's "mane bhukh lagi"…</span>
+      </button>
       ${stops}
       <p class="src">Phrases come from public sources wherever possible. "Standard" means textbook Gujarati your family hasn't checked yet. Use the Family tab to mark what they actually say.</p>
     `));
@@ -319,6 +332,12 @@
     $view.replaceChildren(h(`
       <div><h2>Talk it through</h2><p class="muted">Real conversations. Pick what you'd say. Three stars means every reply was right first time.</p></div>
       ${voiceNote()}
+      <h3>Listen in</h3><p class="muted" style="margin-top:-12px">Longer real-life dialogues. Tap any line for a word-by-word breakdown.</p>
+      <div class="list">${G.stories.map((st, i) => `<button class="scene-card" data-story="${st.id}">
+        <span class="art bandhani" style="background-color:var(${COLORS[(i + 3) % COLORS.length]})">${esc(st.title[0])}</span>
+        <span class="body"><h3>${esc(st.title)}</h3><span class="muted" style="font-size:14px">${esc(st.cast)} · ${st.lines.length} lines</span>
+        <span class="row"><span class="tag">${esc(st.level)}</span>${S.stories[st.id] ? '<span class="tag resp">Done</span>' : ''}</span></span>
+      </button>`).join('')}</div>
       <h3>Drills</h3>${list(D.scenes.filter(s => s.drill))}
       <h3>Conversations</h3>${list(D.scenes.filter(s => !s.drill))}`));
   }
@@ -366,8 +385,8 @@
 
   // ── exercise engine ────────────────────────────────────
   let run = null;
-  function distractors(p, field, n) {
-    const pool = shuffle(D.phrases.filter(q => q.id !== p.id && q[field] !== p[field]));
+  function distractors(p, field, n, from) {
+    const pool = shuffle((from || D.phrases).filter(q => q.id !== p.id && q[field] !== p[field]));
     const same = pool.filter(q => q.unit === p.unit);
     return [...same, ...pool].filter((q, i, a) => a.findIndex(z => z[field] === q[field]) === i).slice(0, n).map(q => q[field]);
   }
@@ -379,6 +398,17 @@
     });
     reviewIds.forEach(id => mix.push({ t: shuffle(['listen', 'meaning', 'say'])[0], p: byId[id], review: true }));
     return newOnes.map(p => ({ t: 'intro', p })).concat(shuffle(mix));
+  }
+  const backOf = k => ({ review: 'review', pattern: 'patterns', story: 'talk' })[k] || 'learn';
+  function startPattern(pid) {
+    const pt = G.patterns.find(z => z.id === pid);
+    const q = []; pt.items.forEach(p => { q.push({ t: 'meaning', p, pool: pt.items }); q.push({ t: 'listen', p, pool: pt.items }); });
+    startRun({ kind: 'pattern', pid, queue: shuffle(q) });
+  }
+  function startStoryQuiz(sid) {
+    const st = G.stories.find(z => z.id === sid);
+    const pick = shuffle(st.items).slice(0, 6);
+    startRun({ kind: 'story', sid, queue: pick.flatMap((p, i) => [{ t: i % 2 ? 'listen' : 'meaning', p, pool: st.items }]) });
   }
   function startRun(r) { run = Object.assign({ done: 0, right: 0, wrong: 0, combo: 0, best: 0, xp: 0, wrongOnce: new Set() }, r); run.total = run.queue.length; setFocus(true); next(); }
   function startLesson(key) {
@@ -394,7 +424,7 @@
   }
   function frame(inner) {
     const pct = Math.round(100 * run.done / Math.max(1, run.total));
-    return h(`<div class="ex"><div class="exbar"><button class="x" data-go="${run.kind === 'review' ? 'review' : 'learn'}" aria-label="Quit">×</button><div class="progress" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div><span class="combo" id="combo">${run.combo >= 2 ? I.flame + run.combo : ''}</span></div>${inner}<div id="fb"></div><div style="height:220px" aria-hidden="true"></div></div>`);
+    return h(`<div class="ex"><div class="exbar"><button class="x" data-go="${backOf(run.kind)}" aria-label="Quit">×</button><div class="progress" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div><span class="combo" id="combo">${run.combo >= 2 ? I.flame + run.combo : ''}</span></div>${inner}<div id="fb"></div><div style="height:220px" aria-hidden="true"></div></div>`);
   }
   const playRow = p => `<div class="playrow"><button class="big-play" data-say="${p.id}" aria-label="Play">${I.speaker}</button><button class="slow" id="slowBtn" aria-pressed="${slow}" aria-label="Slow playback">${I.turtle}</button></div>`;
   function next() {
@@ -406,12 +436,12 @@
       speak(p.g, p.r); return;
     }
     if (x.t === 'listen') {
-      const opts = shuffle([p.e, ...distractors(p, 'e', 3)]);
+      const opts = shuffle([p.e, ...distractors(p, 'e', 3, x.pool)]);
       $view.replaceChildren(frame(`<span class="eyebrow">What did you hear?</span>${playRow(p)}<div class="opts">${opts.map(o => `<button class="opt" data-pick="${esc(o)}">${esc(o)}</button>`).join('')}</div>`));
       x.answer = p.e; speak(p.g, p.r); return;
     }
     if (x.t === 'meaning') {
-      const opts = shuffle([p.r, ...distractors(p, 'r', 3)]);
+      const opts = shuffle([p.r, ...distractors(p, 'r', 3, x.pool)]);
       $view.replaceChildren(frame(`<span class="eyebrow">How do you say…</span><p class="prompt">${esc(p.e)}</p><div class="opts">${opts.map(o => `<button class="opt" data-pick="${esc(o)}">${esc(o)}</button>`).join('')}</div>`));
       x.answer = p.r; return;
     }
@@ -459,6 +489,8 @@
       bonus = S.lessons[r.key] ? 5 : 10;
       S.lessons[r.key] = true;
     }
+    if (r.kind === 'pattern') { bonus = S.patterns[r.pid] ? 3 : 8; S.patterns[r.pid] = true; }
+    if (r.kind === 'story') { bonus = S.stories[r.sid] ? 3 : 10; S.stories[r.sid] = true; }
     const perfect = r.wrong === 0 && r.kind === 'lesson';
     if (perfect) { bonus += 5; S.perfect++; }
     S.bestCombo = Math.max(S.bestCombo, r.best);
@@ -469,7 +501,7 @@
     run = null;
     $view.replaceChildren(h(`<div class="finish">
       <div class="trophy">${perfect ? I.star('star-on').replace('class="star-on"', 'fill="#3A2600"') : I.trophy}</div>
-      <span class="eyebrow">${r.kind === 'lesson' ? (perfect ? 'Flawless lesson' : 'Lesson complete') : 'Review complete'}</span>
+      <span class="eyebrow">${r.kind === 'lesson' ? (perfect ? 'Flawless lesson' : 'Lesson complete') : ({ review: 'Review complete', pattern: 'Pattern practised', story: 'Story understood' })[r.kind]}</span>
       <h2>${perfect ? 'Ekdum barabar!' : 'Shabash!'}</h2>
       <div class="bigstats">
         <div class="bigstat"><b style="color:var(--gold)" id="xpCount">+0</b><span>XP earned</span></div>
@@ -479,7 +511,7 @@
       ${lv ? `<div class="card unlock"><div class="medal" style="--c:var(--turmeric)">${I.bolt}</div><div><b>Level ${levelOf(S.xp)}</b><p class="muted">${esc(titleOf(levelOf(S.xp)))}</p></div></div>` : ''}
       ${fresh.map(b => `<div class="card unlock">${medal(b, false)}<div><b>${esc(b.name)}</b><p class="muted">${esc(b.desc)}</p></div></div>`).join('')}
       <p class="muted">Try one of these on someone at home today.</p>
-      <button class="primary go" data-go="${r.kind === 'review' ? 'review' : 'learn'}">Continue</button>
+      <button class="primary go" data-go="${backOf(r.kind)}">Continue</button>
     </div><span class="done-hero" hidden></span>`));
     setFocus(true);
     sfx.fanfare(); confetti(perfect || lv || fresh.length ? 180 : 110);
@@ -581,6 +613,59 @@
     paint();
   }
 
+  // ── patterns ───────────────────────────────────────────
+  function viewPatterns() {
+    $view.replaceChildren(h(`<div class="ex"><div class="exbar"><button class="x" data-go="learn" aria-label="Back">×</button><div style="flex:1;min-width:0"><h2>How Gujarati works</h2></div></div>
+      <p class="muted">The rules behind the phrases. Learn a pattern once and you can build sentences you've never heard. Each one has a table to listen to and a quick drill.</p>
+      <div class="list">${G.patterns.map((pt, i) => `<button class="scene-card" data-pattern="${pt.id}">
+        <span class="art" style="background:var(${pt.dialect ? '--u-kutch' : '--u-learner'});font-size:24px">${i + 1}</span>
+        <span class="body"><h3>${esc(pt.title)}</h3><span class="row"><span class="tag ${pt.dialect ? 'dialect' : ''}">${esc(pt.tag)}</span>${S.patterns[pt.id] ? '<span class="tag resp">Practised</span>' : ''}</span></span>
+      </button>`).join('')}</div></div>`));
+  }
+  function viewPattern(pid) {
+    const pt = G.patterns.find(z => z.id === pid);
+    setFocus(true);
+    $view.replaceChildren(h(`<div class="ex"><div class="exbar"><button class="x" data-go="patterns" aria-label="Back">×</button><div style="flex:1;min-width:0"><span class="eyebrow">${esc(pt.tag)}</span><h2>${esc(pt.title)}</h2></div></div>
+      <div class="card learn" style="--c:var(${pt.dialect ? '--u-kutch' : '--u-learner'})"><p class="meaning" style="font-size:17px">${esc(pt.why)}</p></div>
+      <div class="list">${pt.items.map(p => `<div class="item"><button class="play" data-say="${p.id}" aria-label="Play ${esc(p.r)}">${I.speaker}</button><span class="r">${esc(p.r)}</span><span>${esc(p.e)}</span></div>`).join('')}</div>
+      ${voiceNote()}
+      <button class="primary go" data-act="start-pattern" data-pid="${pt.id}">Practise this pattern</button></div>`));
+  }
+
+  // ── stories ────────────────────────────────────────────
+  let story = null;
+  function viewStory(sid) {
+    const st = G.stories.find(z => z.id === sid);
+    story = { st, i: 0 };
+    setFocus(true);
+    $view.replaceChildren(h(`<div class="ex"><div class="exbar"><button class="x" data-go="talk" aria-label="Back">×</button><div style="flex:1;min-width:0"><span class="eyebrow">${esc(st.cast)}</span><h3>${esc(st.title)}</h3></div></div>
+      ${voiceNote()}
+      <div class="row"><button class="chip" id="hideEn" aria-pressed="false">Hide English</button><button class="chip" id="showGu" aria-pressed="false">Show Gujarati script</button><button class="chip" id="slowBtn" aria-pressed="${slow}">Slow audio</button></div>
+      <p class="muted" style="font-size:14px">Tap a line to see each word. Try to follow by ear first.</p>
+      <div class="chat" id="chat"></div><div id="storyNext"></div></div>`));
+    storyNext();
+  }
+  function storyNext() {
+    const { st } = story, chat = document.getElementById('chat');
+    if (story.i < st.lines.length) {
+      const l = st.lines[story.i], p = st.items[story.i];
+      const you = l.who === 'You';
+      const hideE = document.getElementById('hideEn').getAttribute('aria-pressed') === 'true';
+      const showG = document.getElementById('showGu').getAttribute('aria-pressed') === 'true';
+      chat.append(h(`<div class="bubble ${you ? 'you' : 'them'} sline" data-gloss="${story.i}" role="button" tabindex="0"><span class="who">${esc(l.who)}</span>
+        <span class="r">${esc(l.r)}</span><span class="gu" ${showG ? '' : 'hidden'} lang="gu">${esc(l.g)}</span><span class="e" ${hideE ? 'hidden' : ''}>${esc(l.e)}</span>
+        <span class="gloss" hidden>${l.w.map(([a, b]) => `<span class="gl"><b>${esc(a)}</b> ${esc(b)}</span>`).join('')}</span>
+        <button class="play" data-say="${p.id}">▶ play</button></div>`));
+      speak(p.g, p.r);
+      story.i++;
+      if (chat.lastElementChild) chat.lastElementChild.scrollIntoView({ block: 'nearest', behavior: reduceMotion ? 'auto' : 'smooth' });
+    }
+    const done = story.i >= st.lines.length;
+    document.getElementById('storyNext').replaceChildren(h(done
+      ? `<div class="card" style="text-align:center;justify-items:center"><h3>End of the story</h3><p class="muted">Six quick questions to check you followed it.</p><button class="primary go" data-act="story-quiz" data-sid="${st.id}">Quick check</button></div>`
+      : `<button class="primary" data-act="next-line">Next line · ${story.i}/${st.lines.length}</button>`));
+  }
+
   const segment = on => `<div class="seg" role="tablist"><button role="tab" data-go="family" aria-selected="${on === 'family'}">Ask family</button><button role="tab" data-go="guide" aria-selected="${on === 'guide'}">Who's who</button></div>`;
   function viewGuide() {
     $view.replaceChildren(h(`<div class="ex">${segment('guide')}
@@ -590,13 +675,22 @@
   }
 
   // ── events ─────────────────────────────────────────────
+  const toggleGloss = el => { const g = el.querySelector('.gloss'); if (g) g.hidden = !g.hidden; };
+  document.addEventListener('keydown', e => { const sl = e.target.closest && e.target.closest('.sline'); if (sl && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggleGloss(sl); } });
   document.addEventListener('click', e => {
+    const sl = e.target.closest('.sline'); if (sl && !e.target.closest('button')) return toggleGloss(sl);
     const t = e.target.closest('button'); if (!t || t.disabled) return;
     if (t.dataset.go) return route(t.dataset.go);
     if (t.dataset.lesson) return startLesson(t.dataset.lesson);
     if (t.dataset.chest) return openChest(t.dataset.chest, t);
     if (t.dataset.scene) return startScene(t.dataset.scene);
     if (t.dataset.act === 'start-review') return startReview();
+    if (t.dataset.pattern) return viewPattern(t.dataset.pattern);
+    if (t.dataset.act === 'start-pattern') return startPattern(t.dataset.pid);
+    if (t.dataset.story) return viewStory(t.dataset.story);
+    if (t.dataset.act === 'next-line') return storyNext();
+    if (t.dataset.act === 'story-quiz') return startStoryQuiz(t.dataset.sid);
+    if (t.id === 'showGu') { const on = t.getAttribute('aria-pressed') !== 'true'; t.setAttribute('aria-pressed', on); document.querySelectorAll('.chat .gu').forEach(el => { el.hidden = !on; }); return; }
     if (t.dataset.say) { const p = byId[t.dataset.say]; return speak(p.g, p.r); }
     if (t.dataset.sayraw) { const st = scene.s.steps[+t.dataset.sayraw]; return speak(st.say, st.r); }
     if (t.id === 'slowBtn') { slow = !slow; t.setAttribute('aria-pressed', slow); return; }

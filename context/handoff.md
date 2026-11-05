@@ -9,6 +9,7 @@
   - 13 conversations, including Bestu varas, besnu, rishta aunties, hosting, Bhuj bazaar, cousin banter, mosal call and Foi's story.
   - 2 drills: tu or tame, and who's who.
   - Who's who address guide, 5 groups and 33 relations, in the Family tab.
+- v4 grammar layer: `app/grammar.js` has 13 patterns with tables and generated drills (incl. a Kutchi mirror) and 6 stories (59 lines, script-first, glossed word by word). `tools/translit.mjs` is the Apollo romaniser; the check compares all 413 script/roman pairs. Grammar report: `knowledge/reports/2026-11-05-gujarati-spoken-grammar.md`.
 - Check: `node projects/apollo/test/check.mjs` passes (content, lessons, review, scenes+stars, mithai box, badges, tabs, Ask-family persistence, dark mode, 0 console errors, no sideways scroll at 390px).
 - v2 (gamified): tab bar (Learn/Talk/Review/Family/Me), journey path with mithai-box chests, combos with double XP, levels with titles, 12 badges, weekly streak strip, confetti, 3-star conversations.
 - Research: `knowledge/reports/2026-11-05-apollo-sklpc-dialect.md`. Snippet-only because the session network blocked all page fetches, so everything is rated `claimed` at most.

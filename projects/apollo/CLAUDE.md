@@ -6,6 +6,7 @@ Stage: building
 ## Read before working
 - Approved brief and definition of done: `../../.soojos/briefs/2026-11-05-apollo.md`
 - Dialect research report: `../../knowledge/reports/2026-11-05-apollo-sklpc-dialect.md`
+- Working grammar (generate new content from this): `../../knowledge/reports/2026-11-05-gujarati-spoken-grammar.md`
 - Prior decisions (binding): `../../decisions/`
 
 ## Standing rules
@@ -14,7 +15,8 @@ Stage: building
 - The family verdict (Ask family tab, stored in the artifact's `progress` db doc) outranks every web source.
 
 ## This project specifically
-- Static app in `app/`: `index.html` (page), `app.js` (logic), `data.js` (all phrases, units, scenes). No build step.
+- Static app in `app/`: `index.html` (page), `app.js` (logic), `data.js` (phrases, units, scenes, who's-who), `grammar.js` (patterns, glossed stories). No build step.
+- New dialogue: write the Gujarati script first, then roman and English, then word glosses. `tools/translit.mjs` checks script against roman, and the check fails if they diverge.
 - Published as a private claude.ai Artifact so it works on the phone; `db` + `user` capabilities hold progress and family verdicts.
 - Listening only, no script taught. Gujarati script is stored solely to drive text-to-speech.
 - Add content by editing `data.js`; the check validates it.
