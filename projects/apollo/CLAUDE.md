@@ -19,6 +19,7 @@ Stage: building
 - Read answers with ArtifactData `list` on `answers`. Item ids map back: `phrase:<id>`, `scene:<id>:<step>`, `lad:<ladder>:<rung>`, `story:<id>:<line>`, `pat:<id>:<row|why>`, `guide:<g>:<r>`, `rule:<i>`, `q:<question>`.
 - v = yes/close/no/unsure (questions: yes/some/no/unsure); c = verdict on the note; say = how they'd say it. Their "say" outranks everything: fold it into data.js / speech.js as the family form, then rebuild audio and run both checks.
 - No-account path: answers stay on the reviewer's phone; the green button opens WhatsApp with `APOLLO1|name|i/n` messages (lines `id|v|c|say`; v y/~/n/?/s, c y/n). Sayuj pastes them into "Add answers someone sent you" on the same page, which writes them to db `answers`. Or he pastes them to Claude directly: the format is the same.
+- Public, no-sign-in copy: `review/family-check.html` (generated: `node projects/apollo/tools/build_standalone.mjs` after editing review/index.html), served from the public repo at https://raw.githack.com/sayujv/soojos/apollo-app/projects/apollo/review/family-check.html. It has no db, so answers come back over WhatsApp.
 - Check: `node projects/apollo/test/review_check.mjs`.
 
 ## This project specifically

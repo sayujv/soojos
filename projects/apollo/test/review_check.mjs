@@ -126,9 +126,28 @@ if (await p2.evaluate(() => getComputedStyle(document.body).backgroundColor) !==
 await p2.screenshot({ path: path.join(tmp, 'review-dark.png') });
 await p2.close();
 
+// standalone page, served from the repo layout as GitHub would serve it: no Claude viewer at all
+{
+  const rs = http.createServer((q, r) => { const f = path.join(root, decodeURIComponent(q.url.split('?')[0])); if (!f.startsWith(root) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type': f.endsWith('.js') ? 'text/javascript' : f.endsWith('.json') ? 'application/json' : 'text/html; charset=utf-8' }); fs.createReadStream(f).pipe(r); }).listen(0);
+  const sp = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  sp.on('pageerror', e => errors.push('standalone: ' + e.message));
+  const audioHits = []; sp.on('response', r => { if (/app\/audio\//.test(r.url())) audioHits.push(r.status()); });
+  await sp.route(/fonts\./, r => r.abort());
+  await sp.goto(`http://127.0.0.1:${rs.address().port}/review/family-check.html`);
+  await sp.waitForSelector('.sec');
+  if (await sp.evaluate(() => document.compatMode) !== 'CSS1Compat') fail('standalone page renders in quirks mode');
+  if (await sp.evaluate(() => window.APOLLO_REVIEW.count()) !== total) fail('standalone page item count differs');
+  await sp.waitForTimeout(800);
+  if (audioHits.length < 17 || audioHits.some(s => s !== 200)) fail(`standalone audio: ${JSON.stringify(audioHits)}`);
+  if (!/this phone/.test(await sp.textContent('#status'))) fail('standalone should save on the phone');
+  await sp.click('[data-sec="family"]'); await sp.locator('.it').first().locator('[data-v="yes"]').click(); await sp.click('[data-home]');
+  if (await sp.locator('a.wa').count() !== 1) fail('standalone: WhatsApp button missing');
+  const o = await sp.evaluate(() => document.documentElement.scrollWidth - window.innerWidth); if (o > 0) fail(`standalone: sideways scroll ${o}px`);
+  await sp.close(); rs.close();
+}
 await browser.close(); server.close();
 errors.forEach(e => fail('console: ' + e));
 console.log(`items: ${total} in ${secs.length} sections ${JSON.stringify(Object.fromEntries(secs))}`);
 console.log(`screenshots: ${tmp}`);
 if (fails.length) { console.log(`FAIL (${fails.length})\n - ` + fails.join('\n - ')); process.exit(1); }
-console.log('PASS: every section renders fully; answers save to device and db, restore from db, filter works; no-account WhatsApp send (new-only, split into parts), import back into db; copy fallback; dark mode; no sideways scroll; 0 console errors');
+console.log('PASS: every section renders fully; answers save to device and db, restore from db, filter works; no-account WhatsApp send (new-only, split into parts), import back into db; copy fallback; standalone public page (standards mode, audio, WhatsApp); dark mode; no sideways scroll; 0 console errors');

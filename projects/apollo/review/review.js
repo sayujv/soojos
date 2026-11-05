@@ -161,8 +161,9 @@
   }
 
   // ── 4. Audio: the app's pre-rendered Gujarati clips ──
+  const AUDIO_BASE = window.APOLLO_AUDIO_BASE || 'audio/';
   const AUDIO = { map: null, clips: {} };
-  (async () => { try { const idx = await (await fetch('audio/index.json')).json(); AUDIO.map = idx.map; await Promise.all(idx.packs.map(pk => fetch('audio/' + pk).then(r => r.json()).then(o => Object.assign(AUDIO.clips, o)).catch(() => {}))); } catch (e) { /* */ } })();
+  (async () => { try { const idx = await (await fetch(AUDIO_BASE + 'index.json')).json(); AUDIO.map = idx.map; await Promise.all(idx.packs.map(pk => fetch(AUDIO_BASE + pk).then(r => r.json()).then(o => Object.assign(AUDIO.clips, o)).catch(() => {}))); } catch (e) { /* */ } })();
   let clip = null;
   function play(g) {
     const k = AUDIO.map && AUDIO.map[g], b = k && AUDIO.clips[k];
