@@ -21,13 +21,20 @@
     ({ id, unit: 'kutch', r, g, e, std: std || '', kind: kind || 'kutchi', conf, src, date: date || '2026-11-05', note: note || '' });
 
   const units = [
-    { id: 'greet', title: 'Saying hello', blurb: 'Greet anyone, from Ba to a cousin', icon: 'namaste' },
-    { id: 'family', title: 'Family', blurb: 'Who is who: kaka, mami, foi and the rest', icon: 'family' },
-    { id: 'food', title: 'At the table', blurb: 'Eating, refusing seconds, praising the cook', icon: 'food' },
-    { id: 'daily', title: 'Everyday talk', blurb: 'Where, when, what, and asking again', icon: 'chat' },
-    { id: 'feel', title: 'Feelings & manners', blurb: 'Tired, happy, sorry, missing someone', icon: 'heart' },
-    { id: 'call', title: 'The phone call', blurb: 'Calling relatives in Kutch, Kenya or the UK', icon: 'phone' },
-    { id: 'kutch', title: 'Kutchi flavour', blurb: 'How SKLPC speech differs, from public sources', icon: 'kutch' }
+    { id: 'greet', title: 'Saying hello', blurb: 'Greet anyone, from Ba to a cousin' },
+    { id: 'respect', title: 'Respect & address', blurb: 'tu or tame, -bhai and -ben, touching feet, the respectful plural' },
+    { id: 'family', title: 'Family', blurb: 'Who is who: kaka, mami, foi and the rest' },
+    { id: 'kin2', title: 'In-laws & extended family', blurb: 'vevai, vevan, mosal, bhanej: words English doesn\'t have' },
+    { id: 'food', title: 'At the table', blurb: 'Eating, refusing seconds, praising the cook, hosting' },
+    { id: 'daily', title: 'Everyday talk', blurb: 'Where, when, what, shopping and haggling' },
+    { id: 'learner', title: "Learner's lifelines", blurb: 'Stay in Gujarati when you get lost' },
+    { id: 'feel', title: 'Feelings & manners', blurb: 'Tired, happy, sorry, missing someone' },
+    { id: 'banter', title: 'Banter & reactions', blurb: 'Really?, wow, I\'m joking, stop fussing' },
+    { id: 'call', title: 'The phone call', blurb: 'Calling relatives in Kutch, Kenya or the UK' },
+    { id: 'care', title: 'Health & care', blurb: 'Checking on an elder who isn\'t well' },
+    { id: 'samaj', title: 'Samaj & gaam', blurb: 'Which gaam?, whose son?, mandir and old stories' },
+    { id: 'occasions', title: 'Festivals & occasions', blurb: 'New Year, weddings, birthdays, and a besnu' },
+    { id: 'kutch', title: 'Kutchi flavour', blurb: 'How SKLPC speech differs, from public sources' }
   ];
 
   const phrases = [
@@ -112,6 +119,130 @@
     p('kyare-aavo', 'call', 'tame Perth kyare aavo cho?', 'તમે પર્થ ક્યારે આવો છો?', 'When are you coming to Perth?'),
     p('pachi-vaat', 'call', 'pachi vaat kariye', 'પછી વાત કરીએ', "Let's talk later"),
     p('ashirvad', 'call', 'ashirvaad aapjo', 'આશીર્વાદ આપજો', 'Bless me (said to elders, often when touching their feet)'),
+
+    // ── respect ───────────────────────────────────────────
+    p('tame', 'respect', 'tame', 'તમે', 'You (respectful, also plural)', { note: 'Use with every elder, every in-law, and anyone you don\'t know well. When unsure, use tame.' }),
+    p('aap', 'respect', 'aap', 'આપ', 'You (very formal)', { note: 'For speeches, priests and letters. In family talk it sounds stiff, or sarcastic.' }),
+    p('aavo', 'respect', 'aavo', 'આવો', 'Come (respectful)', { note: '"aav" for a child or close cousin. "aavo" for anyone older. The same pattern runs through every verb: bes/beso, kar/karo, jo/juo.' }),
+    p('bes', 'respect', 'bes', 'બેસ', 'Sit (informal: kids, close cousins)', { note: 'To an elder this sounds like an order. Say "beso".' }),
+    p('jami-le', 'respect', 'jami le', 'જમી લે', 'Eat up (informal)', { note: 'Ba says this to you. You say "jami lo" back to her.' }),
+    p('taru-naam', 'respect', 'taru naam shu che?', 'તારું નામ શું છે?', "What's your name? (to a child)", { note: '"taru" is the informal "your". With an adult, always "tamaru".' }),
+    p('haa-ji', 'respect', 'haa ji', 'હા જી', 'Yes (extra respectful)', { note: 'Softer and more deferential than a plain "haa". Good with elders.' }),
+    p('pagge-laagu', 'respect', 'pagge laagu', 'પગે લાગું', 'I touch your feet (greeting an elder)', { note: 'Said while bending to touch an elder\'s feet: at festivals, arrivals, departures and before exams. Expect a blessing back.' }),
+    p('sukhi-raho', 'respect', 'sukhi raho', 'સુખી રહો', 'Be happy (an elder\'s blessing)', { note: 'Only elders give blessings. You receive them. Reply "tamara ashirvaad".' }),
+    p('bhai-suffix', 'respect', 'Rameshbhai', 'રમેશભાઈ', 'Ramesh + bhai: how you name an older man', { note: 'Add -bhai to a man\'s name and -ben to a woman\'s. A bare first name sounds rude for anyone older than you, even your parents\' friends.' }),
+    p('ben-suffix', 'respect', 'Geetaben', 'ગીતાબેન', 'Geeta + ben: how you name an older woman'),
+    p('bapa-suffix', 'respect', 'Devjibapa', 'દેવજીબાપા', 'Devji + bapa: an elderly man, with deep respect', { note: 'Common in Kutch and Saurashtra for grandfathers and village elders. Check how your family uses it.' }),
+    p('ma-suffix', 'respect', 'Kankuma', 'કંકુમા', 'Kanku + ma: an elderly woman, with deep respect', { note: 'The female counterpart of -bapa. Check how your family uses it.' }),
+    p('motabhai', 'respect', 'motabhai', 'મોટાભાઈ', 'Elder brother (what you call him)', { note: 'Many families expect you to call an elder brother or elder cousin "motabhai", not by his name.' }),
+    p('motaben', 'respect', 'motaben', 'મોટાબેન', 'Elder sister (what you call her)'),
+    p('bapuji-aavya', 'respect', 'bapuji aavya che', 'બાપુજી આવ્યા છે', 'Father has arrived (respectful plural)', { note: 'When you talk ABOUT an elder, the verb goes plural: "aavya". It\'s the clearest sign of a respectful speaker.' }),
+    p('bhai-aavyo', 'respect', 'bhai aavyo che', 'ભાઈ આવ્યો છે', 'My (younger) brother has arrived', { note: 'Singular "aavyo" for someone younger. Plural for a little brother sounds sarcastic.' }),
+
+    // ── kin2 ──────────────────────────────────────────────
+    p('sasra', 'kin2', 'sasra', 'સસરા', 'Father-in-law'),
+    p('sasu', 'kin2', 'sasu', 'સાસુ', 'Mother-in-law'),
+    p('jamai', 'kin2', 'jamai', 'જમાઈ', 'Son-in-law', { note: 'A jamai is treated as an honoured guest in his wife\'s family home. Expect to be fed a lot.' }),
+    p('vahu', 'kin2', 'vahu', 'વહુ', 'Daughter-in-law'),
+    p('vevai', 'kin2', 'vevai', 'વેવાઈ', "Your child's father-in-law", { note: 'Once two children marry, their fathers call each other vevai and their mothers vevan. English has no word for it.' }),
+    p('vevan', 'kin2', 'vevan', 'વેવાણ', "Your child's mother-in-law"),
+    p('banevi', 'kin2', 'banevi', 'બનેવી', "Sister's husband", { note: 'Many families say "jijaju" instead, which is warmer.' }),
+    p('jijaju', 'kin2', 'jijaju', 'જીજાજુ', "Sister's husband (affectionate)"),
+    p('nanand', 'kin2', 'nanand', 'નણંદ', "Husband's sister"),
+    p('diyar', 'kin2', 'diyar', 'દિયર', "Husband's younger brother"),
+    p('jeth', 'kin2', 'jeth', 'જેઠ', "Husband's elder brother", { note: 'Traditionally treated with great formality by his younger brother\'s wife.' }),
+    p('bhatrijo', 'kin2', 'bhatrijo', 'ભત્રીજો', "Brother's son (nephew)", { note: 'A brother\'s daughter is "bhatriji".' }),
+    p('bhanej', 'kin2', 'bhanej', 'ભાણેજ', "Sister's son or daughter", { note: 'Mama often calls his sister\'s son "bhaana" affectionately.' }),
+    p('mosal', 'kin2', 'mosal', 'મોસાળ', "Your mother's family home", { note: 'Children traditionally spend holidays at the mosal. The mosal brings the "mameru" gifts at weddings.' }),
+    p('pitrai', 'kin2', 'pitrai bhai', 'પિતરાઈ ભાઈ', "Cousin (father's side)", { note: 'In everyday speech most people call cousins plain "bhai" and "ben".' }),
+    p('sagaa', 'kin2', 'sagaa', 'સગાં', 'Relatives', { note: 'Often doubled as "sagaa-vahala": relatives and loved ones.' }),
+    p('kutumb', 'kin2', 'kutumb', 'કુટુંબ', 'The wider family'),
+
+    // ── food (more) ───────────────────────────────────────
+    p('naasto', 'food', 'chaa naasto karo', 'ચા નાસ્તો કરો', 'Have some tea and snacks', { note: 'The first thing any host says. Refusing outright is rude, so take a little.' }),
+    p('jamine-jajo', 'food', 'jamine jajo', 'જમીને જજો', 'Eat before you go', { note: 'Hosts insist. It\'s polite to refuse once. They will ask again.' }),
+    p('kone-banavyu', 'food', 'aa kone banavyu?', 'આ કોણે બનાવ્યું?', 'Who made this?', { note: 'Ask it after tasting and it\'s a compliment. Follow with "khub saras che".' }),
+    p('mithu-ochu', 'food', 'mithu ochu che', 'મીઠું ઓછું છે', 'It needs more salt', { note: '"mithu" means salt here, but also "sweet". Context decides.' }),
+    p('na-bas', 'food', 'naa, bas, have nahi', 'ના, બસ, હવે નહીં', 'No, enough, no more now'),
+    p('thepla', 'food', 'thepla', 'થેપલાં', 'Thepla (spiced flatbread)'),
+    p('bhakhri', 'food', 'bhakhri', 'ભાખરી', 'Bhakhri (thick, crisp flatbread)'),
+    p('kadhi-khichdi', 'food', 'kadhi khichdi', 'કઢી ખીચડી', 'Kadhi and khichdi'),
+    p('chhaas', 'food', 'chhaas', 'છાશ', 'Buttermilk'),
+    p('gol', 'food', 'gol', 'ગોળ', 'Jaggery'),
+
+    // ── daily (more) ──────────────────────────────────────
+    p('kai-nahi', 'daily', 'kai nahi', 'કંઈ નહીં', 'Nothing much'),
+    p('hamna-nahi', 'daily', 'hamna nahi', 'હમણાં નહીં', 'Not now / not yet'),
+    p('fari-aavjo', 'daily', 'fari aavjo', 'ફરી આવજો', 'Come again'),
+    p('ketla-nu', 'daily', 'aa ketla nu che?', 'આ કેટલાનું છે?', 'How much is this?'),
+    p('monghu', 'daily', 'bahu monghu che', 'બહુ મોંઘું છે', "It's too expensive"),
+    p('ochu-karo', 'daily', 'thodu ochu karo ne, bhai', 'થોડું ઓછું કરો ને, ભાઈ', 'Bring it down a bit, bhai', { note: 'Shopkeepers and strangers are "bhai" or "ben", never a bare name.' }),
+
+    // ── learner ───────────────────────────────────────────
+    p('thodu-aavde', 'learner', 'mane Gujarati thodu thodu aavde che', 'મને ગુજરાતી થોડું થોડું આવડે છે', 'I speak a little Gujarati'),
+    p('shikhu-chu', 'learner', 'hu Gujarati shikhu chu', 'હું ગુજરાતી શીખું છું', "I'm learning Gujarati", { note: 'Elders light up at this. Say it early and they\'ll slow down for you.' }),
+    p('kevi-rite', 'learner', 'Gujarati ma kevi rite kahevay?', 'ગુજરાતીમાં કેવી રીતે કહેવાય?', 'How do you say it in Gujarati?'),
+    p('ene-shu', 'learner', 'ene shu kahevay?', 'એને શું કહેવાય?', "What's that called?"),
+    p('eno-arth', 'learner', 'eno arth shu?', 'એનો અર્થ શું?', 'What does that mean?'),
+    p('saachu-bolyo', 'learner', 'hu saachu bolyo?', 'હું સાચું બોલ્યો?', 'Did I say it right?', { note: 'A woman says "saachu boli?".' }),
+    p('sudharjo', 'learner', 'mane sudharjo', 'મને સુધારજો', 'Please correct me'),
+    p('ek-vaar', 'learner', 'ek vaar fari', 'એક વાર ફરી', 'One more time'),
+    p('english-ma', 'learner', 'English ma kaho ne', 'ઇંગ્લિશમાં કહો ને', 'Say it in English, please', { note: 'Your last resort. Try "eno arth shu?" first.' }),
+    p('samjai-gayu', 'learner', 'haa, samjai gayu', 'હા, સમજાઈ ગયું', 'Yes, I understood'),
+    p('pachi-shu', 'learner', 'pachi shu thayu?', 'પછી શું થયું?', 'Then what happened?', { note: 'The best way to keep an elder telling a story, and to keep yourself listening.' }),
+
+    // ── banter ────────────────────────────────────────────
+    p('kharekhar', 'banter', 'kharekhar?', 'ખરેખર?', 'Really?'),
+    p('are-vah', 'banter', 'are vah!', 'અરે વાહ!', 'Oh wow!'),
+    p('shu-vaat', 'banter', 'shu vaat che!', 'શું વાત છે!', 'No way! / Look at you!', { note: 'Said with a smile when someone shows off something good.' }),
+    p('majak', 'banter', 'majak karu chu', 'મજાક કરું છું', "I'm joking"),
+    p('bhale', 'banter', 'bhale', 'ભલે', 'Okay, fine / as you wish'),
+    p('khabar-che', 'banter', 'haa haa, khabar che', 'હા હા, ખબર છે', 'Yes, yes, I know'),
+    p('jo-to', 'banter', 'jo to!', 'જો તો!', 'Look at that!'),
+    p('chup-thaa', 'banter', 'chup thaa!', 'ચૂપ થા!', 'Shush! (teasing a cousin)', { note: 'Only with someone your age or younger. To an elder it\'s shocking.' }),
+    p('nakhra', 'banter', 'nakhra na kar', 'નખરાં ના કર', 'Stop being dramatic (informal)'),
+    p('gusso', 'banter', 'gusso na karo', 'ગુસ્સો ના કરો', "Don't be angry"),
+    p('sharam', 'banter', 'mane sharam aave che', 'મને શરમ આવે છે', "I'm embarrassed"),
+    p('chalo-have', 'banter', 'chalo have', 'ચાલો હવે', "Right, let's go now"),
+
+    // ── care ──────────────────────────────────────────────
+    p('shu-thayu', 'care', 'tamne shu thayu?', 'તમને શું થયું?', "What's wrong? (respectful)"),
+    p('taav', 'care', 'taav aavyo che', 'તાવ આવ્યો છે', 'I have a fever'),
+    p('maathu', 'care', 'maathu dukhe che', 'માથું દુખે છે', 'My head hurts'),
+    p('pet-dukhe', 'care', 'pet dukhe che', 'પેટ દુખે છે', 'My stomach hurts'),
+    p('dava', 'care', 'dava lidhi?', 'દવા લીધી?', 'Did you take your medicine?'),
+    p('doctor', 'care', 'doctor ne batavyu?', 'ડૉક્ટરને બતાવ્યું?', 'Did you see the doctor?'),
+    p('aaram', 'care', 'aaram karo', 'આરામ કરો', 'Rest (respectful)'),
+    p('saru-thai', 'care', 'jaldi saru thai jaay', 'જલ્દી સારું થઈ જાય', 'Get well soon'),
+    p('chinta-thay', 'care', 'mane tamari chinta thay che', 'મને તમારી ચિંતા થાય છે', 'I worry about you'),
+    p('dhyan-rakhjo', 'care', 'dhyan rakhjo', 'ધ્યાન રાખજો', 'Take care', { note: 'The standard way to end a call with an elder. To someone younger: "dhyan rakhje".' }),
+
+    // ── samaj ─────────────────────────────────────────────
+    p('kya-gaam', 'samaj', 'tame kya gaam na?', 'તમે કયા ગામના?', 'Which village is your family from?', { note: 'Often the first question at any SKLPC gathering. Know your answer.' }),
+    p('amaru-gaam', 'samaj', 'amaru gaam Kutch ma che', 'અમારું ગામ કચ્છમાં છે', 'Our village is in Kutch', { note: 'Better still, name it: "amaru gaam ___ che".' }),
+    p('kono-dikro', 'samaj', 'tu kono dikro?', 'તું કોનો દીકરો?', 'Whose son are you?', { note: 'Elders place you by your father. Answer with his name plus -bhai.' }),
+    p('hu-no-dikro', 'samaj', 'hu Rameshbhai no dikro chu', 'હું રમેશભાઈનો દીકરો છું', "I'm Rameshbhai's son", { note: 'Swap in your father\'s name, with -bhai.' }),
+    p('aapno-samaj', 'samaj', 'aapno samaj', 'આપણો સમાજ', 'Our community', { note: '"aapno" is the inclusive "our": yours and mine together.' }),
+    p('jai-swaminarayan', 'samaj', 'jai Swaminarayan', 'જય સ્વામિનારાયણ', 'Greeting among Swaminarayan followers', { note: 'Many SKLPC families are Swaminarayan satsangis (UK temples include Shree Kutch Satsang Swaminarayan). Check whether yours greets this way.' }),
+    p('mandir', 'samaj', 'mandir jaiye', 'મંદિર જઈએ', "Let's go to the temple"),
+    p('darshan', 'samaj', 'darshan karva jaiye', 'દર્શન કરવા જઈએ', "Let's go for darshan"),
+    p('prasad', 'samaj', 'prasad lo', 'પ્રસાદ લો', 'Take some prasad', { note: 'Take it with your right hand, or both hands cupped.' }),
+    p('kenya', 'samaj', 'tame Kenya ma rahya cho?', 'તમે કેન્યામાં રહ્યા છો?', 'Have you lived in Kenya?', { note: 'Many SKLPC families came via Kenya, Uganda or Tanzania. Elders love telling these stories.' }),
+    p('juna-divaso', 'samaj', 'juna divaso ni vaat karo ne', 'જૂના દિવસોની વાત કરો ને', 'Tell me about the old days'),
+
+    // ── occasions ─────────────────────────────────────────
+    p('saal-mubarak', 'occasions', 'saal mubarak', 'સાલ મુબારક', 'Happy New Year (Gujarati New Year, the day after Diwali)', { note: 'Said on Bestu varas, usually with "pagge laagu" to elders.' }),
+    p('nutan-varsh', 'occasions', 'nutan varshabhinandan', 'નૂતન વર્ષાભિનંદન', 'Happy New Year (formal)'),
+    p('diwali', 'occasions', 'Diwali ni shubhkamna', 'દિવાળીની શુભકામના', 'Happy Diwali'),
+    p('janmadin', 'occasions', 'janmadin mubarak', 'જન્મદિન મુબારક', 'Happy birthday'),
+    p('abhinandan', 'occasions', 'abhinandan', 'અભિનંદન', 'Congratulations'),
+    p('lagan', 'occasions', 'lagan kyare che?', 'લગ્ન ક્યારે છે?', "When's the wedding?"),
+    p('kankotri', 'occasions', 'kankotri', 'કંકોતરી', 'Wedding invitation card'),
+    p('chanllo', 'occasions', 'chanllo', 'ચાંલ્લો', 'Cash gift at a wedding or function', { note: 'The amount is usually written down in a book, so families remember to return the favour.' }),
+    p('mameru', 'occasions', 'mameru', 'મામેરું', "Gifts from the mother's family (mosal) at a wedding"),
+    p('besnu', 'occasions', 'besnu', 'બેસણું', 'Prayer meeting after a death', { note: 'Dress plainly, fold your hands, sit quietly, speak little. No "kem cho", no jokes.' }),
+    p('dukh-thayu', 'occasions', 'saambhli ne bahu dukh thayu', 'સાંભળીને બહુ દુઃખ થયું', 'I was very sorry to hear it'),
+    p('shanti', 'occasions', 'bhagwan emna aatma ne shanti aape', 'ભગવાન એમના આત્માને શાંતિ આપે', 'May God give their soul peace', { note: '"emna" is the respectful plural for the person who died.' }),
 
     // ── kutch: dialect layer. Every item is sourced; none is SKLPC-verified yet. ──
     // Research 2026-11-05 (knowledge/reports/2026-11-05-apollo-sklpc-dialect.md). Sources were
@@ -239,8 +370,393 @@
           { r: 'khapey', e: 'I want', why: 'Wrong moment.' }
         ] }
       ]
+    },
+    {
+      id: 'bestu-varas', title: 'New Year at Dada\'s', who: 'Dada', where: 'Bestu varas morning, the day after Diwali',
+      steps: [
+        { say: 'આવ દીકરા! સાલ મુબારક.', r: 'aav dikra! saal mubarak.', e: 'Come in, son! Happy New Year.' },
+        { reply: [
+          { r: 'saal mubarak, dada. pagge laagu', e: 'Happy New Year, Dada. I touch your feet', ok: true },
+          { r: 'saal mubarak! tu kem che?', e: 'Happy New Year! How are you? (informal)', why: '"tu kem che" to Dada is rude. Elders get "tame kem cho".' },
+          { r: 'janmadin mubarak', e: 'Happy birthday', why: "That's happy birthday." }
+        ] },
+        { say: 'સુખી રહો, ખૂબ આગળ વધો.', r: 'sukhi raho, khub aagal vadho.', e: 'Be happy, go far.' },
+        { reply: [
+          { r: 'tamara ashirvaad, dada', e: 'All thanks to your blessings, Dada', ok: true },
+          { r: 'sukhi raho, dada', e: 'Be happy, Dada', why: 'Blessings flow from elder to younger. You receive, not give.' },
+          { r: 'mane khabar nathi', e: "I don't know", why: "He's blessing you, not asking anything." }
+        ] },
+        { say: 'મીઠાઈ ખા. ઘૂઘરા બાએ બનાવ્યા છે.', r: 'mithai khaa. ghughra ba e banavya che.', e: 'Have some sweets. Ba made the ghughra.' },
+        { reply: [
+          { r: 'are vah! ba, khub saras che', e: "Oh wow! Ba, they're really good", ok: true },
+          { r: 'naa, bas, have nahi', e: 'No, enough, no more', why: "You haven't tried one yet. Refuse after, not before." },
+          { r: 'mithu ochu che', e: 'Needs more salt', why: 'Criticising Ba\'s ghughra on New Year? Brave.' }
+        ] },
+        { say: 'આ વર્ષે લગ્ન ક્યારે કરવાના?', r: 'aa varshe lagan kyare karvana?', e: 'So when are you getting married this year?' },
+        { reply: [
+          { r: 'majak karo cho, dada! pachi vaat kariye', e: "You're joking, Dada! Let's talk later", ok: true },
+          { r: 'nakhra na kar', e: 'Stop being dramatic (informal)', why: 'Informal and cheeky. Never to Dada.' },
+          { r: 'kankotri', e: 'Wedding invitation', why: 'The invitation comes much later!' }
+        ] }
+      ]
+    },
+    {
+      id: 'besnu', title: 'At a besnu', who: 'Kaki', where: 'A prayer meeting for a family friend who has passed away',
+      steps: [
+        { say: 'આવો, બેસો.', r: 'aavo, beso.', e: 'Come, sit.' },
+        { reply: [
+          { r: 'jai shri krishna, kaki', e: 'A quiet greeting, hands folded', ok: true },
+          { r: 'kem cho kaki? majama?', e: 'How are you, Kaki? All good?', why: 'Asking if everyone is "majama" at a besnu sounds careless.' },
+          { r: 'are vah!', e: 'Oh wow!', why: 'Far too cheerful for a besnu.' }
+        ] },
+        { say: 'બહુ અચાનક થયું.', r: 'bahu achanak thayu.', e: 'It happened so suddenly.' },
+        { reply: [
+          { r: 'saambhli ne bahu dukh thayu', e: 'I was very sorry to hear it', ok: true },
+          { r: 'koi vaandho nahi', e: 'No problem', why: '"No problem" is the worst thing you could say here.' },
+          { r: 'kharekhar?', e: 'Really?', why: 'Sounds like doubt or gossip. Offer sympathy instead.' }
+        ] },
+        { say: 'એ તમને બહુ યાદ કરતા.', r: 'e tamne bahu yaad karta.', e: 'He often spoke of you.' },
+        { reply: [
+          { r: 'bhagwan emna aatma ne shanti aape', e: 'May God give his soul peace', ok: true },
+          { r: 'shu vaat che!', e: 'No way! / Look at that!', why: 'An exclamation of delight. Very wrong here.' },
+          { r: 'jamine jajo', e: 'Eat before you go', why: "That's what a host says to guests." }
+        ] },
+        { say: 'આવવા બદલ આભાર, બેટા.', r: 'aavva badal aabhar, beta.', e: 'Thank you for coming, dear.' },
+        { reply: [
+          { r: 'dhyan rakhjo, kaki', e: 'Take care, Kaki', ok: true },
+          { r: 'saal mubarak', e: 'Happy New Year', why: 'Festival greeting. Wrong occasion.' },
+          { r: 'chalo have', e: "Right, let's go now", why: 'Sounds like you\'re glad to leave. Keep it gentle.' }
+        ] }
+      ]
+    },
+    {
+      id: 'kono-dikro', title: 'Whose son are you?', who: 'Elder at the samaj', where: 'The samaj hall, after a function',
+      steps: [
+        { say: 'જય સ્વામિનારાયણ. તું કોનો દીકરો?', r: 'jai Swaminarayan. tu kono dikro?', e: 'Jai Swaminarayan. Whose son are you?' },
+        { reply: [
+          { r: 'jai Swaminarayan. hu Rameshbhai no dikro chu', e: "Jai Swaminarayan. I'm Rameshbhai's son", ok: true },
+          { r: 'hu Ramesh no dikro chu', e: "I'm Ramesh's son", why: 'To an elder, your father is "Rameshbhai". The bare name sounds disrespectful.' },
+          { r: 'tamaru naam shu che?', e: "What's your name?", why: 'Answer his question first, then ask yours.' }
+        ] },
+        { say: 'અરે! તમે કયા ગામના?', r: 'are! tame kya gaam na?', e: 'Oh! Which village is your family from?' },
+        { reply: [
+          { r: 'amaru gaam Kutch ma che', e: 'Our village is in Kutch', ok: true },
+          { r: 'Perth ma varsaad che', e: "It's raining in Perth", why: 'He asked about your gaam, not the weather.' },
+          { r: 'mane sharam aave che', e: "I'm embarrassed", why: 'No need to be shy. Name your gaam. Ask your parents if you don\'t know it!' }
+        ] },
+        { say: 'સરસ. તને ગુજરાતી આવડે છે?', r: 'saras. tane Gujarati aavde che?', e: 'Nice. Do you know Gujarati?' },
+        { reply: [
+          { r: 'thodu thodu aavde che. hu shikhu chu', e: "A little. I'm learning", ok: true },
+          { r: 'naa', e: 'No', why: "You're speaking it right now. Give yourself credit." },
+          { r: 'English ma kaho ne', e: 'Say it in English', why: "Don't give up yet!" }
+        ] },
+        { say: 'શાબાશ! બાપુજીને મારા જય સ્વામિનારાયણ કહેજે.', r: 'shabash! bapuji ne mara jai Swaminarayan kaheje.', e: 'Well done! Give your father my regards.' },
+        { reply: [
+          { r: 'haa ji, kahish', e: "Yes, I'll tell him", ok: true },
+          { r: 'bhai aavyo che', e: 'My brother has arrived', why: 'Off topic, and nobody asked about your brother.' },
+          { r: 'chup thaa!', e: 'Shush!', why: 'Never to an elder.' }
+        ] }
+      ]
+    },
+    {
+      id: 'ba-unwell', title: "Ba isn't well", who: 'Ba', where: 'A phone call to Ba, who has a fever',
+      steps: [
+        { say: 'હેલો દીકરા… મને થોડો તાવ છે.', r: 'hello dikra… mane thodo taav che.', e: 'Hello, son… I have a bit of a fever.' },
+        { reply: [
+          { r: 'tamne shu thayu, ba? doctor ne batavyu?', e: "What's wrong, Ba? Have you seen the doctor?", ok: true },
+          { r: 'tu kem che?', e: 'How are you? (informal)', why: '"tu" to Ba. Elders get "tame".' },
+          { r: 'maja aavi', e: 'That was fun', why: "That's 'it was fun'. Not the moment." }
+        ] },
+        { say: 'હા, કાલે બતાવ્યું. દવા આપી છે.', r: 'haa, kaale batavyu. dava aapi che.', e: 'Yes, I saw him yesterday. He gave me medicine.' },
+        { reply: [
+          { r: 'saru. dava lidhi?', e: 'Good. Have you taken it?', ok: true },
+          { r: 'abhinandan', e: 'Congratulations', why: 'Congratulations on the fever? No.' },
+          { r: 'bhale', e: 'Okay, fine', why: 'Too flat. Show you care.' }
+        ] },
+        { say: 'હા, લીધી. તું ચિંતા ના કર.', r: 'haa, lidhi. tu chinta na kar.', e: "Yes, I took it. Don't you worry." },
+        { reply: [
+          { r: 'mane tamari chinta thay che. aaram karo', e: 'I worry about you. Rest', ok: true },
+          { r: 'tame pan chinta na kar', e: "Don't you worry either (mixed)", why: '"na kar" is informal: Ba says it to you. Back to her it\'s "na karo".' },
+          { r: 'chalo have', e: "Right, let's go now", why: "Don't rush off a sick grandmother." }
+        ] },
+        { say: 'હા બેટા. તું ક્યારે આવીશ?', r: 'haa beta. tu kyare aavish?', e: 'Yes, child. When will you visit?' },
+        { reply: [
+          { r: 'jaldi aavish, ba. dhyan rakhjo', e: "I'll come soon, Ba. Take care", ok: true },
+          { r: 'dhyan rakhje', e: 'Take care (informal)', why: '"rakhje" is for someone younger. To Ba: "rakhjo".' },
+          { r: 'jo to!', e: 'Look at that!', why: 'Means "look at that!".' }
+        ] }
+      ]
+    },
+    {
+      id: 'rishta', title: "The aunties' question", who: 'Masi', where: "A cousin's engagement party",
+      steps: [
+        { say: 'કેમ છે બેટા? બહુ મોટો થઈ ગયો!', r: 'kem che beta? bahu moto thai gayo!', e: "How are you, dear? You've grown so much!" },
+        { reply: [
+          { r: 'majama, masi. tame kem cho?', e: 'Fine, Masi. How are you?', ok: true },
+          { r: 'majama. tu kem che?', e: 'Fine. How are you? (informal)', why: 'She can say "kem che" to you. You say "tame kem cho" to her.' },
+          { r: 'pet dukhe che', e: 'My stomach hurts', why: 'Too much information.' }
+        ] },
+        { say: 'હવે તારો વારો. છોકરી જોઈ?', r: 'have taro vaaro. chhokri joi?', e: "Now it's your turn. Found a girl yet?" },
+        { reply: [
+          { r: 'hamna nahi, masi', e: 'Not yet, Masi', ok: true },
+          { r: 'nakhra na kar', e: 'Stop being dramatic', why: 'Cheeky and informal, to an elder.' },
+          { r: 'abhinandan', e: 'Congratulations', why: 'Save that for the engaged couple.' }
+        ] },
+        { say: 'અમારી ઓળખાણમાં એક સારી છોકરી છે…', r: 'amari olkhaan ma ek saari chhokri che…', e: 'We know a nice girl…' },
+        { reply: [
+          { r: 'bhale masi, pachi vaat kariye', e: "Sure Masi, let's talk later", ok: true },
+          { r: 'chup thaa!', e: 'Shush!', why: 'Rude to any elder, even a meddling one.' },
+          { r: 'mane samjayu nahi', e: "I didn't understand", why: 'You understood perfectly. Nice try.' }
+        ] },
+        { say: 'હા હા. ચાલ, જમી લે.', r: 'haa haa. chaal, jami le.', e: 'Ha ha. Come on, go and eat.' },
+        { reply: [
+          { r: 'haa, chalo masi', e: "Yes, let's go, Masi", ok: true },
+          { r: 'tame pan jami le', e: 'You eat too (informal)', why: '"jami le" is how she talks to you. To her: "jami lo".' },
+          { r: 'dava lidhi?', e: 'Did you take your medicine?', why: 'Wrong moment.' }
+        ] }
+      ]
+    },
+    {
+      id: 'mehman', title: 'Guests at the door', who: 'Kaka', where: 'Kaka and Kaki drop in unannounced',
+      steps: [
+        { say: 'જય શ્રી કૃષ્ણ! ઘરે કોઈ છે?', r: 'jai shri krishna! ghare koi che?', e: 'Jai Shri Krishna! Anyone home?' },
+        { reply: [
+          { r: 'aavo aavo, kaka! beso', e: 'Come in, come in, Kaka! Sit', ok: true },
+          { r: 'aav, bes', e: 'Come, sit (informal)', why: 'Informal forms. To Kaka: "aavo, beso".' },
+          { r: 'aavjo', e: 'Goodbye', why: "That's goodbye. They just arrived." }
+        ] },
+        { say: 'ના ના, બસ પાંચ મિનિટ માટે આવ્યા છીએ.', r: 'naa naa, bas paanch minit maate aavya chhiye.', e: "No no, we've only come for five minutes." },
+        { reply: [
+          { r: 'chaa naasto to karo', e: 'At least have tea and a snack', ok: true },
+          { r: 'bhale, aavjo', e: 'Fine, bye', why: 'Letting a guest go without offering anything? Ba would never forgive you.' },
+          { r: 'kharekhar?', e: 'Really?', why: 'Push back with an offer, not a question.' }
+        ] },
+        { say: 'સારું, પણ થોડી જ ચા.', r: 'saaru, pan thodi ja chaa.', e: 'Okay, but just a little tea.' },
+        { reply: [
+          { r: 'haa, ane jamine jajo', e: 'Sure. And eat before you go', ok: true },
+          { r: 'naa, bas', e: 'No, enough', why: "That's refusing food, and you're the host." },
+          { r: 'gusso na karo', e: "Don't be angry", why: "No one's angry." }
+        ] },
+        { say: 'ના બેટા, આજે નહીં. આવતી વખતે.', r: 'naa beta, aaje nahi. aavti vakhate.', e: 'No dear, not today. Next time.' },
+        { reply: [
+          { r: 'saaru kaka, fari aavjo', e: 'Okay Kaka, come again', ok: true },
+          { r: 'chalo have', e: "Right, let's go now", why: 'Sounds like you want them gone.' },
+          { r: 'aav', e: 'Come (informal)', why: 'Informal, and they\'re leaving, not arriving.' }
+        ] }
+      ]
+    },
+    {
+      id: 'bhuj-bazaar', title: 'Bargaining in Bhuj', who: 'Shopkeeper', where: 'A bandhani shop in Bhuj bazaar',
+      steps: [
+        { say: 'આવો, શું જોઈએ?', r: 'aavo, shu joie?', e: 'Welcome, what are you after?' },
+        { reply: [
+          { r: 'aa ketla nu che?', e: 'How much is this?', ok: true },
+          { r: 'tamaru naam shu che?', e: "What's your name?", why: "He's selling, not socialising." },
+          { r: 'maaf karjo', e: "I'm sorry", why: 'Nothing to apologise for.' }
+        ] },
+        { say: 'બે હજાર રૂપિયા.', r: 'be hajaar rupiya.', e: 'Two thousand rupees.' },
+        { reply: [
+          { r: 'bahu monghu che! thodu ochu karo ne, bhai', e: 'Too expensive! Bring it down a bit, bhai', ok: true },
+          { r: 'barabar', e: 'Right, exactly', why: 'Never accept the first price in a bazaar.' },
+          { r: 'chup thaa!', e: 'Shush!', why: 'Rude to a stranger.' }
+        ] },
+        { say: 'તમારા માટે પંદરસો.', r: 'tamara maate pandarso.', e: 'For you, fifteen hundred.' },
+        { reply: [
+          { r: 'saaru bhai, aapo', e: 'Fine, bhai, I\'ll take it', ok: true },
+          { r: 'naa, bas, have nahi', e: 'No, enough, no more', why: "That's how you refuse food." },
+          { r: 'aav', e: 'Come (informal)', why: 'Informal, and to a stranger.' }
+        ] },
+        { say: 'આભાર. ફરી આવજો!', r: 'aabhar. fari aavjo!', e: 'Thank you. Come again!' },
+        { reply: [
+          { r: 'aavjo, bhai', e: 'Bye, bhai', ok: true },
+          { r: 'sukhi raho', e: 'Be happy (blessing)', why: "That's an elder's blessing. Not yours to give a shopkeeper." },
+          { r: 'ashirvaad aapjo', e: 'Bless me', why: 'Asking a shopkeeper for blessings is odd.' }
+        ] }
+      ]
+    },
+    {
+      id: 'cousin', title: 'Cousin banter', who: 'Nikhil', where: 'Your younger cousin, at a family barbecue',
+      steps: [
+        { say: 'એ ભાઈ! શું કરે છે?', r: 'e bhai! shu kare che?', e: "Hey bro! What're you up to?" },
+        { reply: [
+          { r: 'kai nahi. tu shu kare che?', e: 'Nothing much. What about you?', ok: true },
+          { r: 'kai nahi. tame shu karo cho?', e: 'Nothing. And you? (respectful)', why: '"tame" to your younger cousin sounds stiff, like you\'re annoyed.' },
+          { r: 'pagge laagu', e: 'I touch your feet', why: "He's your younger cousin!" }
+        ] },
+        { say: 'મેં તારો ફોટો જોયો. શું વાત છે!', r: 'me taro photo joyo. shu vaat che!', e: 'I saw your photo. Look at you!' },
+        { reply: [
+          { r: 'chup thaa! majak na kar', e: "Shush! Don't tease", ok: true },
+          { r: 'maaf karjo', e: "I'm sorry / forgive me", why: 'Way too formal for banter.' },
+          { r: 'tamara ashirvaad', e: 'Thanks to your blessings', why: "Your little cousin can't bless you." }
+        ] },
+        { say: 'હા હા! ચાલ, ક્રિકેટ રમવા જઈએ?', r: 'haa haa! chaal, cricket ramva jaiye?', e: 'Ha! Come on, shall we play cricket?' },
+        { reply: [
+          { r: 'haa, chaal!', e: "Yeah, let's go!", ok: true },
+          { r: 'beso', e: 'Please sit (respectful)', why: '"beso" is a respectful "sit". Wrong word, wrong register.' },
+          { r: 'dhyan rakhjo', e: 'Take care (respectful)', why: 'A goodbye for elders.' }
+        ] }
+      ]
+    },
+    {
+      id: 'mosal-call', title: 'Video call to Mama', who: 'Mama', where: 'Your mother\'s brother, in Nairobi',
+      steps: [
+        { say: 'ઓહો! ભાણા, કેમ છે?', r: 'oho! bhaana, kem che?', e: 'Oho! My boy, how are you?' },
+        { reply: [
+          { r: 'majama, mama. mami kem che?', e: 'Fine, Mama. How is Mami?', ok: true },
+          { r: 'majama, kaka. tame kem cho?', e: 'Fine, Kaka. How are you?', why: 'He\'s your MOTHER\'S brother: "mama". Kaka is your father\'s brother.' },
+          { r: 'majama. tu kem che?', e: 'Fine. How are you? (informal)', why: '"tu" to Mama. He gets "tame".' }
+        ] },
+        { say: 'મજામાં. નૈરોબીમાં હવે ગરમી છે.', r: 'majama. Nairobi ma have garmi che.', e: 'She\'s fine. It\'s hot in Nairobi now.' },
+        { reply: [
+          { r: 'Perth ma varsaad che', e: "It's raining in Perth", ok: true },
+          { r: 'tame kya gaam na?', e: 'Which village are you from?', why: "He's your mama. You know his gaam!" },
+          { r: 'abhinandan', e: 'Congratulations', why: 'Congratulations on the heat?' }
+        ] },
+        { say: 'મોસાળ ક્યારે આવે છે?', r: 'mosal kyare aave che?', e: 'When are you coming to your mosal?' },
+        { reply: [
+          { r: 'aavta varshe aavish, mama', e: "I'll come next year, Mama", ok: true },
+          { r: 'kaale', e: 'Tomorrow', why: 'Unless you have a ticket for tomorrow!' },
+          { r: 'mane khabar nathi', e: "I don't know", why: 'True, maybe, but cold. Give him something.' }
+        ] },
+        { say: 'સારું. ધ્યાન રાખજે, બેટા.', r: 'saaru. dhyan rakhje, beta.', e: 'Good. Take care, son.' },
+        { reply: [
+          { r: 'tame pan dhyan rakhjo, mama', e: 'You take care too, Mama', ok: true },
+          { r: 'tu pan dhyan rakhje', e: 'You take care too (informal)', why: '"rakhje" is the informal form he used for you. Back to him: "rakhjo".' },
+          { r: 'saal mubarak', e: 'Happy New Year', why: 'Wrong occasion.' }
+        ] }
+      ]
+    },
+    {
+      id: 'foi-story', title: "Foi's story", who: 'Foi', where: 'After dinner. Foi is telling a long story and you\'re losing the thread',
+      steps: [
+        { say: 'તે દિવસે ગામમાં બહુ વરસાદ પડ્યો, અને નદી છલકાઈ ગઈ…', r: 'te divase gaam ma bahu varsaad padyo, ane nadi chhalkai gai…', e: 'That day it poured in the village, and the river overflowed…' },
+        { reply: [
+          { r: 'chhalkai? eno arth shu, foi?', e: '"chhalkai"? What does that mean, Foi?', ok: true },
+          { r: 'aavjo', e: 'Goodbye', why: "She's mid-story." },
+          { r: 'tikhu che', e: "It's spicy", why: "That's about food. She's telling a story." }
+        ] },
+        { say: 'છલકાઈ ગઈ એટલે પાણી બહાર આવી ગયું.', r: 'chhalkai gai etle paani bahar aavi gayu.', e: '"Overflowed" means the water came out over the banks.' },
+        { reply: [
+          { r: 'haa, samjai gayu', e: 'Yes, I understood', ok: true },
+          { r: 'mane sudharjo', e: 'Please correct me', why: "She hasn't corrected you. You haven't said anything yet." },
+          { r: 'naa', e: 'No', why: 'Let her know you followed.' }
+        ] },
+        { say: 'પછી બાપુજી બધા ઢોર લઈને ટેકરી પર ગયા.', r: 'pachi bapuji badha dhor laine tekri par gaya.', e: 'Then Bapuji took all the cattle up the hill.' },
+        { reply: [
+          { r: 'dhire bolo ne, foi', e: 'A bit slower please, Foi', ok: true },
+          { r: 'chup thaa!', e: 'Shush!', why: 'Never to Foi.' },
+          { r: 'bas, pet bharai gayu', e: "Enough, I'm full", why: 'Food again. She\'s telling a story.' }
+        ] },
+        { say: 'હા હા, ધીરે બોલું. ઢોર એટલે ગાય ભેંસ.', r: 'haa haa, dhire bolu. dhor etle gaay bhens.', e: 'All right, slower. "dhor" means cows and buffaloes.' },
+        { reply: [
+          { r: 'are vah! pachi shu thayu?', e: 'Wow! Then what happened?', ok: true },
+          { r: 'jamine jajo', e: 'Eat before you go', why: "That's what a host says when guests leave." },
+          { r: 'tu kono dikro?', e: 'Whose son are you?', why: 'You\'re asking Foi whose son she is.' }
+        ] }
+      ]
+    },
+    {
+      id: 'drill-register', title: 'Drill: tu or tame?', who: 'Drill', where: 'Twelve quick calls. Pick the form that fits the person.', drill: true,
+      steps: [
+        { cue: 'Ba is standing. Ask her to sit.' },
+        { reply: [{ r: 'beso, ba', e: 'Please sit, Ba', ok: true }, { r: 'bes, ba', e: 'Sit, Ba (informal)', why: '"bes" is for kids and close cousins.' }] },
+        { cue: 'Your 8-year-old cousin is across the room. Call him over.' },
+        { reply: [{ r: 'aahi aav', e: 'Come here (informal)', ok: true }, { r: 'aahi padharo', e: 'Kindly come here (very formal)', why: '"padharo" is for honoured guests. To a kid it\'s comic.' }] },
+        { cue: 'Kaka picks up the phone. Ask how he is.' },
+        { reply: [{ r: 'kem cho, kaka?', e: 'How are you, Kaka?', ok: true }, { r: 'kem che, kaka?', e: 'How are you, Kaka? (informal)', why: '"kem che" goes with "tu". Kaka gets "kem cho".' }] },
+        { cue: "Your dad's friend Mahesh walks in. Greet him by name." },
+        { reply: [{ r: 'jai shri krishna, Maheshbhai', e: 'Jai Shri Krishna, Maheshbhai', ok: true }, { r: 'jai shri krishna, Mahesh', e: 'Jai Shri Krishna, Mahesh', why: 'An older man gets -bhai, or "kaka". Never the bare name.' }] },
+        { cue: 'At a stall, get the shopkeeper\'s attention.' },
+        { reply: [{ r: 'bhai, aa ketla nu che?', e: 'Bhai, how much is this?', ok: true }, { r: 'aye, aa ketla nu che?', e: 'Oi, how much is this?', why: 'Strangers are "bhai" or "ben". "aye" is rude.' }] },
+        { cue: 'Tell Ba that Dada has arrived.' },
+        { reply: [{ r: 'dada aavya che', e: 'Dada has arrived (respectful)', ok: true }, { r: 'dada aavyo che', e: 'Dada has arrived (singular)', why: 'Talking about an elder takes the respectful plural: "aavya".' }] },
+        { cue: 'Tell Ba that your little brother has arrived.' },
+        { reply: [{ r: 'bhai aavyo che', e: 'Bhai has arrived', ok: true }, { r: 'bhai aavya che', e: 'Bhai has arrived (respectful)', why: 'Respectful plural for your little brother sounds sarcastic.' }] },
+        { cue: "Ask your friend's grandmother her name." },
+        { reply: [{ r: 'tamaru naam shu che, ba?', e: "What's your name, Ba?", ok: true }, { r: 'taru naam shu che?', e: "What's your name? (informal)", why: '"taru" is for kids. Elders get "tamaru".' }] },
+        { cue: 'Bestu varas. Greet Dada properly.' },
+        { reply: [{ r: 'saal mubarak, dada. pagge laagu', e: 'Happy New Year, Dada. I touch your feet', ok: true }, { r: 'hi dada!', e: 'Hi Dada!', why: 'At Bestu varas, elders expect "pagge laagu" and a bow.' }] },
+        { cue: 'End a call with Kaka.' },
+        { reply: [{ r: 'dhyan rakhjo, kaka', e: 'Take care, Kaka', ok: true }, { r: 'dhyan rakhje, kaka', e: 'Take care, Kaka (informal)', why: '"rakhje" is for someone younger. Kaka gets "rakhjo".' }] },
+        { cue: 'Your cousin keeps teasing you. Tell him to stop.' },
+        { reply: [{ r: 'chup thaa!', e: 'Shush!', ok: true }, { r: 'maaf karjo, chup raho', e: 'Excuse me, please be quiet', why: 'So formal it sounds like a teacher. Cousins get "chup thaa".' }] },
+        { cue: 'Ba is serving you. Tell her to eat too.' },
+        { reply: [{ r: 'ba, tame pan jami lo', e: 'Ba, you eat too', ok: true }, { r: 'ba, tu pan jami le', e: 'Ba, you eat too (informal)', why: 'Ba says "jami le" to you. Back to her it\'s "tame… jami lo".' }] }
+      ]
+    },
+    {
+      id: 'drill-kin', title: "Drill: who's who?", who: 'Drill', where: 'Name the relative. The ones English lumps together as "uncle" and "aunt".', drill: true,
+      steps: [
+        { cue: "Your father's younger brother." },
+        { reply: [{ r: 'kaka', e: "Father's younger brother", ok: true }, { r: 'mama', e: "Mother's brother", why: 'Mama is on your mother\'s side.' }] },
+        { cue: "Your father's ELDER brother." },
+        { reply: [{ r: 'mota pappa', e: "Father's elder brother", ok: true }, { r: 'kaka', e: "Father's younger brother", why: 'Kaka is the younger one. The elder is "mota pappa" (some families say "mota bapa").' }] },
+        { cue: "Your mother's sister." },
+        { reply: [{ r: 'masi', e: "Mother's sister", ok: true }, { r: 'foi', e: "Father's sister", why: '"foi" is your father\'s sister.' }] },
+        { cue: "Your father's sister's husband." },
+        { reply: [{ r: 'fuva', e: "Foi's husband", ok: true }, { r: 'masa', e: "Masi's husband", why: 'Masa is married to masi (mother\'s side).' }] },
+        { cue: "Your mother's brother's wife." },
+        { reply: [{ r: 'mami', e: "Mama's wife", ok: true }, { r: 'kaki', e: "Kaka's wife", why: 'Kaki is on your father\'s side.' }] },
+        { cue: "Your sister's husband." },
+        { reply: [{ r: 'jijaju', e: "Sister's husband", ok: true }, { r: 'jeth', e: "A woman's husband's elder brother", why: '"jeth" is a different relation entirely.' }] },
+        { cue: "Your brother's son." },
+        { reply: [{ r: 'bhatrijo', e: "Brother's son", ok: true }, { r: 'bhanej', e: "Sister's child", why: '"bhanej" is a SISTER\'s child.' }] },
+        { cue: "Your mother's parents' home, where you spend the holidays." },
+        { reply: [{ r: 'mosal', e: "Mother's family home", ok: true }, { r: 'sasru', e: "In-laws' home", why: '"sasru" is your spouse\'s family home.' }] },
+        { cue: "Your sister's father-in-law, as your parents call him." },
+        { reply: [{ r: 'vevai', e: "Child's father-in-law", ok: true }, { r: 'sasra', e: 'Father-in-law', why: 'He\'s HER sasra. To your parents he\'s "vevai".' }] }
+      ]
     }
+
   ];
 
-  window.APOLLO_DATA = { units, phrases, scenes };
+  // Who's who: how to address each relation. "say" = what you call them; "you" = tu or tame.
+  const guide = [
+    { group: "Dad's side", rows: [
+      ["Dad's father", 'dada', 'tame', ''],
+      ["Dad's mother", 'ba / dadi', 'tame', 'In many families "ba" also means mother. Check yours.'],
+      ["Dad's elder brother", 'mota pappa', 'tame', 'Some families say "mota bapa".'],
+      ["Dad's younger brother", 'kaka', 'tame', ''],
+      ["Kaka's wife", 'kaki', 'tame', ''],
+      ["Dad's sister", 'foi', 'tame', ''],
+      ["Foi's husband", 'fuva', 'tame', ''],
+      ['Their children (your cousins)', 'bhai / ben, or motabhai / motaben if older', 'tu (younger), varies (older)', 'Older cousins: follow what your parents do.']
+    ] },
+    { group: "Mum's side (your mosal)", rows: [
+      ["Mum's father", 'nana', 'tame', ''],
+      ["Mum's mother", 'nani', 'tame', ''],
+      ["Mum's brother", 'mama', 'tame', 'He may call you "bhaana" (sister\'s boy).'],
+      ["Mama's wife", 'mami', 'tame', ''],
+      ["Mum's sister", 'masi', 'tame', ''],
+      ["Masi's husband", 'masa', 'tame', '']
+    ] },
+    { group: 'Your generation', rows: [
+      ['Elder brother', 'motabhai', 'tame or tu (family habit)', 'Many families frown on using his bare name.'],
+      ['Elder sister', 'motaben', 'tame or tu (family habit)', ''],
+      ['Younger sibling', 'their name, or bhai / ben', 'tu', ''],
+      ["Brother's wife", 'bhabhi', 'tame', ''],
+      ["Sister's husband", 'jijaju / banevi', 'tame', 'A jamai in her family: treat him as an honoured guest.'],
+      ["Brother's son / daughter", 'bhatrijo / bhatriji', 'tu', ''],
+      ["Sister's son / daughter", 'bhanej', 'tu', '']
+    ] },
+    { group: 'Through marriage', rows: [
+      ["Spouse's father / mother", 'sasra / sasu (often "pappa" / "mummy" to their face)', 'tame', ''],
+      ["Your child's in-laws", 'vevai / vevan', 'tame', 'Formal and respectful on both sides.'],
+      ["Daughter's husband", 'jamai (call him by name + "kumar" or just his name)', 'tame', 'Varies by family.'],
+      ["Son's wife", 'vahu', 'tu or tame (family habit)', ''],
+      ["Husband's sister", 'nanand', 'varies', ''],
+      ["Husband's younger / elder brother", 'diyar / jeth', 'tame (jeth always)', ''],
+      ["Wife's brother / sister", 'saalo / saali', 'tame', '"saalo" is also a common insult. To his face, use his name + bhai.']
+    ] },
+    { group: 'Outside the family', rows: [
+      ['An older man', 'name + bhai, or "kaka"', 'tame', 'Never a bare first name.'],
+      ['An older woman', 'name + ben, or "masi" / "kaki"', 'tame', ''],
+      ['A village elder', 'name + bapa / ma, or "bapa" / "ba"', 'tame', 'Common in Kutch and Saurashtra.'],
+      ['Shopkeeper, driver, stranger', 'bhai / ben', 'tame', ''],
+      ['Priest at the mandir', 'maharaj / swami', 'tame (or aap)', ''],
+      ['Any child', 'their name, or beta / dikra', 'tu', '']
+    ] }
+  ];
+
+  window.APOLLO_DATA = { units, phrases, scenes, guide };
 })();

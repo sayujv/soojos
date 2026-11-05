@@ -162,6 +162,11 @@ await page.fill(`[data-note="${firstId}"]`, 'test note');
 await page.press(`[data-note="${firstId}"]`, 'Tab');
 await overflow('family');
 await page.reload(); await page.waitForSelector('.tab');
+await page.click('.seg [data-go="guide"]');
+const rows = await page.locator('.grow').count();
+const want = phrases.length && (await page.evaluate(() => window.APOLLO_DATA.guide.reduce((n, g) => n + g.rows.length, 0)));
+if (rows !== want || rows < 25) fail(`who's-who shows ${rows} rows, expected ${want}`);
+await overflow('who\'s who');
 const v = await page.evaluate(id => window.APOLLO.state().verdicts[id], firstId);
 if (!(v && v.v === 'yes' && v.note === 'test note')) fail(`family verdict not persisted: ${JSON.stringify(v)}`);
 
@@ -178,4 +183,4 @@ await browser.close();
 for (const e of errors) fail(e);
 console.log(`screenshots: ${tmp}`);
 if (fails.length) { console.log(`FAIL (${fails.length})\n - ` + fails.join('\n - ')); process.exit(1); }
-console.log(`PASS: content valid; ${lessonKeys.length} lessons, review, ${scenes.length} scenes, ask-family, mithai box, badges, tabs, dark mode; 0 console errors; no sideways scroll at 390px`);
+console.log(`PASS: content valid; ${lessonKeys.length} lessons, review, ${scenes.length} scenes, ask-family, who's-who, mithai box, badges, tabs, dark mode; 0 console errors; no sideways scroll at 390px`);

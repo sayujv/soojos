@@ -225,15 +225,15 @@
   function paintTabs() {
     const due = dueCards().length;
     document.getElementById('tabs').replaceChildren(h(TABS.map(([id, label, ic]) =>
-      `<button class="tab" data-go="${id}" ${(current === id || (current === 'book' && id === 'me')) ? 'aria-current="page"' : ''}>${I[ic]}${label}${id === 'review' && due ? `<span class="dot">${due}</span>` : ''}</button>`).join('')));
+      `<button class="tab" data-go="${id}" ${(current === id || (current === 'book' && id === 'me') || (current === 'guide' && id === 'family')) ? 'aria-current="page"' : ''}>${I[ic]}${label}${id === 'review' && due ? `<span class="dot">${due}</span>` : ''}</button>`).join('')));
   }
   function setFocus(on) { document.body.classList.toggle('focus', on); document.querySelector('main').classList.toggle('focus', on); }
   function route(to) {
     try { synth && synth.cancel(); } catch (e) { /* */ }
     run = null; scene = null; setFocus(false);
-    current = ['learn', 'talk', 'review', 'family', 'me', 'book'].includes(to) ? to : 'learn';
+    current = ['learn', 'talk', 'review', 'family', 'guide', 'me', 'book'].includes(to) ? to : 'learn';
     try { if (location.hash.slice(1) !== current) history.replaceState(null, '', '#' + current); } catch (e) { /* */ }
-    ({ learn: viewLearn, talk: viewTalk, review: viewReview, family: () => viewBook(true), me: viewMe, book: () => viewBook(false) })[current]();
+    ({ learn: viewLearn, talk: viewTalk, review: viewReview, family: () => viewBook(true), guide: viewGuide, me: viewMe, book: () => viewBook(false) })[current]();
     paintTabs(); paintBar(); window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', () => { const t = location.hash.slice(1); if (t && t !== current && !run && !scene) route(t); });
@@ -310,15 +310,17 @@
   // ── Talk tab ───────────────────────────────────────────
   const starsHtml = n => `<span class="stars" aria-label="${n} of 3 stars">${[1, 2, 3].map(i => I.star(i <= n ? 'star-on' : 'star-off')).join('')}</span>`;
   function viewTalk() {
-    const COLORS = ['--u-food', '--u-call', '--u-kutch', '--u-family', '--u-daily'];
+    const COLORS = ['--u-food', '--u-call', '--u-kutch', '--u-family', '--u-daily', '--u-kin2', '--u-samaj', '--u-learner'];
+    const list = arr => `<div class="list">${arr.map((s, i) => `<button class="scene-card" data-scene="${s.id}">
+        <span class="art bandhani" style="background-color:var(${s.drill ? '--u-respect' : COLORS[i % COLORS.length]})">${s.drill ? '?' : esc(s.who[0])}</span>
+        <span class="body"><h3>${esc(s.title)}</h3><span class="muted" style="font-size:14px">${esc(s.where)}</span>
+        <span class="row">${starsHtml(S.scenes[s.id] || 0)}${s.dialect ? '<span class="tag dialect">Kutchi</span>' : ''}${s.drill ? `<span class="tag">${s.steps.filter(z => z.reply).length} calls</span>` : ''}</span></span>
+      </button>`).join('')}</div>`;
     $view.replaceChildren(h(`
       <div><h2>Talk it through</h2><p class="muted">Real conversations. Pick what you'd say. Three stars means every reply was right first time.</p></div>
       ${voiceNote()}
-      <div class="list">${D.scenes.map((s, i) => `<button class="scene-card" data-scene="${s.id}">
-        <span class="art bandhani" style="background-color:var(${COLORS[i % COLORS.length]})">${esc(s.who[0])}</span>
-        <span class="body"><h3>${esc(s.title)}</h3><span class="muted" style="font-size:14px">${esc(s.where)}</span>
-        <span class="row">${starsHtml(S.scenes[s.id] || 0)}${s.dialect ? '<span class="tag dialect">Kutchi</span>' : ''}</span></span>
-      </button>`).join('')}</div>`));
+      <h3>Drills</h3>${list(D.scenes.filter(s => s.drill))}
+      <h3>Conversations</h3>${list(D.scenes.filter(s => !s.drill))}`));
   }
 
   // ── Review tab ─────────────────────────────────────────
@@ -499,8 +501,9 @@
     const { s } = scene; const chat = document.getElementById('chat'), choices = document.getElementById('choices');
     choices.replaceChildren();
     const hide = document.getElementById('hideEn').getAttribute('aria-pressed') === 'true';
-    while (scene.i < s.steps.length && s.steps[scene.i].say) {
+    while (scene.i < s.steps.length && (s.steps[scene.i].say || s.steps[scene.i].cue)) {
       const st = s.steps[scene.i];
+      if (st.cue) { chat.append(h(`<div class="bubble cue"><span class="who">Your move</span><span class="r">${esc(st.cue)}</span></div>`)); scene.i++; continue; }
       chat.append(h(`<div class="bubble them"><span class="who">${esc(s.who)}</span><span class="r">${esc(st.r)}</span><span class="e" ${hide ? 'hidden' : ''}>${esc(st.e)}</span><button class="play" data-sayraw="${scene.i}">▶ play</button></div>`));
       speak(st.say, st.r);
       scene.i++;
@@ -544,6 +547,7 @@
     const checked = dialect.filter(p => S.verdicts[p.id] && S.verdicts[p.id].v).length;
     const chips = (family ? ['dialect', ...kinds] : kinds).map(k => `<button class="chip" data-kind="${k}" aria-pressed="${bookFilter === k}">${k === 'all' ? 'All' : k === 'dialect' ? 'Dialect first' : KIND_LABEL[k]}</button>`).join('');
     $view.replaceChildren(h(`<div class="ex">
+      ${family ? segment('family') : ''}
       ${family ? `<div class="card" style="grid-template-columns:auto minmax(0,1fr);align-items:center">
           <div style="color:var(--ok)">${ring(checked / Math.max(1, dialect.length), 64, 8, 'var(--ok)', `<text x="32" y="37" text-anchor="middle" font-family="Baloo Bhai 2, sans-serif" font-weight="800" font-size="14" fill="currentColor">${checked}/${dialect.length}</text>`)}</div>
           <div><h2>Ask family</h2><p class="muted">Say each phrase to a parent or grandparent. Mark ✓ if that's how your family says it, ✗ if not, and write what they say instead. This outranks every source in the app.</p></div>
@@ -575,6 +579,14 @@
       save(); celebrate(checkBadges(), false);
     });
     paint();
+  }
+
+  const segment = on => `<div class="seg" role="tablist"><button role="tab" data-go="family" aria-selected="${on === 'family'}">Ask family</button><button role="tab" data-go="guide" aria-selected="${on === 'guide'}">Who's who</button></div>`;
+  function viewGuide() {
+    $view.replaceChildren(h(`<div class="ex">${segment('guide')}
+      <div><h2>Who's who, and how to address them</h2><p class="muted">What you call each person, and whether they get "tu" or "tame". When in doubt, go respectful: nobody minds being called "tame".</p></div>
+      ${D.guide.map(g => `<section class="card guide-card"><h3>${esc(g.group)}</h3><div class="grows">${g.rows.map(([who, say, you, note]) => `<div class="grow"><span class="gwho">${esc(who)}</span><span class="gsay">${esc(say)}</span><span class="tag ${/^tu$/.test(you) ? '' : 'resp'}">${esc(you)}</span>${note ? `<span class="gnote">${esc(note)}</span>` : ''}</div>`).join('')}</div></section>`).join('')}
+      <p class="src">General Gujarati custom, not yet checked by your family. Kutch families vary, so use the Ask family tab to confirm.</p></div>`));
   }
 
   // ── events ─────────────────────────────────────────────
