@@ -88,12 +88,12 @@
 
   // ── 3. Answers: localStorage always, artifact db when available ──
   const KEY = 'apollo.review.v1';
-  let A = {}; let reviewer = '';
-  try { const raw = JSON.parse(localStorage.getItem(KEY) || '{}'); A = raw.a || {}; reviewer = raw.name || ''; } catch (e) { /* storage blocked */ }
+  let A = {}; let reviewer = ''; let SENT = {};
+  try { const raw = JSON.parse(localStorage.getItem(KEY) || '{}'); A = raw.a || {}; reviewer = raw.name || ''; SENT = raw.sent || {}; } catch (e) { /* storage blocked */ }
   let db = null, uid = null, online = false;
   const pending = new Map(); let flushT = null;
   function persist(id) {
-    try { localStorage.setItem(KEY, JSON.stringify({ a: A, name: reviewer })); } catch (e) { /* */ }
+    try { localStorage.setItem(KEY, JSON.stringify({ a: A, name: reviewer, sent: SENT })); } catch (e) { /* */ }
     if (id) pending.set(id, true);
     clearTimeout(flushT); flushT = setTimeout(flush, 700);
     paintStatus('saving');
@@ -127,6 +127,38 @@
       persist(); render();
     } catch (e) { paintStatus('local'); }
   })();
+
+  // ── 3b. Sending without an account: compact text over WhatsApp, and importing it back ──
+  const VCODE = { yes: 'y', close: '~', no: 'n', unsure: '?', some: 's' }, VBACK = { y: 'yes', '~': 'close', n: 'no', '?': 'unsure', s: 'some' };
+  const clean = t => String(t || '').replace(/[|\n\r]+/g, ' ').replace(/\s+/g, ' ').trim();
+  const line = id => { const a = A[id] || {}; return [id, VCODE[a.v] || '', a.c === 'yes' ? 'y' : a.c === 'no' ? 'n' : '', clean(a.say)].join('|'); };
+  const sig = id => JSON.stringify(A[id] || {});
+  const unsent = () => ALL.filter(it => answered(it) && SENT[it.id] !== sig(it.id)).map(it => it.id);
+  function parts(ids) {
+    const out = []; let cur = [];
+    const head = (i, n) => `APOLLO1|${clean(reviewer) || 'family'}|${i}/${n}\nAnswers for Sayuj's Gujarati app. Please don't edit this message.`;
+    for (const id of ids) {
+      const trial = [...cur, line(id)];
+      if (cur.length && encodeURIComponent(head(9, 9) + '\n' + trial.join('\n')).length > 3000) { out.push(cur); cur = [line(id)]; }
+      else cur = trial;
+    }
+    if (cur.length) out.push(cur);
+    return out.map((ls, i) => ({ ids: ls.map(l => l.split('|')[0]), text: head(i + 1, out.length) + '\n' + ls.join('\n') }));
+  }
+  function importText(txt) {
+    const lines = String(txt || '').split(/\r?\n/);
+    let name = '', n = 0;
+    for (const l of lines) {
+      const hd = l.match(/^APOLLO1\|([^|]*)\|/); if (hd) { name = name || hd[1].trim(); continue; }
+      const f = l.split('|'); if (f.length < 4 || !byId[f[0].trim()]) continue;
+      const id = f[0].trim();
+      A[id] = { v: VBACK[f[1].trim()] || '', c: f[2].trim() === 'y' ? 'yes' : f[2].trim() === 'n' ? 'no' : '', say: f.slice(3).join('|').trim() };
+      pending.set(id, true); n++;
+    }
+    if (name && !reviewer) reviewer = name;
+    persist();
+    return { n, name };
+  }
 
   // ── 4. Audio: the app's pre-rendered Gujarati clips ──
   const AUDIO = { map: null, clips: {} };
@@ -166,14 +198,29 @@
         <h1>Help Sayuj speak like our family</h1>
         <p>Sayuj is learning to speak Gujarati the way <b>our</b> family does. An AI wrote these sentences from books and websites, so some will be wrong, too formal, or not how we say it.</p>
         <p>For each one, tap <b>✓ Yes</b>, <b>≈ Nearly</b> or <b>✗ No</b>. If we'd say it differently, type how. Short forms, slang and Kutchi words are exactly what's needed. Where there's a note, tell us if the note is right. Press ▶ to hear it (the voice is a robot).</p>
-        <p class="small">Answers save as you go. Do a few at a time, and skip anything you're unsure of.</p>
+        <p class="small">No account needed. Answers save on this phone as you go. When you've done some, the green button at the bottom sends them to Sayuj on WhatsApp. Do a few at a time, and skip anything you're unsure of.</p>
       </section>
       <label class="name">Your name <input id="who" value="${esc(reviewer)}" placeholder="e.g. Mummy" autocomplete="given-name"></label>
       <div class="overall"><div class="bar"><i style="width:${Math.round(100 * done / total)}%"></i></div><span>${done} of ${total} checked</span></div>
       <div class="secs">${sections.map(s => { const d = countDone(s.items); return `<button class="sec" data-sec="${s.id}"><span><b>${esc(s.title)}</b><small>${esc(s.blurb)}</small></span><span class="cnt ${d === s.items.length ? 'full' : ''}">${d}/${s.items.length}</span></button>`; }).join('')}</div>
-      <div class="foot"><button class="ghost" id="copyAll">Copy my answers</button><p class="small">Use this if saving online doesn't work: paste the answers into a WhatsApp message to Sayuj.</p></div>`));
+      ${sendCard()}
+      <details class="import"><summary>For Sayuj: add answers someone sent you</summary>
+        <p class="small">Paste the WhatsApp message(s) here, all parts together if there were several.</p>
+        <textarea id="impText" rows="5" placeholder="APOLLO1|Mummy|1/2 …"></textarea>
+        <button class="ghost" id="impBtn">Add these answers</button><p class="small" id="impMsg" role="status"></p>
+      </details>`));
     window.scrollTo(0, 0);
   }
+  function sendCard() {
+    const ids = unsent(), ps = parts(ids), any = ALL.some(answered);
+    if (!any) return `<div class="send"><h3>Sending your answers</h3><p class="small">${online ? 'Your answers save online automatically, so there is nothing to send.' : 'When you\'ve answered some, a button here sends them to Sayuj on WhatsApp. No account needed.'}</p></div>`;
+    return `<div class="send"><h3>${online ? 'Your answers are saved online' : 'Send your answers to Sayuj'}</h3>
+      ${online ? '<p class="small">Sayuj can already see them. You can still send them on WhatsApp if you like.</p>' : '<p class="small">Tap to open WhatsApp with your answers typed in, choose Sayuj, and press send.</p>'}
+      ${ps.length ? ps.map((pt, i) => `<a class="wa" href="https://wa.me/?text=${encodeURIComponent(pt.text)}" target="_blank" rel="noopener" data-part="${i}">Send ${pt.ids.length} ${ids.length === pt.ids.length ? 'new answers' : 'answers'}${ps.length > 1 ? ` (part ${i + 1} of ${ps.length})` : ''} on WhatsApp</a>`).join('') : '<p class="sent">✓ Everything has been sent. Answer more and a new button appears.</p>'}
+      <button class="ghost" id="copyAll">Copy my answers instead</button>
+      <p class="small">If WhatsApp doesn't open, use "Copy" and paste it into a message to Sayuj.</p></div>`;
+  }
+  let lastParts = [];
   function section(id, keepScroll) {
     const s = sections.find(x => x.id === id); current = id;
     const list = onlyOpen ? s.items.filter(it => !answered(it)) : s.items;
@@ -198,10 +245,15 @@
     if (t.dataset.play) return play(t.dataset.play);
     const art = t.closest('.it'); if (!art) {
       if (t.id === 'copyAll') {
-        const lines = ALL.filter(answered).map(it => { const a = A[it.id]; return `${it.id} | ${it.r || it.q || it.e} | ${a.v || '-'}${a.c ? ' | note ' + a.c : ''}${a.say ? ' | we say: ' + a.say : ''}`; });
-        const txt = `Apollo family check from ${reviewer || 'family'} (${lines.length} answers)\n` + lines.join('\n');
+        const ids = ALL.filter(answered).map(it => it.id);
+        const txt = `APOLLO1|${clean(reviewer) || 'family'}|1/1\nAnswers for Sayuj's Gujarati app. Please don't edit this message.\n` + ids.map(line).join('\n');
         const done = () => { t.textContent = 'Copied! Paste it to Sayuj'; setTimeout(() => { t.textContent = 'Copy my answers'; }, 2500); };
         try { navigator.clipboard.writeText(txt).then(done, () => fallbackCopy(txt, t)); } catch (err) { fallbackCopy(txt, t); }
+      }
+      if (t.id === 'impBtn') {
+        const r = importText($('impText').value);
+        $('impMsg').textContent = r.n ? `Added ${r.n} answers${r.name ? ' from ' + r.name : ''}.${online ? ' They are saved online.' : ''}` : 'No answers found. Paste the whole message, starting with APOLLO1.';
+        if (r.n) setTimeout(home, 1500);
       }
       return;
     }
@@ -211,8 +263,18 @@
     art.classList.toggle('done', answered(byId[id]));
     persist(id); paintProgress();
   });
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a.wa'); if (!a) return;
+    const ps = parts(unsent()), pt = ps[+a.dataset.part]; if (!pt) return;
+    pt.ids.forEach(id => { SENT[id] = sig(id); });
+    persist(); setTimeout(home, 600);
+  });
   document.addEventListener('change', e => {
-    if (e.target.id === 'who') { reviewer = e.target.value.trim(); Object.keys(A).forEach(k => pending.set(k, true)); return persist(); }
+    if (e.target.id === 'who') {
+      reviewer = e.target.value.trim(); Object.keys(A).forEach(k => pending.set(k, true)); persist();
+      const sc = document.querySelector('.send'); if (sc) sc.replaceWith(h(sendCard()));
+      return;
+    }
     if (e.target.id === 'onlyOpen') { onlyOpen = e.target.checked; shown = 30; return section(current); }
     const inp = e.target.closest('[data-say]'); if (!inp) return;
     const art = inp.closest('.it'), id = art.dataset.id;
@@ -230,6 +292,6 @@
     btn.after(ta); ta.focus(); ta.select(); btn.textContent = 'Select all and copy the text below';
   }
 
-  window.APOLLO_REVIEW = { sections, answers: () => A, count: () => ALL.length, flush };
+  window.APOLLO_REVIEW = { sections, answers: () => A, count: () => ALL.length, flush, importText };
   home();
 })();

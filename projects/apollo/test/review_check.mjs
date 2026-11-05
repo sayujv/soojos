@@ -57,7 +57,6 @@ await page.click('[data-home]'); await page.click('[data-sec="greet"]');
 const withClaim = page.locator('.it:has(.claim)').first();
 await withClaim.locator('[data-v="close"]').click();
 await withClaim.locator('[data-c="yes"]').click();
-await page.fill('#who', 'Mummy').catch(() => {});
 await page.click('[data-home]'); await page.fill('#who', 'Mummy'); await page.press('#who', 'Tab');
 await page.waitForTimeout(1200);
 const db = await page.evaluate(() => window.__db);
@@ -78,6 +77,20 @@ await page.check('#onlyOpen');
 if (await page.locator('.it[data-id="q:ba"]').count()) fail('hide-done filter did not hide an answered item');
 await page.close();
 
+// for Sayuj: importing a pasted WhatsApp message writes answers to the db under the sender's name
+{
+  const pi = await open(true);
+  await pi.evaluate(() => sessionStorage.removeItem('__db'));
+  await pi.reload(); await pi.waitForSelector('.sec');
+  await pi.click('.import summary');
+  await pi.fill('#impText', 'APOLLO1|Mummy|1/1\nAnswers for Sayuj\'s Gujarati app.\nq:ba|n||dadi\nphrase:kem-cho|y|y|\nnot a line\nq:se|s||kyare kyare');
+  await pi.click('#impBtn'); await pi.waitForTimeout(1200);
+  if (!/Added 3 answers from Mummy/.test(await pi.textContent('#impMsg'))) fail(`import message: ${await pi.textContent('#impMsg')}`);
+  const d2 = Object.values(await pi.evaluate(() => window.__db));
+  if (!(d2.length === 3 && d2.every(x => x.name === 'Mummy') && d2.find(x => x.item === 'q:se').v === 'some' && d2.find(x => x.item === 'phrase:kem-cho').c === 'yes')) fail(`imported answers not in db: ${JSON.stringify(d2)}`);
+  await pi.close();
+}
+
 // no Claude viewer: device-only mode + copy fallback
 const p2 = await open(false);
 if (!/this phone/.test(await p2.textContent('#status'))) fail('offline status not shown');
@@ -86,7 +99,28 @@ await p2.locator('.it').first().locator('[data-v="yes"]').click();
 await p2.click('[data-home]');
 await p2.click('#copyAll');
 const copied = await p2.locator('.copybox').count() ? await p2.locator('.copybox').inputValue() : '';
-if (copied && !/phrase:kien-aayo \| kien aayo\? \| yes/.test(copied)) fail('copy text missing the answer');
+if (copied && !/phrase:kien-aayo\|y\|\|/.test(copied)) fail('copy text missing the answer');
+
+// no account: WhatsApp send of new answers, marked sent, then a new one appears for the next answer
+await p2.click('[data-sec="family"]');
+const f0 = p2.locator('.it').first();
+await f0.locator('[data-v="no"]').click(); await f0.locator('.say').fill('ame "dadi" kahiye | બા નહીં'); await f0.locator('.say').press('Tab');
+await p2.click('[data-home]'); await p2.fill('#who', 'Mummy'); await p2.press('#who', 'Tab');
+const waHrefs = await p2.$$eval('a.wa', as => as.map(a => a.getAttribute('href')));
+if (waHrefs.length !== 1) fail(`expected 1 WhatsApp button, got ${waHrefs.length}`);
+const waText = waHrefs.length ? decodeURIComponent(waHrefs[0].replace('https://wa.me/?text=', '')) : '';
+if (!/^APOLLO1\|Mummy\|1\/1/.test(waText) || !waText.includes('q:ba|n||ame "dadi" kahiye બા નહીં') || !waText.includes('phrase:kien-aayo|y||')) fail(`WhatsApp text wrong:\n${waText}`);
+await p2.evaluate(() => { const a = document.querySelector('a.wa'); a.addEventListener('click', e => e.preventDefault()); a.click(); });
+await p2.waitForTimeout(900);
+if (!(await p2.locator('.send .sent').count())) fail('sent answers not marked as sent');
+await p2.click('[data-sec="greet"]'); await p2.locator('.it').first().locator('[data-v="yes"]').click(); await p2.click('[data-home]');
+const again = await p2.$$eval('a.wa', as => as.map(a => decodeURIComponent(a.getAttribute('href'))));
+if (again.length !== 1 || !/Send 1 new answers/.test(await p2.textContent('a.wa')) || again[0].includes('q:ba|')) fail('second send should contain only the new answer');
+// many answers split into parts under the URL limit
+await p2.evaluate(() => { const R = window.APOLLO_REVIEW; R.sections.forEach(sc => sc.items.slice(0, 40).forEach(it => { R.answers()[it.id] = { v: 'close', say: 'kai bijo shabd vaprie chhie aa jagya par' }; })); });
+await p2.click('[data-sec="family"]'); await p2.click('[data-home]');
+const many = await p2.$$eval('a.wa', as => as.map(a => a.getAttribute('href').length));
+if (many.length < 2 || many.some(n => n > 3200)) fail(`long sends should split under the limit: ${JSON.stringify(many)}`);
 await p2.emulateMedia({ colorScheme: 'dark' });
 if (await p2.evaluate(() => getComputedStyle(document.body).backgroundColor) !== 'rgb(14, 17, 36)') fail('dark mode background wrong');
 await p2.screenshot({ path: path.join(tmp, 'review-dark.png') });
@@ -97,4 +131,4 @@ errors.forEach(e => fail('console: ' + e));
 console.log(`items: ${total} in ${secs.length} sections ${JSON.stringify(Object.fromEntries(secs))}`);
 console.log(`screenshots: ${tmp}`);
 if (fails.length) { console.log(`FAIL (${fails.length})\n - ` + fails.join('\n - ')); process.exit(1); }
-console.log('PASS: every section renders fully; answers save to device and db, restore from db, filter works; offline copy fallback; dark mode; no sideways scroll; 0 console errors');
+console.log('PASS: every section renders fully; answers save to device and db, restore from db, filter works; no-account WhatsApp send (new-only, split into parts), import back into db; copy fallback; dark mode; no sideways scroll; 0 console errors');
