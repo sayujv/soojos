@@ -14,6 +14,13 @@
 - v2 (gamified): tab bar (Learn/Talk/Review/Family/Me), journey path with mithai-box chests, combos with double XP, levels with titles, 12 badges, weekly streak strip, confetti, 3-star conversations.
 - Research: `knowledge/reports/2026-11-05-apollo-sklpc-dialect.md`. Snippet-only because the session network blocked all page fetches, so everything is rated `claimed` at most.
 
+- v5 (usefulness pass):
+  - Real Gujarati audio: 404 eSpeak NG clips in `app/audio/` (rebuild with `node projects/apollo/tools/build_audio.mjs`, needs `pip install espeakng-loader` + ffmpeg).
+  - About-you profile: gender forms, father's name, gaam, dialect lean, level.
+  - AI via `sample`: "How do I say…?", a rehearsal partner with corrections, prep phrases and saved phrases (`S.mine`), which feed review.
+  - Speak-first in conversations, test-out per unit, Continue button, goal setting, Kutchi cross-links.
+  - Artifact capabilities: db, user, sample.
+
 ## Next
 1. Sayuj uses the Ask-family tab with a parent. Then read the verdicts with ArtifactData `list progress`, fold them into data.js and republish.
 2. Re-run research with network access, or on the Mac: panjokutch.com, cal.org PDF, freelang, sklpc.com, YouTube Kutchi Patel comedy.

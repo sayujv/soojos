@@ -17,6 +17,7 @@ Stage: building
 ## This project specifically
 - Static app in `app/`: `index.html` (page), `app.js` (logic), `data.js` (phrases, units, scenes, who's-who), `grammar.js` (patterns, glossed stories). No build step.
 - New dialogue: write the Gujarati script first, then roman and English, then word glosses. `tools/translit.mjs` checks script against roman, and the check fails if they diverge.
-- Published as a private claude.ai Artifact so it works on the phone; `db` + `user` capabilities hold progress and family verdicts.
+- Published as a private claude.ai Artifact so it works on the phone. `db` + `user` hold progress, family verdicts and saved phrases; `sample` powers Ask and Rehearse. Publish with `root` = `projects/apollo/app` and include `audio/*`.
+- After any content change: `node projects/apollo/tools/build_audio.mjs`, then the check.
 - Speaking and listening first. Gujarati script drives text-to-speech and is the authoring source; learners see it only through the optional "Show Gujarati script" toggle in stories.
 - Add content by editing `data.js`; the check validates it.

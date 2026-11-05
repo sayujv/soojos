@@ -79,6 +79,16 @@ let chromium;
 try { ({ chromium } = require('playwright')); } catch { ({ chromium } = require('/opt/node22/lib/node_modules/playwright')); }
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apollo-'));
 for (const f of ['data.js', 'grammar.js', 'app.js']) fs.copyFileSync(path.join(appDir, f), path.join(tmp, f));
+fs.cpSync(path.join(appDir, 'audio'), path.join(tmp, 'audio'), { recursive: true });
+// serve over http so fetch() of the audio packs works, as it does in the artifact
+const http = await import('node:http');
+const server = http.createServer((req, res) => {
+  const f = path.join(tmp, decodeURIComponent(req.url.split('?')[0]).replace(/^\/+/, '') || 'index.html');
+  if (!f.startsWith(tmp) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404); return res.end(); }
+  res.writeHead(200, { 'content-type': f.endsWith('.js') ? 'text/javascript' : f.endsWith('.json') ? 'application/json' : 'text/html; charset=utf-8' });
+  fs.createReadStream(f).pipe(res);
+}).listen(0);
+const base = `http://127.0.0.1:${server.address().port}/`;
 // Mirror the artifact publish skeleton so the page renders in standards mode.
 fs.writeFileSync(path.join(tmp, 'index.html'), '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>' + fs.readFileSync(path.join(appDir, 'index.html'), 'utf8') + '</body></html>');
 
@@ -88,8 +98,20 @@ const errors = [];
 page.on('pageerror', e => errors.push('pageerror: ' + e.message));
 page.on('console', m => { if (m.type() === 'error' && !/fonts\.g|ERR_|net::/.test(m.text())) errors.push('console: ' + m.text()); });
 await page.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
-await page.goto('file://' + path.join(tmp, 'index.html'));
+await page.goto(base + 'index.html');
+// first run: About you
+await page.waitForSelector('#profileForm');
+await page.fill('#pfFather', 'mahesh'); await page.fill('#pfGaam', 'Kera');
+await page.check('input[name="pfLean"][value="mixed"]');
+await overflow_early();
+await page.click('[data-act="save-profile"]');
 await page.waitForSelector('.stop');
+if (!(await page.locator('.cta[data-lesson="greet:0"]').count())) fail('Continue button missing or not pointing at the first lesson');
+// audio packs load
+for (let i = 0; i < 40 && (await page.evaluate(() => window.APOLLO.audio().clips)) < 400; i++) await page.waitForTimeout(250);
+const au = await page.evaluate(() => window.APOLLO.audio());
+if (au.clips < 400 || au.map < 400) fail(`audio packs: ${JSON.stringify(au)}`);
+async function overflow_early() { const o = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth); if (o > 0) fail(`about-you: sideways scroll ${o}px`); }
 
 const overflow = async where => { const o = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth); if (o > 0) fail(`${where}: page scrolls sideways by ${o}px at 390px`); };
 await overflow('home');
@@ -170,7 +192,10 @@ await page.click('.tab[data-go="talk"]');
 await overflow('talk tab');
 for (const s of scenes) {
   await page.click(`[data-scene="${s.id}"]`);
-  for (const st of s.steps) if (st.reply) { const k = st.reply.findIndex(o => o.ok); await page.click(`[data-reply="${k}"]`); }
+  for (const st of s.steps) if (st.reply) {
+    if (await page.locator('[data-act="show-choices"]').count()) await page.click('[data-act="show-choices"]');
+    const k = st.reply.findIndex(o => o.ok); await page.click(`[data-reply="${k}"]`);
+  }
   if (!(await page.locator('text=Conversation done').count())) fail(`scene ${s.id}: did not complete`);
   await overflow(`scene ${s.id}`);
   await page.click('#choices [data-go="talk"]');
@@ -222,6 +247,30 @@ await page.fill(`[data-note="${firstId}"]`, 'test note');
 await page.press(`[data-note="${firstId}"]`, 'Tab');
 await overflow('family');
 await page.reload(); await page.waitForSelector('.tab');
+
+// personalisation: father's name and gendered forms reach the phrasebook
+await page.evaluate(() => window.APOLLO.route('book'));
+await page.fill('#q', 'dikro chu');
+if (!(await page.locator('.item .r', { hasText: 'hu Maheshbhai no dikro chu' }).count())) fail('father name not personalised in phrasebook');
+await page.fill('#q', 'kem cho');
+if (!(await page.locator('.item .kx', { hasText: 'kien aayo' }).count())) fail('Kutchi equivalent not linked on "kem cho?"');
+await page.evaluate(() => { window.APOLLO.state().profile.gender = 'f'; window.APOLLO.route('book'); });
+await page.fill('#q', 'tired');
+if (!(await page.locator('.item .r', { hasText: 'hu thaki gai chu' }).count())) fail('feminine form not used when speaking as a woman');
+await page.evaluate(() => { window.APOLLO.state().profile.gender = 'm'; });
+
+// test out of a unit
+await page.evaluate(() => window.APOLLO.route('learn'));
+await page.click('[data-testout="food"]');
+{ let k = 0; while (await page.locator('.finish').count() === 0 && k++ < 30) if (!(await answerCurrent())) break; }
+if (!(await page.evaluate(() => Object.keys(window.APOLLO.state().lessons).filter(k => k.startsWith('food:')).length >= 4))) fail('test-out did not mark the unit done');
+await page.click('.finish [data-go]');
+
+// goal
+await page.evaluate(() => window.APOLLO.route('me'));
+await page.click('[data-goal="50"]');
+if (await page.evaluate(() => window.APOLLO.state().goal) !== 50) fail('goal not saved');
+await page.evaluate(() => window.APOLLO.route('family'));
 await page.click('.seg [data-go="guide"]');
 const rows = await page.locator('.grow').count();
 const want = phrases.length && (await page.evaluate(() => window.APOLLO_DATA.guide.reduce((n, g) => n + g.rows.length, 0)));
@@ -239,8 +288,55 @@ await page.screenshot({ path: path.join(tmp, 'home-dark.png'), fullPage: false }
 await page.emulateMedia({ colorScheme: 'light' });
 await page.screenshot({ path: path.join(tmp, 'home-light.png'), fullPage: false });
 
-await browser.close();
+// AI features with a stand-in for Claude (the real one only exists inside the Claude viewer)
+const ai = await browser.newPage({ viewport: { width: 390, height: 844 } });
+ai.on('pageerror', e => errors.push('ai pageerror: ' + e.message));
+await ai.addInitScript(() => {
+  const calls = (window.__calls = []);
+  const sample = async () => ({ text: '' });
+  sample.json = async (input) => {
+    calls.push(JSON.parse(JSON.stringify(input)));
+    await new Promise(r => setTimeout(r, 30));
+    if (typeof input === 'string' && input.includes('"phrases"')) return { phrases: [{ r: 'majama, ba', gu: 'મજામાં, બા', e: "I'm fine, Ba", note: 'reply to kem che' }, { r: 'tame kem cho?', gu: 'તમે કેમ છો?', e: 'How are you?', note: '' }] };
+    if (typeof input === 'string') return { r: 'ba, mane navi naukri mali', gu: 'બા, મને નવી નોકરી મળી', e: 'Ba, I got a new job', register: 'tame-level respect is carried by "ba"; no verb needs it here.', words: [['navi', 'new'], ['naukri', 'job'], ['mali', 'was found (got)']], alt: [{ r: 'ba, mane nokri mali gai', e: 'Ba, I landed a job', when: 'more casual' }], kutchi: null, culture: 'Ba will ask about the salary. Smile.' };
+    const last = input[input.length - 1].content;
+    return { feedback: input.length > 1 ? { verdict: last.includes('tame') ? 'great' : 'fix', note: 'Use tame with Ba.', better: 'majama, ba. tame kem cho?', better_e: 'Fine, Ba. How are you?' } : null, reply: { r: 'saru dikra. jamyo?', gu: 'સારું દીકરા. જમ્યો?', e: 'Good, son. Have you eaten?' }, hint: 'Say whether you have eaten.' };
+  };
+  window.claude = { use: async n => (n === 'sample' ? sample : null) };
+});
+await ai.route(/fonts\./, r => r.abort());
+await ai.goto(base + 'index.html');
+await ai.click('[data-act="skip-profile"]');
+await ai.waitForSelector('#quickAskForm');
+await ai.fill('#quickAsk', 'tell Ba I got a new job');
+await ai.click('#quickAskForm button');
+await ai.waitForSelector('#askIn');
+if ((await ai.inputValue('#askIn')) !== 'tell Ba I got a new job') fail('quick ask did not carry the text over');
+await ai.click('#askBtn');
+await ai.waitForSelector('.ai-result');
+if (!(await ai.locator('.ai-result .roman', { hasText: 'navi naukri' }).count())) fail('ask result not rendered');
+const askPrompt = await ai.evaluate(() => window.__calls[0]);
+if (!/Kutch Leva Patel/.test(askPrompt) || !/Ba, Dada or another elder/.test(askPrompt)) fail('ask prompt missing community or listener context');
+await ai.click('[data-act="save-mine"]');
+const mine = await ai.evaluate(() => window.APOLLO.state().mine);
+if (!(mine.length === 1 && mine[0].g === 'બા, મને નવી નોકરી મળી')) fail('saved phrase missing');
+if (!(await ai.evaluate(id => !!window.APOLLO.state().cards[id], mine[0].id))) fail('saved phrase not added to review deck');
+await ai.evaluate(() => window.APOLLO.route('rehearse'));
+await ai.click('[data-act="rh-prep"]');
+await ai.waitForSelector('#rhPrepOut .item');
+await ai.click('[data-act="rh-start"]');
+await ai.waitForSelector('#chat .bubble.them');
+await ai.fill('#rhIn', 'majama ba. tame kem cho?');
+await ai.click('#rhSend');
+await ai.waitForSelector('.fbk.great');
+if (await ai.locator('#chat .bubble.them').count() !== 2) fail('partner did not reply to the learner');
+const turns = await ai.evaluate(() => window.__calls[window.__calls.length - 1]);
+if (!(Array.isArray(turns) && turns[0].role === 'user' && turns[turns.length - 1].role === 'user' && turns[turns.length - 2].role === 'assistant')) fail('rehearse turns malformed');
+{ const o = await ai.evaluate(() => document.documentElement.scrollWidth - window.innerWidth); if (o > 0) fail(`rehearse: sideways scroll ${o}px`); }
+await ai.close();
+
+await browser.close(); server.close();
 for (const e of errors) fail(e);
 console.log(`screenshots: ${tmp}`);
 if (fails.length) { console.log(`FAIL (${fails.length})\n - ` + fails.join('\n - ')); process.exit(1); }
-console.log(`PASS: content valid; ${lessonKeys.length} lessons, review, ${scenes.length} scenes, patterns, stories, ask-family, who's-who, mithai box, badges, tabs, dark mode; 0 console errors; no sideways scroll at 390px`);
+console.log(`PASS: content valid; ${lessonKeys.length} lessons, review, ${scenes.length} scenes, about-you, personalisation, audio packs, test-out, AI ask + rehearse (mocked), patterns, stories, ask-family, who's-who, mithai box, badges, tabs, dark mode; 0 console errors; no sideways scroll at 390px`);
